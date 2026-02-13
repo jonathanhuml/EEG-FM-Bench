@@ -135,12 +135,12 @@ class SienaScalpBuilder(EEGDatasetBuilder):
 
         arr = np.array(sub_meta).reshape(-1, 6)
 
-        # 创建 DataFrame
+        # Create DataFrame
         df = pd.DataFrame(arr, columns=[
             'name', 'age', 'gender', 'start_time', 'seiz_start', 'seiz_end'
         ])
 
-        # 类型转换（如果需要把数字列变成 int）
+        # Type casting (convert numeric columns to int if needed)
         df['age'] = df['age'].astype(int)
         df['start_time'] = df['start_time'].astype(int)
         df['seiz_start'] = df['seiz_start'].astype(int)
@@ -196,14 +196,14 @@ class SienaScalpBuilder(EEGDatasetBuilder):
             seiz_start = row['seiz_start'] - start_time
             seiz_end = row['seiz_end'] - start_time
 
-            # 如果当前时间在 seizure 前，说明中间有空白
+            # If current time is before seizure start, there is a gap
             if current < seiz_start:
                 non_seizure_intervals.append((current, seiz_start))
 
-            # 移动 current 到 seizure 之后
+            # Move `current` to after the seizure interval
             current = max(current, seiz_end)
 
-        # 最后是否还有结尾部分
+        # Check whether there is a trailing segment
         if current < total_end and (total_end - current) > self.config.wnd_div_sec:
             non_seizure_intervals.append((current, total_end))
 
@@ -248,7 +248,7 @@ class SienaScalpBuilder(EEGDatasetBuilder):
         df['split'] = 'train'
         df.loc[df['subject'].isin([16, 17]), 'split'] = 'test'
 
-        # name 中包含 PN13 或 PN14 的设为 'valid'
+        # Set to 'valid' for PN13/PN14
         df.loc[df['subject'].isin([9, 13]), 'split'] = 'valid'
         return df
 

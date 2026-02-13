@@ -166,8 +166,8 @@ class MotorMoveImagineBuilder(EEGDatasetBuilder):
 
     def _persist_example_file(self, sample: dict):
         # pretrain datasets have no ground truth will be assigned a label item which indicates all signal array
-        path, montage, label, split = (
-            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'])
+        path, montage, label, split, subject = (
+            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'], sample['subject'])
         try:
             with self._read_raw_data(path, preload=True, verbose=False) as data:
                 if len(data.info['bads']) > 0:
@@ -184,6 +184,7 @@ class MotorMoveImagineBuilder(EEGDatasetBuilder):
                     return None
     
                 df = pd.DataFrame(data=examples)
+                df['subject'] = str(subject)
                 filename = f"{self._encode_path(path)}.parquet"
                 output_path = self._build_output_dir(split, filename)
     

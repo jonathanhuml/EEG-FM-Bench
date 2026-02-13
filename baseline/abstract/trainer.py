@@ -7,26 +7,29 @@ import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 import comet_ml
 import datasets
 import pandas as pd
 import torch
+import torch.nn as nn
 import wandb
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score, average_precision_score, cohen_kappa_score, f1_score
 from torch import Tensor
 from torch.utils.data import DataLoader
 
 from baseline.abstract.adapter import AbstractDataLoaderFactory
-from common.config import AbstractConfig
-from baseline.utils.utils import seed_torch
+from baseline.abstract.config import AbstractConfig, BaseLoggingArgs
+from baseline.utils.lora import (
+    inject_lora, get_lora_state_dict, load_lora_state_dict, get_model_lora_targets
+)
+from baseline.utils.common import seed_torch
 from common.log import setup_log
-from data.processor.wrapper import get_dataset_n_class, get_dataset_category
+from data.processor.wrapper import get_dataset_n_class, get_dataset_category, get_dataset_shape_info
 from common.distributed.env import get_is_master, get_global_rank, get_local_rank, get_world_size, get_master_addr, \
-    get_master_port, get_specific_dirname
+    get_master_port, get_specific_dirname, clean_torch_distributed
 from common.distributed.loader import DistributedGroupBatchSampler
-from common.utils import clean_torch_distributed
 
 logger = logging.getLogger("baseline")
 
@@ -105,7 +108,15 @@ class AbstractTrainer(ABC):
 
         self.start_time = datetime.datetime.now()
         self.comet_experiment = None
+        
+        self.ckpt_dir: str = ""
+        self.log_dir: str = ""
+        
+        # LoRA tracking
+        self.lora_modules: List[str] = []
 
+        # Lazy-created pretrain reconstruction head (registered on model)
+        self._pretrain_recon_head = None
     
     def setup_distributed(self):
         """Setup distributed training environment."""
@@ -137,21 +148,76 @@ class AbstractTrainer(ABC):
         self.world_size = world_size
         self.rank = rank
         self.local_rank = local_rank
+
+    def setup_device(self, device: Optional[str] = None):
+        """Setup non-distributed device for analysis or single-GPU runs."""
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        self.device = torch.device(device)
+        self.world_size = 1
+        self.rank = 0
+        self.local_rank = 0
+
+    def maybe_wrap_ddp(self, model: nn.Module, find_unused_parameters: bool = True) -> nn.Module:
+        """Wrap model with DDP if distributed is initialized, otherwise return as-is."""
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
+            return torch.nn.parallel.DistributedDataParallel(
+                model, device_ids=[self.local_rank], find_unused_parameters=find_unused_parameters
+            )
+        return model
+    
+    def encode_str(self, s: str, max_length=512):
+        """Encode string to tensor for distributed broadcasting."""
+        encoded = s.encode()[:max_length]
+        encoded += b'\0' * (max_length - len(encoded))
+        return torch.ByteTensor(list(encoded)).to(self.device)
+
+    def broadcast_str(self, s, max_length=512, rank=0):
+        """Broadcast string across distributed processes."""
+        if rank == 0:
+            tensor = self.encode_str(s, max_length)
+        else:
+            tensor = torch.zeros(max_length, dtype=torch.uint8, device=self.device)
+        torch.distributed.broadcast(tensor, src=0)
+
+        bytes_list = tensor.cpu().numpy().tobytes()
+        string = bytes_list.split(b'\0')[0].decode()
+        return string
+
+    def get_train_io_path(self, args: BaseLoggingArgs) -> tuple[str, str]:
+        if not get_is_master():
+            return '', ''
+
+        name = get_specific_dirname()
+        run_dir = args.run_dir
+        log_path = os.path.join(run_dir, 'log', 'baseline', self.model_type, name)
+        ckpt_path = os.path.join(run_dir, 'ckpt', 'baseline', self.model_type, name)
+
+        os.makedirs(log_path, exist_ok=True)
+        os.makedirs(ckpt_path, exist_ok=True)
+
+        return log_path, ckpt_path
     
     def setup_logging(self):
-        """Setup logging configuration."""
-        if get_is_master():
-            dirname = get_specific_dirname()
-            output_dir = Path(self.cfg.logging.output_dir, dirname)
-            output_dir.mkdir(parents=True, exist_ok=True)
+        log_dir, ckpt_dir = self.get_train_io_path(self.cfg.logging)
+        # Broadcast paths in distributed environment
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
+            ckpt_dir = self.broadcast_str(ckpt_dir, max_length=512, rank=self.rank)
+            log_dir = self.broadcast_str(log_dir, max_length=512, rank=self.rank)
 
-            log_file = output_dir / f"{self.cfg.model_type}_trainer.log"
+        self.ckpt_dir = ckpt_dir
+        self.log_dir = log_dir
+        
+        # Setup log file with unified path
+        if get_is_master():
             setup_log(
-                file_path=str(log_file),
+                file_path=os.path.join(log_dir, f"{self.model_type}_trainer.log"),
                 start_time=self.start_time.timestamp(),
                 name="baseline",
                 level="INFO"
             )
+            logger.info(f"log dir: {self.log_dir}, checkpoint dir: {self.ckpt_dir}")
 
         logger.info(f"Starting {self.cfg.model_type} training with "
                    f"{self.num_ds} dataset(s): {list(self.ds_conf.keys())}")
@@ -172,7 +238,7 @@ class AbstractTrainer(ABC):
                 self._init_comet()
 
     def _init_wandb(self):
-        """Initialize wandb logging."""
+        """Initialize wandb logging with unified naming."""
         try:
             # Create wandb metrics list
             wandb_metrics = []
@@ -187,13 +253,19 @@ class AbstractTrainer(ABC):
                     f"{ds_name}/test/epoch"
                 ])
 
+            wandb_dir = os.path.join(self.cfg.logging.run_dir, 'log', 'baseline', 'wandb')
+            
+            if self.cfg.logging.project is None:
+                logger.warning("Project name not set, using experiment_name as fallback")
+            
+            # Use unified run name from log directory
+            run_name = os.path.basename(self.log_dir)
+            
             # Setup wandb configuration with unified parameters
             wandb_config = {
+                'dir': wandb_dir,
                 'project': self.cfg.logging.project or self.cfg.logging.experiment_name,
-                'name': (
-                    f"{self.model_type}_{'uni' if self.cfg.multitask else 'sep'}"
-                    f"_{datetime.datetime.now().strftime('%m%d_%H%M%S')}"
-                ),
+                'name': run_name,
                 'config': self.cfg.model_dump(),
                 'tags': self.cfg.logging.tags,
                 'mode': 'offline' if self.cfg.logging.offline else 'online',
@@ -442,7 +514,8 @@ class AbstractTrainer(ABC):
                 self.ds_info[dataset_name] = {
                     'config': dataset_config,
                     'n_class': get_dataset_n_class(dataset_name, dataset_config),
-                    'category': get_dataset_category(dataset_name, dataset_config)
+                    'category': get_dataset_category(dataset_name, dataset_config),
+                    'shape_info': get_dataset_shape_info(dataset_name, dataset_config, self.cfg.fs),
                 }
                 logger.info(f"Dataset {dataset_name} - {dataset_config} for mixed set")
         else:
@@ -451,11 +524,16 @@ class AbstractTrainer(ABC):
                 ds_name: {
                     'config': ds_conf,
                     'n_class': get_dataset_n_class(ds_name, ds_conf),
-                    'category': get_dataset_category(ds_name, ds_conf)
+                    'category': get_dataset_category(ds_name, ds_conf),
+                    'shape_info': get_dataset_shape_info(ds_name, ds_conf, self.cfg.fs),
                 }}
             logger.info(f"Dataset {ds_name} - {ds_conf} only")
 
     def _gather_tensor(self, tensor: Tensor, max_length: int) -> Optional[list[Tensor]]:
+        is_dist = torch.distributed.is_available() and torch.distributed.is_initialized()
+        if not is_dist:
+            return [tensor]
+
         exist_mask = torch.tensor([tensor.shape[0]], dtype=torch.int32, device=self.device)
         mask_gather_list = [torch.zeros_like(exist_mask) for _ in range(self.world_size)] \
             if get_is_master() else None
@@ -493,8 +571,9 @@ class AbstractTrainer(ABC):
 
         return conf_matrix
 
-    def _clip_grad_norm_(self):
-        self.scaler.unscale_(self.optimizer)
+    def _clip_grad_norm_(self, already_unscaled: bool = False):
+        if not already_unscaled:
+            self.scaler.unscale_(self.optimizer)
         grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.training.max_grad_norm)
         return grad_norm.detach().cpu().item()
 
@@ -505,6 +584,7 @@ class AbstractTrainer(ABC):
         dataloaders, samplers = self.dataloader_factory.create_dataloader(
             datasets_config=self.ds_conf,
             mixed=mixed,
+            fs=self.cfg.fs,
             num_replicas=self.world_size,
             rank=self.local_rank,
             split=split,
@@ -518,6 +598,7 @@ class AbstractTrainer(ABC):
         dataloader, sampler = self.dataloader_factory.create_dataloader(
             datasets_config={ds_name: ds_config},
             mixed=False,
+            fs=self.cfg.fs,
             num_replicas=self.world_size,
             rank=self.local_rank,
             split=split,
@@ -533,27 +614,112 @@ class AbstractTrainer(ABC):
         """Setup model architecture."""
         pass
 
+    def get_lora_target_modules(self) -> List[str]:
+        """
+        Get LoRA target modules for this model.
+        
+        Can be overridden by subclasses to provide model-specific targets.
+        By default, uses the configuration or model-type specific defaults.
+        """
+        lora_cfg = self.cfg.training.lora
+        
+        # If explicit target modules specified (not just ["default"])
+        if lora_cfg.lora_target_modules != ["default"]:
+            return lora_cfg.lora_target_modules
+        
+        # Otherwise, use model-type specific defaults
+        return get_model_lora_targets(self.model_type, lora_cfg.lora_target_type)
+
+    def apply_lora(self, model: nn.Module) -> nn.Module:
+        """
+        Apply LoRA to the model if enabled in configuration.
+        
+        Args:
+            model: The model to apply LoRA to
+            
+        Returns:
+            Model with LoRA layers injected (or original model if LoRA disabled)
+        """
+        lora_cfg = self.cfg.training.lora
+        
+        if not lora_cfg.use_lora:
+            return model
+        
+        logger.info(f"Applying LoRA with r={lora_cfg.lora_r}, alpha={lora_cfg.lora_alpha}, scope={lora_cfg.lora_scope}")
+        
+        target_modules = self.get_lora_target_modules()
+        logger.info(f"LoRA target modules: {target_modules}")
+        
+        model, injected_modules = inject_lora(
+            model=model,
+            target_modules=target_modules,
+            r=lora_cfg.lora_r,
+            lora_alpha=lora_cfg.lora_alpha,
+            lora_dropout=lora_cfg.lora_dropout,
+            exclude_modules=lora_cfg.lora_exclude_modules,
+            scope=lora_cfg.lora_scope,
+            verbose=get_is_master(),
+        )
+        
+        self.lora_modules = injected_modules
+        
+        return model
+
     def setup_optim_params(self, model):
+        """
+        Setup optimizer parameters with support for LoRA.
+        
+        When LoRA is enabled:
+        - Only LoRA parameters and classifier/head parameters are trainable
+        - Base encoder parameters are frozen
+        
+        When LoRA is disabled:
+        - Uses original freeze_encoder logic
+        """
+        lora_cfg = self.cfg.training.lora
+        
         head_params = []
         encoder_params = []
+        lora_params = []
 
         for name, param in model.named_parameters():
-            if 'classifier' in name or 'conv_router' in name:
+            # Check if this is a LoRA parameter
+            if "lora_A" in name or "lora_B" in name:
+                lora_params.append(param)
+            elif 'classifier' in name or 'conv_router' in name:
                 head_params.append(param)
             else:
                 encoder_params.append(param)
 
         params = [{'params': head_params, 'lr': self.cfg.training.max_lr}]
 
-        # Add encoder parameters if not frozen
-        if not self.cfg.training.freeze_encoder:
-            encoder_lr = self.cfg.training.max_lr * self.cfg.training.encoder_lr_scale
-            params.append({'params': encoder_params, 'lr': encoder_lr})
-        else:
-            # Freeze encoder parameters
+        if lora_cfg.use_lora:
+            # LoRA mode: train LoRA params + head, freeze encoder
+            lora_lr = self.cfg.training.max_lr * lora_cfg.lora_lr_scale
+            params.append({'params': lora_params, 'lr': lora_lr})
+            
+            # Freeze non-LoRA encoder parameters
             for param in encoder_params:
                 param.requires_grad = False
-            logger.info("Encoder parameters frozen")
+            
+            lora_param_count = sum(p.numel() for p in lora_params)
+            head_param_count = sum(p.numel() for p in head_params)
+            frozen_param_count = sum(p.numel() for p in encoder_params)
+            
+            logger.info(f"LoRA training mode:")
+            logger.info(f"  - LoRA params: {lora_param_count:,} (lr={lora_lr:.2e})")
+            logger.info(f"  - Head params: {head_param_count:,} (lr={self.cfg.training.max_lr:.2e})")
+            logger.info(f"  - Frozen encoder params: {frozen_param_count:,}")
+        else:
+            # Original logic
+            if not self.cfg.training.freeze_encoder:
+                encoder_lr = self.cfg.training.max_lr * self.cfg.training.encoder_lr_scale
+                params.append({'params': encoder_params, 'lr': encoder_lr})
+            else:
+                # Freeze encoder parameters
+                for param in encoder_params:
+                    param.requires_grad = False
+                logger.info("Encoder parameters frozen")
 
         return params
 
@@ -603,6 +769,342 @@ class AbstractTrainer(ABC):
         self.scaler = scaler
         self.scheduler = scheduler
 
+    def debug_params_grad(self):
+        for name, param in self.model.named_parameters():
+            if get_is_master() and param.grad is not None:
+                logger.info(
+                    f"{name} "
+                    f"Range: [{param.grad.min():.8f}, {param.grad.max():.8f}], "
+                    f"Scale: {param.grad.abs().mean():.8f}")
+
+    def get_current_lr(self):
+        """Get current learning rates for all parameter groups."""
+        return [param_group['lr'] for param_group in self.optimizer.param_groups]
+
+    # ===========================================
+    # Analysis Mode Training Interface
+    # ===========================================
+
+    def finetune_one_batch(
+        self,
+        batch: dict,
+        pre_step_hook: Optional[callable] = None,
+        post_step_hook: Optional[callable] = None,
+    ) -> tuple[float, float, float]:
+        """Train on a single batch (used for analysis loops)."""
+        self.model.train()
+        self.optimizer.zero_grad()
+
+        batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
+        labels = batch['label']
+
+        logits, loss = self.train_step(batch, labels)
+
+        if torch.isnan(loss):
+            raise ValueError("NaN loss detected during analysis step")
+
+        self.scaler.scale(loss).backward()
+
+        # Unscale grads before analysis hook to avoid scaled gradients
+        self.scaler.unscale_(self.optimizer)
+
+        if pre_step_hook is not None:
+            pre_step_hook(self.model, self.current_step, batch)
+
+        grad_norm = self._clip_grad_norm_(already_unscaled=True)
+
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+
+        with torch.no_grad():
+            preds = torch.argmax(logits, dim=-1)
+            acc = (preds == labels).float().mean().item()
+
+        loss_val = loss.detach().item()
+
+        if post_step_hook is not None:
+            post_step_hook(self.model, self.current_step, loss_val, grad_norm)
+
+        self.current_step += 1
+        self.scheduler.step()
+
+        return loss_val, grad_norm, acc
+
+    def create_masked_batch(
+        self,
+        batch: dict,
+        mask_ratio: float = 0.5,
+        mask_strategy: str = "random_mixed",
+        temporal_ratio: float = 0.5,
+    ) -> Tuple[dict, torch.Tensor, torch.Tensor]:
+        """Create masked batch for pretraining objective.
+
+        This creates a masked version of the input data for reconstruction-based
+        pretraining. The masking is done on patches (after the data is reshaped
+        into patches).
+
+        Args:
+            batch: Input batch with 'data' key of shape [B, C, T]
+            mask_ratio: Fraction of patches to mask (0.0 - 1.0)
+            mask_strategy: Masking strategy:
+                - "random": Random patch masking
+                - "temporal": Mask entire time steps across all channels
+                - "channel": Mask entire channels across all time steps
+                - "random_mixed": Mix of temporal and channel masking
+            temporal_ratio: For "random_mixed", ratio of temporal vs channel masking
+
+        Returns:
+            (masked_batch, mask, original_patches):
+                - masked_batch: Batch with masked data
+                - mask: Boolean mask [B, C, n_patches] where True = masked
+                - original_patches: Original patches [B, C, n_patches, patch_size]
+        """
+        data = batch['data']  # [B, C, T]
+        batch_size, n_channels, n_timepoints = data.shape
+
+        # Infer patch size from model (most models use power of 2)
+        patch_size = getattr(self.model, 'patch_size', None)
+        if patch_size is None:
+            # Try to get from encoder
+            encoder = getattr(self.model, 'encoder', None)
+            if encoder is not None:
+                patch_size = getattr(encoder, 'patch_size', 200)
+            else:
+                patch_size = 200  # Default
+
+        n_patches = n_timepoints // patch_size
+
+        # Reshape to patches: [B, C, n_patches, patch_size]
+        data_trimmed = data[:, :, :n_patches * patch_size]
+        original_patches = data_trimmed.view(batch_size, n_channels, n_patches, patch_size)
+
+        # Create mask based on strategy
+        device = data.device
+
+        if mask_strategy == "random":
+            # Random patch-wise masking
+            mask = torch.rand(batch_size, n_channels, n_patches, device=device) < mask_ratio
+
+        elif mask_strategy == "temporal":
+            # Mask entire time steps (same mask across channels)
+            temporal_mask = torch.rand(batch_size, 1, n_patches, device=device) < mask_ratio
+            mask = temporal_mask.expand(-1, n_channels, -1)
+
+        elif mask_strategy == "channel":
+            # Mask entire channels (same mask across time)
+            channel_mask = torch.rand(batch_size, n_channels, 1, device=device) < mask_ratio
+            mask = channel_mask.expand(-1, -1, n_patches)
+
+        elif mask_strategy == "random_mixed":
+            # Mix of temporal and channel masking
+            n_temporal = int(mask_ratio * temporal_ratio * n_patches)
+            n_channel = int(mask_ratio * (1 - temporal_ratio) * n_channels)
+
+            mask = torch.zeros(batch_size, n_channels, n_patches, dtype=torch.bool, device=device)
+
+            for b in range(batch_size):
+                # Temporal masking (random time steps)
+                if n_temporal > 0:
+                    t_indices = torch.randperm(n_patches, device=device)[:n_temporal]
+                    mask[b, :, t_indices] = True
+
+                # Channel masking (random channels)
+                if n_channel > 0:
+                    c_indices = torch.randperm(n_channels, device=device)[:n_channel]
+                    mask[b, c_indices, :] = True
+        else:
+            raise ValueError(f"Unknown mask strategy: {mask_strategy}")
+
+        # Apply mask (zero out masked patches)
+        masked_patches = original_patches.clone()
+        mask_expanded = mask.unsqueeze(-1).expand_as(masked_patches)
+        masked_patches[mask_expanded] = 0.0
+
+        # Reshape back to [B, C, T]
+        masked_data = masked_patches.view(batch_size, n_channels, n_patches * patch_size)
+
+        # Create masked batch
+        masked_batch = batch.copy()
+        masked_batch['data'] = masked_data
+
+        return masked_batch, mask, original_patches
+
+    def pretrain_step_for_analysis(
+        self,
+        batch: dict,
+        mask_ratio: float = 0.5,
+        mask_strategy: str = "random_mixed",
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Pretrain step with MSE reconstruction objective.
+
+        This performs a single pretraining step:
+        1. Mask input patches
+        2. Forward through encoder
+        3. Reconstruct masked patches (using simple linear head)
+        4. Compute MSE loss on masked positions only
+
+        Args:
+            batch: Input batch
+            mask_ratio: Fraction of patches to mask
+            mask_strategy: Masking strategy
+
+        Returns:
+            (loss, logits, mask): Reconstruction loss, predicted patches, mask
+        """
+        # Create masked batch
+        masked_batch, mask, original_patches = self.create_masked_batch(
+            batch, mask_ratio, mask_strategy
+        )
+
+        with torch.amp.autocast('cuda', enabled=self.cfg.training.use_amp, dtype=torch.bfloat16):
+            # Get encoder output
+            encoder = getattr(self.model, 'encoder', self.model)
+
+            # Forward through encoder
+            # Most encoders expect [B, C, n_patches, patch_size]
+            data = masked_batch['data']
+            batch_size, n_channels, n_timepoints = data.shape
+
+            patch_size = getattr(encoder, 'patch_size', 200)
+            n_patches = n_timepoints // patch_size
+
+            # Reshape for encoder
+            data_patches = data[:, :, :n_patches * patch_size].view(
+                batch_size, n_channels, n_patches, patch_size
+            )
+
+            # Get features from encoder
+            # Output shape varies by model, typically [B, C, n_patches, D] or [B, T, D]
+            features = encoder(data_patches)
+
+            # Handle different output shapes
+            if features.dim() == 3:
+                # [B, T, D] - typical transformer output
+                # Reshape to [B, C, n_patches, D] if possible
+                if features.shape[1] == n_channels * n_patches:
+                    features = features.view(batch_size, n_channels, n_patches, -1)
+                else:
+                    # Use as-is, project to reconstruction
+                    embed_dim = features.shape[-1]
+                    if self._pretrain_recon_head is None:
+                        head = torch.nn.Linear(embed_dim, patch_size)
+                        head = head.to(features.device).to(features.dtype)
+                        target_model = getattr(self.model, "module", self.model)
+                        target_model._pretrain_recon_head = head
+                        self._pretrain_recon_head = head
+                        if self.optimizer is not None:
+                            self.optimizer.add_param_group({
+                                "params": self._pretrain_recon_head.parameters(),
+                                "lr": self.cfg.training.max_lr,
+                            })
+                    reconstructed = self._pretrain_recon_head(features)
+                    # This path needs special handling - skip for now
+                    raise NotImplementedError("3D output reconstruction not fully implemented")
+
+            if features.dim() == 4:
+                # [B, C, n_patches, D]
+                embed_dim = features.shape[-1]
+
+                # Create reconstruction head if not exists (register on model)
+                if self._pretrain_recon_head is None:
+                    head = torch.nn.Linear(embed_dim, patch_size)
+                    head = head.to(features.device).to(features.dtype)
+                    # Register on underlying model for checkpointing
+                    target_model = getattr(self.model, "module", self.model)
+                    target_model._pretrain_recon_head = head
+                    self._pretrain_recon_head = head
+                    # Ensure optimizer updates this head if optimizer already built
+                    if self.optimizer is not None:
+                        self.optimizer.add_param_group({
+                            "params": self._pretrain_recon_head.parameters(),
+                            "lr": self.cfg.training.max_lr,
+                        })
+
+                # Reconstruct: [B, C, n_patches, patch_size]
+                reconstructed = self._pretrain_recon_head(features)
+            else:
+                raise ValueError(f"Unexpected feature shape: {features.shape}")
+
+        # Compute MSE loss on masked positions only
+        # mask: [B, C, n_patches], original_patches: [B, C, n_patches, patch_size]
+        mask_expanded = mask.unsqueeze(-1).expand_as(original_patches)
+
+        # Only compute loss on masked patches
+        pred_masked = reconstructed[mask_expanded]
+        target_masked = original_patches[mask_expanded]
+
+        if pred_masked.numel() == 0:
+            # No masked patches (edge case)
+            loss = torch.tensor(0.0, device=reconstructed.device, requires_grad=True)
+        else:
+            loss = torch.nn.functional.mse_loss(pred_masked.float(), target_masked.float())
+
+        return loss, reconstructed, mask
+
+    def pretrain_one_batch_for_analysis(
+        self,
+        batch: dict,
+        mask_ratio: float = 0.5,
+        mask_strategy: str = "random_mixed",
+        pre_step_hook: Optional[callable] = None,
+    ) -> Tuple[float, float]:
+        """Pretrain on a single batch (used for analysis loops).
+
+        Args:
+            batch: Input batch
+            mask_ratio: Fraction of patches to mask
+            mask_strategy: Masking strategy
+            pre_step_hook: Callable(model, step, batch) called before optimizer.step()
+
+        Returns:
+            (loss, grad_norm): Loss value and gradient norm
+        """
+        self.model.train()
+        self.optimizer.zero_grad()
+
+        batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
+
+        loss, reconstructed, mask = self.pretrain_step_for_analysis(batch, mask_ratio, mask_strategy)
+
+        if torch.isnan(loss):
+            raise ValueError("NaN loss detected during pretrain step")
+
+        self.scaler.scale(loss).backward()
+
+        # Unscale grads before analysis hook
+        self.scaler.unscale_(self.optimizer)
+
+        if pre_step_hook is not None:
+            pre_step_hook(self.model, self.current_step, batch)
+
+        grad_norm = self._clip_grad_norm_(already_unscaled=True)
+
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
+
+        loss_val = loss.detach().item()
+
+        self.current_step += 1
+        self.scheduler.step()
+
+        return loss_val, grad_norm
+    
+    def setup_analysis_mode(self):
+        """Configure trainer for gradient/feature analysis mode.
+
+        This sets up the trainer in a special mode optimized for analysis:
+        1. Optionally disables cloud logging (wandb/comet)
+        2. Sets up analysis-specific output directory
+        3. Returns hooks for gradient capture
+
+        """
+        self.cfg.logging.use_cloud = False
+        logger.info("Analysis mode: cloud logging disabled")
+
+    # ===========================================
+    # Fine-tuning Training Interface
+    # ===========================================
+    
     def train_step(self, batch, labels):
         with torch.amp.autocast('cuda', enabled=self.cfg.training.use_amp, dtype=torch.bfloat16):
             logits = self.model(batch)
@@ -612,6 +1114,12 @@ class AbstractTrainer(ABC):
 
     def train_epoch(self, train_loader: DataLoader, train_sampler: DistributedGroupBatchSampler):
         self.model.train()
+        if self.cfg.training.freeze_encoder:
+            if torch.distributed.is_available() and torch.distributed.is_initialized():
+                self.model.module.encoder.eval()
+            else:
+                self.model.encoder.eval()
+
         train_sampler.set_epoch(self.epoch)
 
         batch: dict
@@ -631,13 +1139,6 @@ class AbstractTrainer(ABC):
 
             # Backward pass
             self.scaler.scale(loss).backward()
-            # for name, param in self.model.named_parameters():
-            #     if get_is_master() and param.grad is not None:
-            #         logger.info(
-            #             f"{name} "
-            #             f"Range: [{param.grad.min():.8f}, {param.grad.max():.8f}], "
-            #             f"Scale: {param.grad.abs().mean():.8f}")
-
             grad_norm = self._clip_grad_norm_()
 
             # Optimizer step
@@ -664,11 +1165,11 @@ class AbstractTrainer(ABC):
                         'train/loss_ce': loss_tensor.cpu().item(),
                         'train/acc': acc_tensor.cpu().item(),
                         'train/grad_norm': grad_norm,
-                        'train/header_lr': self.scheduler.get_last_lr()[0],
+                        'train/header_lr': self.get_current_lr()[0],
                     }
 
                     if not self.cfg.training.freeze_encoder:
-                        log_data['train/encoder_lr'] = self.scheduler.get_last_lr()[1]
+                        log_data['train/encoder_lr'] = self.get_current_lr()[-1]
 
                     if not self.multitask:
                         log_data = {f"{ds_name}/{key}": value for key, value in log_data.items()}
@@ -681,7 +1182,6 @@ class AbstractTrainer(ABC):
 
             self.current_step += 1
             self.scheduler.step()
-    
 
     def eval_step(self, batch, labels):
         with torch.amp.autocast('cuda', enabled=self.cfg.training.use_amp, dtype=torch.bfloat16):
@@ -692,6 +1192,7 @@ class AbstractTrainer(ABC):
 
     def eval_epoch(self, dataloaders: list[DataLoader], prefix: str):
         """Evaluate one epoch and return metrics."""
+        is_dist = torch.distributed.is_available() and torch.distributed.is_initialized()
         if get_is_master():
             logger.info(f"Starting {prefix} evaluation...")
 
@@ -723,8 +1224,9 @@ class AbstractTrainer(ABC):
                     pred = torch.argmax(logits, dim=1).detach()
                     cm = self._calc_confusion_matrix(pred, labels.detach(), n_class)
 
-                    overall_metrics[ds_name]['loss_sum'] += loss.detach() * len(batch)
-                    overall_metrics[ds_name]['cnt'] += len(batch)
+                    batch_size = labels.shape[0]
+                    overall_metrics[ds_name]['loss_sum'] += loss.detach() * batch_size
+                    overall_metrics[ds_name]['cnt'] += batch_size
                     overall_metrics[ds_name]['cm'] += cm.detach()
 
                     logits_across, labels_across = self._gather_result(logits.detach(), labels.detach())
@@ -732,13 +1234,15 @@ class AbstractTrainer(ABC):
                         overall_metrics[ds_name]['logits'].append(logits_across.cpu())
                         overall_metrics[ds_name]['labels'].append(labels_across.cpu())
 
-                torch.distributed.barrier()
+                if is_dist:
+                    torch.distributed.barrier()
 
             log_dict = {}
             for ds_name in self.ds_info.keys():
-                torch.distributed.all_reduce(overall_metrics[ds_name]['loss_sum'], op=torch.distributed.ReduceOp.SUM)
-                torch.distributed.all_reduce(overall_metrics[ds_name]['cnt'], op=torch.distributed.ReduceOp.SUM)
-                torch.distributed.all_reduce(overall_metrics[ds_name]['cm'], op=torch.distributed.ReduceOp.SUM)
+                if is_dist:
+                    torch.distributed.all_reduce(overall_metrics[ds_name]['loss_sum'], op=torch.distributed.ReduceOp.SUM)
+                    torch.distributed.all_reduce(overall_metrics[ds_name]['cnt'], op=torch.distributed.ReduceOp.SUM)
+                    torch.distributed.all_reduce(overall_metrics[ds_name]['cm'], op=torch.distributed.ReduceOp.SUM)
 
                 overall_metrics[ds_name]['loss'] = overall_metrics[ds_name]['loss_sum'] / overall_metrics[ds_name][
                     'cnt'].float()
@@ -764,23 +1268,51 @@ class AbstractTrainer(ABC):
                 log_cloud = self._create_ft_cloud_log_data(log_dict, prefix, overall_metrics)
                 self._log_to_cloud(log_cloud)
 
-            torch.distributed.barrier()
+            if is_dist:
+                torch.distributed.barrier()
+
+            return overall_metrics
 
     @abstractmethod
     def load_checkpoint(self, checkpoint_path: str):
         """Load model checkpoint."""
         pass
+
+    def load_lora_checkpoint(self, lora_checkpoint_path: str):
+        """
+        Load LoRA weights from a checkpoint file.
+        
+        Args:
+            lora_checkpoint_path: Path to the LoRA checkpoint file
+        """
+        if not self.cfg.training.lora.use_lora:
+            logger.warning("LoRA is not enabled, skipping LoRA checkpoint loading")
+            return
+        
+        logger.info(f"Loading LoRA checkpoint from {lora_checkpoint_path}")
+        lora_state_dict = torch.load(lora_checkpoint_path, map_location=self.device, weights_only=True)
+        
+        missing_keys, unexpected_keys = load_lora_state_dict(
+            self.model, lora_state_dict, strict=False
+        )
+        
+        if missing_keys:
+            logger.warning(f"Missing LoRA keys: {missing_keys}")
+        if unexpected_keys:
+            logger.warning(f"Unexpected LoRA keys: {unexpected_keys}")
+        
+        logger.info("LoRA checkpoint loaded successfully")
     
     def save_checkpoint(self, ds_name: Optional[str] = None, is_milestone: bool = False, **kwargs):
+        """Save checkpoint with unified path management."""
         if not get_is_master():
             return
 
         if ds_name is None:
             ds_name = 'unified'
-            checkpoint_dir = Path(self.cfg.logging.ckpt_dir, ds_name)
+            checkpoint_dir = Path(self.ckpt_dir, ds_name)
         else:
-            checkpoint_dir = Path(self.cfg.logging.ckpt_dir, 'seperated', ds_name)
-
+            checkpoint_dir = Path(self.ckpt_dir, 'seperated', ds_name)
 
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -790,7 +1322,7 @@ class AbstractTrainer(ABC):
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'scaler_state_dict': self.scaler.state_dict(),
-            'config': self.cfg.model_dump(),
+            'config': self.cfg.model_dump(mode='json'),
             'dataset_name': ds_name,
         }
 
@@ -800,6 +1332,34 @@ class AbstractTrainer(ABC):
         torch.save(checkpoint, checkpoint_path)
 
         logger.info(f"Checkpoint saved: {ds_name}: {checkpoint_path}")
+
+        # Save LoRA weights separately if LoRA is enabled
+        if self.cfg.training.lora.use_lora:
+            self.save_lora_checkpoint(checkpoint_dir, ds_name, suffix)
+    
+    def save_lora_checkpoint(self, checkpoint_dir: Path, ds_name: str, suffix: str):
+        """
+        Save LoRA weights separately from the main checkpoint.
+        
+        Args:
+            checkpoint_dir: Directory to save the checkpoint
+            ds_name: Dataset name
+            suffix: Checkpoint suffix (e.g., 'last', 'epoch_10')
+        """
+        if not get_is_master():
+            return
+        
+        lora_state_dict = get_lora_state_dict(self.model)
+        
+        if not lora_state_dict:
+            logger.warning("No LoRA parameters found to save")
+            return
+        
+        lora_checkpoint_path = checkpoint_dir / f'{self.model_type}_{ds_name}_{suffix}_lora.pt'
+        torch.save(lora_state_dict, lora_checkpoint_path)
+        
+        lora_param_count = sum(v.numel() for v in lora_state_dict.values())
+        logger.info(f"LoRA checkpoint saved: {lora_checkpoint_path} ({lora_param_count:,} params)")
 
     def run(self):
         seed_torch(self.cfg.seed)
@@ -811,7 +1371,7 @@ class AbstractTrainer(ABC):
         logger.info(f"  - Datasets: {self.num_ds} {list(self.cfg.data.datasets.keys())}")
         logger.info(f"  - Multitask: {self.cfg.multitask}")
         logger.info(f"  - Max epochs: {self.cfg.training.max_epochs}")
-        logger.info(f"  - Output directory: {self.cfg.logging.output_dir}")
+        logger.info(f"  - Output directory: {self.log_dir} -- {self.ckpt_dir}")
 
         """Main training loop - supports both multitask and separate models patterns."""
         if self.cfg.multitask:

@@ -1,0 +1,86 @@
+# BIOT Separated Full Training Configuration
+# This configuration demonstrates separate model training for individual datasets with full fine-tuning
+
+# Basic configuration
+seed: 42
+master_port: 51100
+multitask: false  # Train separate models for each dataset
+
+# Data configuration
+data:
+  datasets:
+#    tuab: 'finetune'
+  batch_size: 1024
+  num_workers: 1
+
+# Model configuration
+model:
+  pretrained_path: null
+
+  # Classifier head configuration
+  classifier_head:
+    head_type: 'avg_pool'  # Options: avg_pool, attention_pool, dual_stream_fusion, flatten_mlp
+    
+    # Common parameters
+    hidden_dims: [128]
+    dropout: 0.3
+    
+    # Attention Pool parameters (for attention_pool)
+    attn_n_head: 4
+    attn_head_dim: 64
+    
+    # Dual Stream Fusion parameters (for dual_stream_fusion)
+    fusion_mode: 'dual'  # Options: time_first, channel_first, dual
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+# Training configuration
+training:
+  max_epochs: 200
+  weight_decay: 0.01
+  max_grad_norm: 3.0
+
+  lr_schedule: "cosine"
+  max_lr: 5e-3
+  encoder_lr_scale: 1.0
+  warmup_epochs: 5
+  warmup_scale: 1e-1
+  pct_start: 0.1          # For OneCycleLR
+  min_lr: 5e-4
+
+  # Training options
+  use_amp: false
+  freeze_encoder: false  # Allow full fine-tuning for single dataset
+
+  # LoRA configuration
+  lora:
+    use_lora: false
+    lora_r: 8
+    lora_alpha: 16
+    lora_dropout: 0.0
+    lora_target_modules: ['default']
+    lora_exclude_modules: null
+    lora_target_type: 'default'  # Options: default, full, attention, ffn
+    lora_scope: 'transformer'    # Options: transformer, full
+    lora_lr_scale: 1.0
+
+# Logging configuration
+logging:
+  experiment_name: "eegnet"
+  run_dir: "assets/run"
+
+  # Cloud logging
+  use_cloud: true
+  cloud_backend: "wandb"
+
+  project: "eegnet"
+  offline: false
+
+  tags: ["eegnet", "full"]
+
+  # Logging intervals
+  log_step_interval: 2
+  ckpt_interval: 100

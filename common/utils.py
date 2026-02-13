@@ -8,8 +8,6 @@ import yaml
 from omegaconf import DictConfig
 from torch import nn, Tensor
 
-from common.type import PriorType
-
 
 def split_array_equal_part(arr: Union[list[int], Tensor] , k: int):
     return [arr[i:i + k] for i in range(0, len(arr), k)]
@@ -84,27 +82,3 @@ class ElectrodeSet:
     def get_electrodes_name(self, electrodes: list[int]) -> list[str]:
         return [self.index_dict[electrode] for electrode in electrodes]
 
-    def _create_boolean_matrix(self, input_dict):
-        element_to_index = {element: idx for idx, element in enumerate(self.Electrodes)}
-
-        bool_matrix = []
-
-        for key, elements in input_dict.items():
-            bool_list = [False] * len(self.Electrodes)
-
-            for element in elements:
-                if element in element_to_index:
-                    idx = element_to_index[element]
-                    bool_list[idx] = True
-
-            bool_matrix.append(bool_list)
-
-        bool_matrix = np.array(bool_matrix, dtype=np.bool)
-        return bool_matrix
-
-
-def clean_torch_distributed(local_rank: int):
-    # deepspeed env can also be cleand
-    # torch.distributed.barrier(device_ids=[local_rank])
-    torch.distributed.barrier()
-    torch.distributed.destroy_process_group()

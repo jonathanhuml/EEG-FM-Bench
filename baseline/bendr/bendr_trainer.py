@@ -73,7 +73,6 @@ class BendrUnifiedModel(nn.Module):
         x = batch['data'] * 0.001  # Shape: (batch_size, n_channels, n_timepoints)
         # x = zscore(x)
         montage = batch['montage'][0]  # Get montage from batch
-        ds_name = montage.split('/')[0]
 
         data = self.conv_router(x, montage)
 
@@ -84,10 +83,16 @@ class BendrUnifiedModel(nn.Module):
         features = self.encoder(data)
         features = self.contextualizer(features)
 
+        # features shape: (batch, encoder_h, seq_len)
+        # Permute to: (batch, seq_len, encoder_h)
         features = torch.permute(features, (0, 2, 1))
+        
+        # Reshape to 4D: [B, T, C, D] where T=seq_len, C=1 (features already combined channels)
+        features = features.unsqueeze(2)  # [B, seq_len, 1, encoder_h]
 
+        # Pass montage; classifier will handle montage/ds_name split internally
         # Apply our multi-head classifier
-        logits = self.classifier(features, ds_name)
+        logits = self.classifier(features, montage)
         
         return logits
 
@@ -155,12 +160,28 @@ class BendrTrainer(AbstractTrainer):
         embed_dim = model_cfg.emb_dim  # BENDR contextualizer outputs encoder_h features
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
         
+        # Get classifier head configuration
+        head_cfg = model_cfg.classifier_head
+        
+        # Build ds_shape_info for FLATTEN_MLP head type
+        # BENDR outputs features after conv downsampling: seq_len is reduced by encoder stride
+        # Output shape: [B, seq_len_reduced, 1, encoder_h]
+        ds_shape_info = {}
+        for ds_name, info in self.ds_info.items():
+            for montage_key, (n_timepoints, n_channels) in info['shape_info'].items():
+                # Calculate reduced sequence length after BENDR encoder
+                # BENDR uses conv_stride (default: [5, 4]) for downsampling
+                seq_len_reduced = n_timepoints
+                for stride in model_cfg.conv_stride:
+                    seq_len_reduced = seq_len_reduced // stride
+                # C=1 since channel info is already combined by conv_router and encoder
+                ds_shape_info[montage_key] = (seq_len_reduced, 1, embed_dim)
+        
         self.classifier = MultiHeadClassifier(
             embed_dim=embed_dim,
-            mlp_dims=model_cfg.mlp_hidden_dim,
             head_configs=head_configs,
-            dropout=model_cfg.head_dropout,
-            average_pooling=True,
+            head_cfg=head_cfg,
+            ds_shape_info=ds_shape_info,
             t_sne=model_cfg.t_sne,
         )
         logger.info(f"Created multi-head classifier with heads: {list(head_configs.keys())}")
@@ -171,6 +192,8 @@ class BendrTrainer(AbstractTrainer):
                 self.cfg.model.pretrained_path,
                 self.cfg.model.pretrained_conv_path
             ])
+        else:
+            logger.info("No pretrained path specified, starting from scratch")
 
         # Create a unified model
         model = BendrUnifiedModel(
@@ -180,6 +203,10 @@ class BendrTrainer(AbstractTrainer):
             classifier=self.classifier,
             grad_cam=self.cfg.model.grad_cam,
         )
+        
+        # Apply LoRA if enabled
+        model = self.apply_lora(model)
+        
         model = model.to(self.device)
 
         model = torch.nn.parallel.DistributedDataParallel(
@@ -190,31 +217,6 @@ class BendrTrainer(AbstractTrainer):
         self.model = model
 
         return model
-
-    def setup_optim_params(self, model):
-        """Setup optimizer parameters with different learning rates for different components."""
-        head_params = []
-        encoder_params = []
-
-        for name, param in model.named_parameters():
-            if 'classifier' in name or 'conv_router' in name:
-                head_params.append(param)
-            else:
-                encoder_params.append(param)
-
-        params = [{'params': head_params, 'lr': self.cfg.training.max_lr}]
-
-        # Add encoder parameters if not frozen
-        if not self.cfg.training.freeze_encoder:
-            encoder_lr = self.cfg.training.max_lr * self.cfg.training.encoder_lr_scale
-            params.append({'params': encoder_params, 'lr': encoder_lr})
-        else:
-            # Freeze encoder parameters
-            for param in encoder_params:
-                param.requires_grad = False
-            logger.info("Encoder parameters frozen")
-
-        return params
 
     def load_checkpoint(self, checkpoint_path: list[str]):
         """Load separate checkpoints for encoder and contextualizer."""

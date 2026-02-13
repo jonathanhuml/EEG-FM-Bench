@@ -105,8 +105,8 @@ class SeedIVBuilder(EEGDatasetBuilder):
 
     def _persist_example_file(self, sample: dict):
         # pretrain datasets have no ground truth will be assigned a label item which indicates all signal array
-        path, montage, labels, split = (
-            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'])
+        path, montage, labels, split, subject = (
+            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'], sample['subject'])
         mid_df = pd.DataFrame(columns=[
             'key', 'split', 'cnt'])
 
@@ -120,7 +120,9 @@ class SeedIVBuilder(EEGDatasetBuilder):
                 chs_idx = self._fetch_chs_index(montage)
 
                 examples = self._generate_window_sample(raw, montage, chs_idx, [label], self.config.persist_drop_last)
+
                 df = pd.DataFrame(data=examples)
+                df['subject'] = str(subject)
                 filename = f"{self._encode_path(log_path)}.parquet"
                 output_path = self._build_output_dir(split, filename)
 

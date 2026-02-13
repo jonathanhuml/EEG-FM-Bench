@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from baseline.utils.utils import seed_torch
+from baseline.utils.common import seed_torch
 
 
 logger = getLogger('baseline')
@@ -119,7 +119,7 @@ def rotate_half(x):
     return x.flatten(-2)
 
 
-def apply_rotary_emb(freqs, t, start_index=0, scale=1.):
+def apply_rotary_emb(freqs: Tensor, t, start_index=0, scale=1.):
     freqs = freqs.to(t)
     rot_dim = freqs.shape[-1]
     end_index = start_index + rot_dim

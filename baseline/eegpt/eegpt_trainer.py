@@ -11,7 +11,7 @@ from baseline.abstract.trainer import AbstractTrainer
 from baseline.eegpt.eegpt_adapter import EegptDataLoaderFactory
 from baseline.eegpt.eegpt_config import EegptConfig
 from baseline.eegpt.model import EEGTransformer
-from baseline.utils.network import Conv1dWithConstraint
+from baseline.utils.common import Conv1dWithConstraint
 
 
 logger = logging.getLogger('baseline')
@@ -30,20 +30,24 @@ class EEGPTUnifiedModel(nn.Module):
     def forward(self, batch):
         x = batch['data']
         chans_id = batch['chans_id'][0]
-        ds_name = batch['montage'][0].split('/')[0]
+        montage = batch['montage'][0]
+        ds_name = montage.split('/')[0]
 
         # Apply channel convolution if available
         if self.chan_conv is not None:
             x = self.chan_conv(x)
 
         # Encoder forward pass
+        # features shape depends on EEGPT output, need to reshape to 4D
         features = self.encoder(x, chan_ids=chans_id)
 
         if self.grad_cam:
             self.grad_cam_activation = features.transpose(1, 2)
 
-        features = features.reshape((features.shape[0],  features.shape[1], -1,))
-        logits = self.classifier(features, ds_name)
+        # features is 4D: [B, T, C, D] where T=seq_len, C=1, D=embed_dim * embed_num
+
+        # Pass montage; classifier will handle montage/ds_name split internally
+        logits = self.classifier(features, montage)
 
         return logits
 
@@ -107,19 +111,32 @@ class EegptTrainer(AbstractTrainer):
                 self.max_channels, 1, max_norm=1)
 
         # Create a classifier - always use multi-head for compatibility
-        embed_dim = self.cfg.model.embed_dim * self.cfg.model.embed_num
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
+        head_cfg = self.cfg.model.classifier_head
+
+        # Build ds_shape_info for FLATTEN_MLP head type
+        # For EEGPT, shape is [T, 1, embed_dim * embed_num] where T = seq_len
+        ds_shape_info = {}
+        patch_stride = self.cfg.model.patch_stride
+        for ds_name, info in self.ds_info.items():
+            for montage_key, (n_timepoints, n_channels) in info['shape_info'].items():
+                seq_len = n_timepoints // patch_stride
+                ds_shape_info[montage_key] = (seq_len, self.cfg.model.embed_num, self.cfg.model.embed_dim)
 
         self.classifier = MultiHeadClassifier(
-            embed_dim=embed_dim,
-            mlp_dims=self.cfg.model.mlp_hidden_dim,
+            embed_dim=self.cfg.model.embed_dim,
             head_configs=head_configs,
-            dropout=self.cfg.model.dropout_rate,
+            head_cfg=head_cfg,
+            ds_shape_info=ds_shape_info,
             t_sne=self.cfg.model.t_sne,
         )
         logger.info(f"Created multi-head classifier with heads: {list(head_configs.keys())}")
 
-        self.load_checkpoint(self.cfg.model.pretrained_path)
+        if self.cfg.model.pretrained_path:
+            self.load_checkpoint(self.cfg.model.pretrained_path)
+        else:
+            logger.info("No pretrained path specified, starting from scratch")
+
         logger.info(f"Model setup complete for {list(self.ds_info.keys())}")
 
         model = EEGPTUnifiedModel(
@@ -128,6 +145,10 @@ class EegptTrainer(AbstractTrainer):
             chan_conv=self.chan_conv,
             grad_cam=self.cfg.model.grad_cam,
         )
+        
+        # Apply LoRA if enabled
+        model = self.apply_lora(model)
+        
         model = model.to(self.device)
 
         model = torch.nn.parallel.DistributedDataParallel(

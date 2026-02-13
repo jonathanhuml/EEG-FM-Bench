@@ -10,11 +10,12 @@ from torch import nn
 from torch.utils.data import DataLoader
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 from baseline.abstract.trainer import AbstractTrainer, format_console_log_dict
+from data.processor.wrapper import get_dataset_montage, get_dataset_n_class, get_dataset_category, get_dataset_patch_len
 from common.distributed.env import get_is_master
 from common.distributed.loader import DistributedGroupBatchSampler
-from data.processor.wrapper import get_dataset_montage, get_dataset_n_class, get_dataset_category, get_dataset_patch_len
+
 
 logger = logging.getLogger('baseline')
 
@@ -54,8 +55,8 @@ class ClassicalTrainingArgs(BaseTrainingArgs):
 class ClassicalLoggingArgs(BaseLoggingArgs):
     """Classical logging configuration."""
     experiment_name: str = "classical"
-    output_dir: str = "/path/to/your/code/baseline/classical/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/classical/ckpt"
+    output_dir: str = "assets/run/log/classical"
+    run_dir: str = "assets/run/ckpt/classical"
 
     # Cloud logging options
     use_cloud: bool = True

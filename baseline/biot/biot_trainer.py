@@ -37,7 +37,15 @@ class BiotDataLoaderFactory(AbstractDataLoaderFactory):
 
 
 class BiotUnifiedModel(nn.Module):
-    """Unified BIOT model with dynamic channel routing."""
+    """Unified BIOT model with dynamic channel routing.
+    
+    Note: BIOT encoder already performs global average pooling internally,
+    outputting features of shape (batch, emb_size). The classifier input is
+    reshaped to 4D [B, 1, 1, emb_size] purely for consistency with other models.
+    Since temporal dimension is completely pooled, complex classification heads
+    (ATTENTION_POOL, DUAL_STREAM_FUSION) are unnecessary. Simple pooling or MLP
+    is sufficient for this model.
+    """
     
     def __init__(self, encoder: BIOTEncoder, classifier, conv_router, grad_cam: bool):
         super().__init__()
@@ -51,7 +59,6 @@ class BiotUnifiedModel(nn.Module):
     def forward(self, batch):
         x = batch['data']  # Shape: (batch_size, n_channels, n_timepoints)
         montage = batch['montage'][0]  # Get montage from batch
-        ds_name = montage.split('/')[0]
 
         # trim data to times 200
         patch_size = self.encoder.n_fft
@@ -64,11 +71,17 @@ class BiotUnifiedModel(nn.Module):
         if self.grad_cam:
             self.grad_cam_activation = mapped_data.transpose(1, 2)
         
-        # Apply BIOT encoder (handles STFT and concatenation internally)
+        # Apply BIOT encoder (handles STFT and concatenation internally, already pooled)
+        # Output features shape: [batch_size, emb_size] (already globally pooled)
         features = self.encoder(mapped_data)
         
+        # Reshape to 4D: [B, T, C, D] with T=1, C=1 since it's already pooled
+        # NOTE: Complex classification heads (ATTENTION_POOL, DUAL_STREAM_FUSION) unnecessary
+        features = features.view(features.shape[0], 1, 1, -1)
+        
+        # Pass montage; classifier will handle montage/ds_name split internally
         # Apply classifier
-        logits = self.classifier(features, ds_name)
+        logits = self.classifier(features, montage)
         
         return logits
 
@@ -121,13 +134,22 @@ class BiotTrainer(AbstractTrainer):
         )
         logger.info(f"Created dynamic convolution router: {list(conv_configs.keys())}")
 
+        embed_dim = model_cfg.emb_size
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
+        head_cfg = model_cfg.classifier_head
+
+        # Build ds_shape_info for FLATTEN_MLP head type
+        # BIOT outputs [B, emb_size] which is reshaped to [B, 1, 1, emb_size]
+        ds_shape_info = {}
+        for ds_name, info in self.ds_info.items():
+            for montage_key in info['shape_info'].keys():
+                ds_shape_info[montage_key] = (1, 1, embed_dim)
+
         self.classifier = MultiHeadClassifier(
-            embed_dim=model_cfg.emb_size,
-            mlp_dims=model_cfg.mlp_hidden_dim,
+            embed_dim=embed_dim,
             head_configs=head_configs,
-            dropout=model_cfg.head_dropout,
-            average_pooling=False,
+            head_cfg=head_cfg,
+            ds_shape_info=ds_shape_info,
             t_sne=model_cfg.t_sne,
         )
         logger.info(f"Created multi-head classifier with heads: {list(head_configs.keys())}")
@@ -135,6 +157,8 @@ class BiotTrainer(AbstractTrainer):
         # Load pretrained weights if available
         if self.cfg.model.pretrained_path:
             self.load_checkpoint(self.cfg.model.pretrained_path)
+        else:
+            logger.info("No pretrained path specified, starting from scratch")
 
         model = BiotUnifiedModel(
             encoder=self.encoder,
@@ -142,6 +166,10 @@ class BiotTrainer(AbstractTrainer):
             conv_router=self.conv_router,
             grad_cam=self.cfg.model.grad_cam,
         )
+        
+        # Apply LoRA if enabled
+        model = self.apply_lora(model)
+        
         model = model.to(self.device)
 
         model = torch.nn.parallel.DistributedDataParallel(

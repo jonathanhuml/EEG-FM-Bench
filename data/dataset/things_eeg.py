@@ -6,8 +6,9 @@ from typing import Optional, Union, Any
 import datasets
 import mne
 import mne_bids
+import numpy as np
 import pandas as pd
-from mne.io import BaseRaw
+from mne.io import BaseRaw, RawArray
 from mne_bids import BIDSPath
 from pandas import DataFrame
 

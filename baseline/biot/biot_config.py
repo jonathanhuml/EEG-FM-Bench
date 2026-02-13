@@ -5,7 +5,7 @@ BIOT Configuration that inherits from AbstractConfig.
 from typing import Dict, Optional, List
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 
 
 class BiotDataArgs(BaseDataArgs):
@@ -18,7 +18,7 @@ class BiotDataArgs(BaseDataArgs):
 class BiotModelArgs(BaseModelArgs):
     """BIOT model configuration."""
     # Pretrained model path
-    pretrained_path: Optional[str] = '/path/to/your/code/biot/ckpt/biot-EEG-six-datasets-18-channels.ckpt'
+    pretrained_path: Optional[str] = None
 
     # BIOT architecture parameters
     emb_size: int = 256
@@ -32,10 +32,6 @@ class BiotModelArgs(BaseModelArgs):
     
     # Channel adaptation
     use_channel_conv: bool = True
-    
-    # Classification head
-    head_dropout: float = 0.1
-    mlp_hidden_dim: list[int] = Field(default_factory=lambda: [128])
 
 
 class BiotTrainingArgs(BaseTrainingArgs):
@@ -61,8 +57,7 @@ class BiotTrainingArgs(BaseTrainingArgs):
 class BiotLoggingArgs(BaseLoggingArgs):
     """BIOT logging configuration."""
     experiment_name: str = "biot"
-    output_dir: str = "/path/to/your/code/biot/log"
-    ckpt_dir: str = "/path/to/your/code/biot/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -83,6 +78,7 @@ class BiotConfig(AbstractConfig):
     """BIOT configuration that extends AbstractConfig."""
     
     model_type: str = "biot"
+    fs: int = 200
     
     data: BiotDataArgs = Field(default_factory=BiotDataArgs)
     model: BiotModelArgs = Field(default_factory=BiotModelArgs)

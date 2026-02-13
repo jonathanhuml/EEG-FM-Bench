@@ -134,8 +134,8 @@ class BCIC2020ImagineBuilder(EEGDatasetBuilder):
 
     def _persist_example_file(self, sample: dict):
         # pretrain datasets have no ground truth will be assigned a label item which indicates all signal array
-        path, montage, label, split = (
-            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'])
+        path, montage, label, split, subject = (
+            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'], sample['subject'])
         try:
             with self._read_raw_data(path, preload=True, verbose=False) as data:
                 data = self._select_data_channels(data, path, montage)
@@ -147,6 +147,7 @@ class BCIC2020ImagineBuilder(EEGDatasetBuilder):
                     return None
 
                 df = pd.DataFrame(data=examples)
+                df['subject'] = str(subject)
                 filename = f"{self._encode_path(path)}.parquet"
                 output_path = self._build_output_dir(split, filename)
 
@@ -213,5 +214,16 @@ if __name__ == "__main__":
     builder.download_and_prepare(num_proc=1)
     dataset = builder.as_dataset()
     print(dataset)
-
+    #
+    # labels = torch.tensor(dataset['train']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
+    #
+    # labels = torch.tensor(dataset['validation']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
+    #
+    # labels = torch.tensor(dataset['test']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
 

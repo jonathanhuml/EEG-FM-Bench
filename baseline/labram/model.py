@@ -9,6 +9,8 @@
 # ---------------------------------------------------------
 
 import math
+from typing import Optional
+
 # from functools import partial
 
 import torch
@@ -18,6 +20,7 @@ import torch.nn.functional as F
 from timm.layers import drop_path, trunc_normal_
 # from timm.models import register_model
 from einops import rearrange
+from torch import Tensor
 
 
 def _cfg(url='', **kwargs):
@@ -115,24 +118,22 @@ class Attention(nn.Module):
         self.scale = qk_scale or head_dim ** -0.5
 
         self.qkv = nn.Linear(dim, all_head_dim * 3, bias=False)
+        self.q_bias: Optional[Tensor] = None
+        self.v_bias: Optional[Tensor] = None
         if qkv_bias:
-            self.q_bias = nn.Parameter(torch.zeros(all_head_dim))
-            self.v_bias = nn.Parameter(torch.zeros(all_head_dim))
-        else:
-            self.q_bias = None
-            self.v_bias = None
+            self.q_bias: Tensor = nn.Parameter(torch.zeros(all_head_dim))
+            self.v_bias: Tensor = nn.Parameter(torch.zeros(all_head_dim))
 
+        self.q_norm: Optional[nn.Module] = None
+        self.k_norm: Optional[nn.Module] = None
         if qk_norm is not None:
             self.q_norm = qk_norm(head_dim)
             self.k_norm = qk_norm(head_dim)
-        else:
-            self.q_norm = None
-            self.k_norm = None
 
         if window_size:
             self.window_size = window_size
             self.num_relative_distance = (2 * window_size[0] - 1) * (2 * window_size[1] - 1) + 3
-            self.relative_position_bias_table = nn.Parameter(
+            self.relative_position_bias_table: Optional[Tensor] = nn.Parameter(
                 torch.zeros(self.num_relative_distance, num_heads))  # 2*Wh-1 * 2*Ww-1, nH
             # cls to token & token 2 cls & cls to cls
 
@@ -156,7 +157,7 @@ class Attention(nn.Module):
             self.register_buffer("relative_position_index", relative_position_index)
         else:
             self.window_size = None
-            self.relative_position_bias_table = None
+            self.relative_position_bias_table: Optional[Tensor] = None
             self.relative_position_index = None
 
         self.attn_drop = nn.Dropout(attn_drop)
@@ -167,6 +168,7 @@ class Attention(nn.Module):
         B, N, C = x.shape
         qkv_bias = None
         if self.q_bias is not None:
+            # noinspection PyTypeChecker
             qkv_bias = torch.cat((self.q_bias, torch.zeros_like(self.v_bias, requires_grad=False), self.v_bias))
         # qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         qkv = F.linear(input=x, weight=self.qkv.weight, bias=qkv_bias)
@@ -346,10 +348,9 @@ class NeuralTransformer(nn.Module):
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         # self.mask_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        self.pos_embed: Optional[Tensor] = None
         if use_abs_pos_emb:
             self.pos_embed = nn.Parameter(torch.zeros(1, 128 + 1, embed_dim), requires_grad=True)
-        else:
-            self.pos_embed = None
         self.time_embed = nn.Parameter(torch.zeros(1, 16, embed_dim), requires_grad=True)
         self.pos_drop = nn.Dropout(p=drop_rate)
 

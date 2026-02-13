@@ -1,0 +1,84 @@
+# Analysis example config (single file demo)
+#
+# Available paradigm values:
+#   - scratch_vs_pretrained
+#   - pretrain_vs_finetune
+#   - multi_dataset_joint
+#
+# Available model_type values (current analysis runner):
+#   - cbramod | labram | reve | csbrain | mantis | moment
+#
+# Available grouping_strategy values:
+#   - by_module_type | by_layer_index | by_model_innovation
+
+paradigm: "scratch_vs_pretrained"
+model_type: "csbrain"
+seed: 42
+seeds: [42]
+device: "cuda"
+
+# null => use datasets from trainer config
+datasets: null
+
+# Optional checkpoint override for pretrained condition
+pretrained_checkpoint: null
+
+grouping_strategy: "by_module_type"
+
+training:
+  num_steps: 256
+  num_epochs: null
+  pretrain_steps: null
+  warmup_steps: 16
+
+gradient:
+  projection_dim: 1024
+  projection_seed: 42
+  collect_interval: 16
+  max_samples_per_condition: 256
+  track_raw_norms: true
+  probe_batches_per_condition: 8
+
+feature:
+  enabled: true
+  feature_layers: null
+  auto_detect_max_layers: 24
+  projection_dim: 512
+  projection_seed: 42
+  max_samples_per_condition: 256
+  probe_batches_per_condition: 8
+
+metrics:
+  compute_cosine_similarity: true
+  compute_subspace_affinity: true
+  compute_conflict_stats: true
+  compute_svcca: false
+  compute_energy_flow: true
+  subspace_ranks: [3, 4, 5, 6, 7, 8]
+  svcca_components: 10
+  svcca_variance_threshold: 0.99
+  conflict_sample_rate: 1.0
+  cka_kernel: "linear"
+  rsa_metric: "correlation"
+  rsa_comparison: "spearman"
+
+masking:
+  mask_ratio: 0.5
+  mask_strategy: "random_mixed"
+
+cross_dataset:
+  enabled: true
+  comparison_datasets: null
+  compute_conclusion_similarity: true
+  compute_effect_correlation: true
+  compute_rank_agreement: true
+  effect_size_threshold: 0.1
+  conflict_threshold: 0.3
+  aggregate_method: "mean"
+
+output:
+  output_dir: "./assets/analysis/results"
+  save_format: "hdf5"
+  save_metrics_jsonl: true
+  save_summary_json: true
+  checkpoint_interval: 128

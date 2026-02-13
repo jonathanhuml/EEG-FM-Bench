@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -8,7 +8,7 @@ import datasets
 from torch import Tensor
 from torch.utils.data import Dataset, Sampler, DataLoader
 
-from common.config import AbstractConfig
+
 from common.type import TrainStage
 from data.processor.wrapper import load_concat_eeg_datasets
 
@@ -28,8 +28,8 @@ class DistributedGroupBatchSampler(Sampler):
             drop_last=False,
     ):
         super().__init__()
-
-        if torch.distributed.is_available():
+        dist_ready = torch.distributed.is_available() and torch.distributed.is_initialized()
+        if dist_ready:
             if num_replicas is None:
                 num_replicas = torch.distributed.get_world_size()
             if rank is None:
@@ -47,6 +47,7 @@ class DistributedGroupBatchSampler(Sampler):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
+        # noinspection PyTypeChecker
         if len(dataset) < self.num_replicas:
             raise ValueError("Not enough data for training")
         self._adjust_batch_size(batch_size)
@@ -63,11 +64,15 @@ class DistributedGroupBatchSampler(Sampler):
 
         self._group_by_montage()
         self._sampling_by_proportion()
+
+        self._montage_keys = sorted(self.montage_groups.keys())
+
         self._calculate_batch_numbers()
         self._pre_gen_all_batches()
 
 
     def _adjust_batch_size(self, batch_size):
+        # noinspection PyTypeChecker
         effective_batch_size = min(
             batch_size,
             math.floor(len(self.dataset) / self.num_replicas)
@@ -132,7 +137,9 @@ class DistributedGroupBatchSampler(Sampler):
     def _calculate_batch_numbers(self):
         total_batches = 0
         self.group_batches_counter = {}
-        for montage, indices in self.montage_groups.items():
+
+        for montage in self._montage_keys:
+            indices = self.montage_groups[montage]
             num_samples = len(indices)
             if self.drop_last:
                 num_batches = num_samples // self.batch_size
@@ -156,10 +163,11 @@ class DistributedGroupBatchSampler(Sampler):
 
     def _pre_gen_all_batches(self):
         all_batches: list[Tensor] = []
-        for montage, indices in self.montage_groups.items():
+        for montage in self._montage_keys:
+            indices = self.montage_groups[montage]
             # shuffle in single montage
             if self.shuffle:
-                perm = torch.randperm(len(indices), generator=self.generator).tolist()
+                perm = torch.randperm(len(indices), generator=self.generator)
                 indices = indices[perm]
 
             # gen batches in this montage
@@ -179,6 +187,8 @@ class DistributedGroupBatchSampler(Sampler):
         self.epoch = epoch
         self.generator = torch.Generator()
         self.generator.manual_seed(self.seed + self.epoch)
+        # shuffle samples per epoch -> split -> gen batches”
+        self._pre_gen_all_batches()
 
     def __iter__(self):
         # shuffle batches among various montage
@@ -194,31 +204,46 @@ class DistributedGroupBatchSampler(Sampler):
         return self.num_rank_batches
 
 
-def assign_sampler_and_loader(dataset: datasets.Dataset, args: AbstractConfig, world_size: int, rank: int,):
+def assign_sampler_and_loader(dataset: datasets.Dataset, args: Any, world_size: int, rank: int):
     sampler = DistributedGroupBatchSampler(
         dataset=dataset,
         batch_size=args.data.batch_size,
         sample_ratio=args.data.sample_ratio,
         num_replicas=world_size,
         rank=rank,
-        seed=args.seed
+        seed=args.dist.seed
     )
+
+    num_workers = args.data.num_workers
+
+    dataloader_kwargs = {
+        'batch_sampler': sampler,
+        'num_workers': num_workers,
+        'pin_memory': False,
+        'persistent_workers': num_workers > 0,
+    }
+
+    if num_workers > 0:
+        dataloader_kwargs['prefetch_factor'] = 2
+        # noinspection PyTypeChecker
+        dataloader_kwargs["multiprocessing_context"] = "spawn"
+
     loader = DataLoader(
         dataset,
-        batch_sampler=sampler,
-        num_workers=args.data.num_loader_workers
+        **dataloader_kwargs,
     )
+
     return sampler, loader
 
 
 def create_pretrain_concat_loader(
-        args: AbstractConfig,
+    args: Any,
         world_size: int,
         rank: int,
-        split: datasets.Split=datasets.Split.TRAIN
+        split: datasets.NamedSplit=datasets.Split.TRAIN
 ) -> tuple[Dataset, DistributedGroupBatchSampler, DataLoader]:
     if args.stage == TrainStage.PRETRAIN:
-        dataset_list = args.data.datasets
+        dataset_list = args.data.datasets.keys()
         builder_configs = ['pretrain' for _ in range(len(args.data.datasets))]
     else:
         raise ValueError(f"Create pretrain loader for stage {args.stage}")
@@ -227,31 +252,34 @@ def create_pretrain_concat_loader(
         dataset_list,
         builder_configs=builder_configs,
         split=split,
-        weight_option='statistics'
+        weight_option='statistics',
+        fs=args.fs,
     )
     sampler, loader = assign_sampler_and_loader(dataset, args, world_size, rank)
     return dataset, sampler, loader
 
 
 def create_finetune_single_loader(
-        args: AbstractConfig,
+    args: Any,
         ds_name: str,
         ds_config: str,
         world_size: int,
         rank: int,
-        split: datasets.Split,
+        split: datasets.NamedSplit,
         add_ds_name: bool = False,
 ):
     if args.stage != TrainStage.FINETUNE:
         raise ValueError(f"Create finetune loader for stage {args.stage}")
 
-    assert ds_name in args.finetune.datasets.keys() and ds_config == args.finetune.datasets[ds_name]
+    assert ds_name in args.ft.datasets.keys() and ds_config == args.ft.datasets[ds_name]
     dataset, weight = load_concat_eeg_datasets(
         [ds_name],
         builder_configs=[ds_config],
         split=split,
         weight_option='statistics',
-        add_ds_name=add_ds_name
+        add_ds_name=add_ds_name,
+        cast_label=True,
+        fs=args.fs,
     )
 
     sampler, loader = assign_sampler_and_loader(dataset, args, world_size, rank)
@@ -259,22 +287,23 @@ def create_finetune_single_loader(
 
 
 def create_finetune_mixed_loader(
-        args: AbstractConfig,
+    args: Any,
         world_size: int,
         rank: int,
-        split: datasets.Split,
+        split: datasets.NamedSplit,
 ) -> tuple[Dataset, DistributedGroupBatchSampler, DataLoader, list[Tensor]]:
     if args.stage != TrainStage.FINETUNE:
         raise ValueError(f"Create finetune loader for stage {args.stage}")
-    dataset_dict = args.finetune.datasets
+    dataset_dict = args.ft.datasets
 
     dataset, weights = load_concat_eeg_datasets(
         dataset_dict.keys(),
         builder_configs=dataset_dict.values(),
         split=split,
-        weight_option=args.finetune.loss_weight_type,
+        weight_option=args.ft.loss_weight_type,
         add_ds_name=True,
-        cast_label=True
+        cast_label=True,
+        fs=args.fs,
     )
 
     sampler, loader = assign_sampler_and_loader(dataset, args, world_size, rank)
@@ -282,16 +311,16 @@ def create_finetune_mixed_loader(
 
 
 def create_finetune_loader_list(
-    args: AbstractConfig,
+    args: Any,
     world_size: int,
     rank: int,
-    split: datasets.Split = datasets.Split.TRAIN
+    split: datasets.NamedSplit = datasets.Split.TRAIN,
 ):
     if args.stage != TrainStage.FINETUNE:
         raise ValueError(f"Create finetune loader for stage {args.stage}")
 
     dataset_list, sampler_list, loader_list, weight_list = [], [], [], []
-    for dataset_name, config_name in args.finetune.datasets.items():
+    for dataset_name, config_name in args.ft.datasets.items():
         dataset, sampler, loader, distribution = create_finetune_single_loader(
             args, dataset_name, config_name, world_size, rank, split, add_ds_name=True)
         dataset_list.append(dataset)
@@ -303,7 +332,7 @@ def create_finetune_loader_list(
 
 
 if __name__ == "__main__":
-    data = load_concat_eeg_datasets(['seed_v'], ['finetune'], datasets.Split.TRAIN)
+    data, _ = load_concat_eeg_datasets(['seed_v'], ['finetune'], datasets.Split.TRAIN, fs=256)
     sampler = DistributedGroupBatchSampler(data, 32, 0.8, 2, 0, drop_last=True,)
 
     loader = torch.utils.data.DataLoader(dataset=data, batch_sampler=sampler, num_workers=4)

@@ -3,7 +3,9 @@ import random
 from datetime import datetime
 from functools import lru_cache
 
-from common.config import BaseLoggingArgs
+import torch
+
+from common.conf import BaseLogArgs
 from common.path import RUN_ROOT
 
 
@@ -78,6 +80,15 @@ def get_master_addr() -> str:
             return node_list
         else:
             print(node_list)
+            if '[' in node_list:
+                beg = node_list.find('[')
+                pos1 = node_list.find('-', beg)
+                if pos1 < 0:
+                    pos1 = 1000
+                pos2 = node_list.find(',', beg)
+                if pos2 < 0:
+                    pos2 = 1000
+                node_list = node_list[:min(pos1,pos2)].replace('[', '')
             addr = node_list[12:].replace('-', '.')
             return addr
     else:
@@ -85,6 +96,7 @@ def get_master_addr() -> str:
 
 @lru_cache()
 def get_available_cpu() -> int:
+    # Try to get CPU core count from Slurm environment variables
     slurm_cpus_per_task = os.getenv("SLURM_CPUS_PER_TASK")
     if slurm_cpus_per_task:
         return int(slurm_cpus_per_task)
@@ -102,17 +114,33 @@ def get_specific_dirname() -> str:
         return f"local_{datetime.now().strftime('%y%m%d%H%M%S')}"
 
 
-def get_train_io_path(args: BaseLoggingArgs) -> tuple[str, str]:
+def get_train_io_path(args: BaseLogArgs) -> tuple[str, str]:
     if not get_is_master():
         return '', ''
 
     name = get_specific_dirname()
     run_dir = args.run_dir if args.run_dir else RUN_ROOT
-
-    log_path = os.path.join(run_dir, 'log', 'train', name)
-    ckpt_path = os.path.join(run_dir, 'ckpt', name)
+    log_path = os.path.join(run_dir, 'log', 'former', name)
+    ckpt_path = os.path.join(run_dir, 'ckpt', 'former', name)
 
     os.makedirs(log_path, exist_ok=True)
     os.makedirs(ckpt_path, exist_ok=True)
 
     return log_path, ckpt_path
+
+def get_slurm_id():
+    return os.environ["SLURM_JOB_ID"]
+
+
+def clean_torch_distributed(local_rank: int = 0):
+    """Safely clean up torch.distributed process group and CUDA cache."""
+    try:
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
+            torch.distributed.barrier()
+            torch.distributed.destroy_process_group()
+    except Exception as exc:
+        raise exc
+        # logger.warning(f"Failed to clean torch.distributed state on rank {local_rank}: {exc}")
+    finally:
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()

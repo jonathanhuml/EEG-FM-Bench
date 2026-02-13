@@ -6,6 +6,9 @@ from typing import Optional
 from logging import Filter, Formatter, StreamHandler
 
 
+from common.distributed.env import get_global_rank, get_is_slurm_job, get_is_master
+
+
 PRECISION_DICT = {
     "lr": "6e",
     "header_lr": "6e",
@@ -18,6 +21,11 @@ PRECISION_DICT = {
     "cohen_kappa": "3f",
     "auroc": "3f",
     "auc_pr": "3f",
+    "moe_layers": "1f",
+    "load_cv": "3f",
+    "router_entropy": "3f",
+    "top1_prob": "3f",
+    "active_experts": "4e",
 }
 
 
@@ -50,16 +58,6 @@ def format_console_log_dict(log_data: dict, prefix: str = 'train'):
     ])
     formatted_log = f"{prefix[:-1]} {formatted_log}"
     return formatted_log
-
-
-def sync_deepspeed_log_handler(default_logger: logging.Logger, deepspeed_logger: logging.Logger):
-    for handler in deepspeed_logger.handlers[:]:
-        deepspeed_logger.removeHandler(handler)
-        handler.close()
-
-    for handler in default_logger.handlers:
-        if isinstance(handler, StreamHandler):
-            deepspeed_logger.addHandler(handler)
 
 
 def setup_log(
