@@ -107,7 +107,7 @@ class TuabBuilder(EEGDatasetBuilder):
         })
         return info
 
-    def _resolve_exp_events(self, file_path: str, info: dict[str, Any]) -> dict[str, list[tuple[str, int, int]]]:
+    def _resolve_exp_events(self, file_path: str, info: dict[str, Any]) -> list[tuple[Any, int, int]]:
         label = self._extract_middle_path(file_path, -3, -2)[0]
         return [(label, 0, -1)]
 
@@ -125,10 +125,11 @@ class TuabBuilder(EEGDatasetBuilder):
         self._std_chs_cache[montage] = chs_std
         return chs_std
 
+
 if __name__ == "__main__":
-    builder = TuabBuilder('finetune')
+    builder = TuabBuilder('pretrain')
     # builder.clean_disk_cache()
-    # builder.preproc()
+    builder.preproc()
     builder.download_and_prepare(num_proc=4)
     dataset = builder.as_dataset()
     print(dataset)

@@ -12,8 +12,7 @@ from baseline.abstract.classical import ClassicalDataArgs, ClassicalModelArgs, C
 class ConformerLoggingArgs(ClassicalLoggingArgs):
     """Conformer logging configuration."""
     experiment_name: str = "eeg-conformer"
-    output_dir: str = "/path/to/your/code/baseline/Conformer/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/Conformer/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -34,6 +33,7 @@ class ConformerConfig(ClassicalConfig):
     """Conformer configuration that extends AbstractConfig."""
 
     model_type: str = "eeg-conformer"
+    fs: int = 256
 
     data: ClassicalDataArgs = Field(default_factory=ClassicalDataArgs)
     model: ClassicalModelArgs = Field(default_factory=ClassicalModelArgs)

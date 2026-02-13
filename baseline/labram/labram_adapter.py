@@ -3,13 +3,11 @@ LABRAM Adapter that inherits from AbstractDatasetAdapter.
 """
 
 import logging
-from typing import Dict, List, Union, Any
+from typing import List
 
-import torch
 from datasets import Dataset as HFDataset
 
 from baseline.abstract.adapter import AbstractDatasetAdapter, AbstractDataLoaderFactory
-from data.processor.wrapper import get_dataset_montage
 
 
 logger = logging.getLogger("baseline")

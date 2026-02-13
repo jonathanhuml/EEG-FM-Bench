@@ -1,0 +1,32 @@
+# t-SNE visualization config for CSBrain
+
+# Model type
+model_type: 'csbrain'
+
+# Checkpoint path (optional)
+ckpt_path: 'assets/ckpt/baseline/csbrain/model.ckpt'
+
+# Output directory
+output_dir: 'plot/output/csbrain/tsne'
+
+# Random seed
+seed: 1216
+
+# Dataset config
+datasets:
+    seed: 'finetune_sub_dependent'
+    hmc: 'finetune'
+
+# Tags
+tag: ['csbrain', 'tsne', 'test']
+
+# Data split
+split: 'test'
+
+# t-SNE parameters
+num_batch: 1000
+perplexity: 30
+small_perplexity: 10
+use_pca: false
+pca_dims: 50
+max_iter: 1000 

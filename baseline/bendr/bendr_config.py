@@ -5,7 +5,7 @@ BENDR Configuration that inherits from AbstractConfig.
 from typing import Dict, Optional, List
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 
 
 class BendrDataArgs(BaseDataArgs):
@@ -42,10 +42,6 @@ class BendrModelArgs(BaseModelArgs):
     mask_p_c: float = 0.004
     mask_t_span: int = 6
     
-    # Classification head
-    head_dropout: float = 0.1
-    mlp_hidden_dim: list[int] = Field(default_factory=lambda: [128])
-    
     # Model dimensions
     max_channels: int = 20
 
@@ -76,8 +72,7 @@ class BendrTrainingArgs(BaseTrainingArgs):
 class BendrLoggingArgs(BaseLoggingArgs):
     """BENDR logging configuration."""
     experiment_name: str = "bendr"
-    output_dir: str = "/path/to/your/code/bendr/log"
-    ckpt_dir: str = "/path/to/your/code/bendr/ckpt"
+    run_dir: str = "assets/run"
     
     # Cloud logging options
     use_cloud: bool = True
@@ -98,6 +93,7 @@ class BendrConfig(AbstractConfig):
     """BENDR configuration that extends AbstractConfig."""
     
     model_type: str = "bendr"
+    fs: int = 256
     
     data: BendrDataArgs = Field(default_factory=BendrDataArgs)
     model: BendrModelArgs = Field(default_factory=BendrModelArgs)

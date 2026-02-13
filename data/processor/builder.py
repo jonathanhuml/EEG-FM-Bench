@@ -9,27 +9,25 @@ from abc import ABC
 from dataclasses import dataclass,  field
 from typing import Optional, Union, Any
 
-
-import datasets
-
 import mne
+import s3fs
+import datasets
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
-import s3fs
-from datasets import BuilderConfig, utils, DownloadManager, StreamingDownloadManager, SplitGenerator
-from datasets.data_files import DataFilesDict, DataFilesPatternsDict
 from multiprocess.pool import Pool
 from mne.io import BaseRaw
 from numpy import ndarray
 from omegaconf import OmegaConf
 from pandas import DataFrame
 from tqdm import tqdm
+from datasets.data_files import DataFilesDict, DataFilesPatternsDict
+from datasets import BuilderConfig, utils, DownloadManager, StreamingDownloadManager, SplitGenerator
 
 from common.log import setup_log
-from common.path import CONF_ROOT, DATABASE_CACHE_ROOT, DATABASE_PROC_ROOT, DATABASE_RAW_ROOT, LOG_ROOT, PLATFORM
 from common.type import DatasetTaskType
 from common.utils import ElectrodeSet
+from common.path import CONF_ROOT, DATABASE_CACHE_ROOT, DATABASE_PROC_ROOT, DATABASE_RAW_ROOT, LOG_ROOT, PLATFORM
 
 
 logger = logging.getLogger('preproc')
@@ -48,7 +46,7 @@ class EEGConfig(BuilderConfig):
 
     # preproc conf
     filter_low: float = 0.1
-    filter_high: float = 128.0
+    filter_high: float = 100.0
     filter_notch: float = 50.0
     fs: float = 256.0
     unit: str = "uV"
@@ -65,22 +63,23 @@ class EEGConfig(BuilderConfig):
     database_raw_root: str = DATABASE_RAW_ROOT
     database_proc_root: str = DATABASE_PROC_ROOT
     database_cache_root: str = DATABASE_CACHE_ROOT
-    log_root: str = os.path.join(LOG_ROOT, 'preproc')
+    log_root_base: str = os.path.join(LOG_ROOT, 'preproc')
     s3_conf_path: str = os.path.join(
         CONF_ROOT, 's3', 's3_local.yaml'
         if PLATFORM == 'local' else 's3_remote.yaml')
 
-    # auto defined
+    # auto defined - fs independent
     raw_path: str = field(init=False)
     data_path: str = field(init=False)
     mid_path: str = field(init=False)
+    log_root: str = field(init=False)
     wnd_len: int = field(init=False)
     is_remote_fs: bool = False
 
     # --- Subclass Override Conf ---
     # source dataset info
     dataset_name: Optional[str] = 'default'
-    task_type: DatasetTaskType = DatasetTaskType.UNKNOWN
+    task_type: DatasetTaskType = DatasetTaskType.DEFAULT
     file_ext: str = 'edf'
     montage: dict[str, list[str]] = field(default_factory=lambda: {'default': []})
 
@@ -103,24 +102,39 @@ class EEGConfig(BuilderConfig):
     is_finetune: bool = False
     category: list[str] = field(default_factory=lambda: [])
 
-
     def __post_init__(self):
         super().__post_init__()
-        self.raw_path = os.path.join(self.database_raw_root, self.suffix_path)
-        self.data_path = os.path.join(self.database_proc_root)
-        self.mid_path = os.path.join(self.database_cache_root, self.dataset_name)
 
-        self.wnd_len = int(self.fs) * self.wnd_div_sec
+        # renew fs dependent items
+        fs = self.fs
+        self.apply_fs(fs)
+
+        self.raw_path = os.path.join(self.database_raw_root, self.suffix_path)
         self.category_query_dict: dict[str, int] = {name: idx for idx, name in enumerate(self.category)}
 
         if not self.is_finetune:
             self.test_ratio = 0.0
 
-        if self.dataset_name:
-            self.log_root = os.path.join(self.log_root, self.dataset_name)
-
         if self.database_cache_root.startswith('s3://'):
             self.is_remote_fs = True
+
+    def get_fs_id(self) -> str:
+        return f"fs_{int(self.fs)}"
+
+    def apply_fs(self, fs: float):
+        """Apply sampling rate and update all fs-dependent paths."""
+        self.fs = fs
+
+        # FS-dependent paths (include fs_id)
+        self.data_path = os.path.join(self.database_proc_root, self.get_fs_id())
+        self.mid_path = os.path.join(self.database_cache_root, self.get_fs_id(), self.dataset_name)
+        if self.dataset_name:
+            self.log_root = os.path.join(self.log_root_base, self.get_fs_id(), self.dataset_name)
+        else:
+            self.log_root = self.log_root_base
+
+        self.wnd_len = int(self.fs) * self.wnd_div_sec
+
 
 class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
     DEFAULT_CONFIG_NAME = 'pretrain'
@@ -129,8 +143,16 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
         BUILDER_CONFIG_CLASS(name='pretrain'),
         BUILDER_CONFIG_CLASS(name='finetune', is_finetune=True),]
 
-    def __init__(self, config_name='pretrain', **kwargs):
+    def __init__(self, config_name='pretrain', fs: Optional[float] = None, **kwargs):
+        # Override sampling rate if specified
+        if fs is not None:
+            self.builder_configs[config_name].apply_fs(float(fs))
+        else:
+            self.builder_configs[config_name].apply_fs(256.0)
+
         conf: EEGConfig = self.builder_configs.get(config_name)
+
+        # Arrow cache path is now directly from data_path (already includes dataset_name/fs_id)
         super().__init__(
             cache_dir=conf.data_path,
             dataset_name=conf.dataset_name,
@@ -158,12 +180,14 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
         self.log_err_files_path = os.path.join(conf.log_root, f'{self.config.name}_err_files.txt')
         setup_log(file_path=self.log_path, name='preproc')
 
+        # Summary path for raw data info (not sampling rate dependent)
         self.summary_path = os.path.join(conf.raw_path, 'summary', self.config.name)
         self.info_csv_path = os.path.join(self.summary_path, f'{self.dataset_name}_{self.config.name}_info.csv')
-        self.mid_file_csv_path = os.path.join(self.summary_path, f'{self.dataset_name}_{self.config.name}_cache_files.csv')
+        # Cache file list is fs-dependent (parquet files are resampled to specific fs)
+        self.mid_file_csv_path = os.path.join(self.summary_path, f'{self.dataset_name}_{self.config.name}_{self.config.get_fs_id()}_cache_files.csv')
 
         self._std_chs_cache:dict[str, list[str]] = {}
-        self._std_chs_idx_cache: dict[str, list[int]] = {}
+        self._std_chs_idx_cache: dict[str, ndarray] = {}
 
         if self.config.is_remote_fs:
             self.s3_conf = OmegaConf.load(self.config.s3_conf_path)
@@ -176,6 +200,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
             "chs": datasets.Sequence(datasets.Value("int32")),
             "task": datasets.Value("int32"),
             "montage": datasets.Value("string"),
+            "subject": datasets.Value("string"),
         }
 
         if self.config.is_finetune:
@@ -200,6 +225,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
     def select_split_to_dict(df: DataFrame, split: str):
         split_df: DataFrame = df[df['split'] == split]
         split_df.reset_index(drop=True, inplace=True)
+        # noinspection PyTypeChecker
         res_dict: dict[str, list] = split_df.to_dict(orient='list')
         return res_dict
 
@@ -229,11 +255,13 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
             keys: list[str] = kwargs['key']
             splits: list[str] = kwargs['split']
             fs = s3fs.S3FileSystem(**self.s3_conf) if self.config.is_remote_fs else None
+
             for file, split in zip(keys, splits):
-                file_path = os.path.join(self.config.mid_path, self.config.name, split, file)
+                # noinspection PyTypeChecker
+                file_path: str = os.path.join(self.config.mid_path, self.config.name, split, file)
                 with (
                         fs.open(file_path, 'rb') if fs
-                        else open(file_path, 'rb')  # 本地回退
+                    else open(file_path, 'rb')  # local fallback
                 ) as f:
                     # disable internal multithread
                     table = pq.read_table(f, use_threads=False)
@@ -243,6 +271,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
                         row['chs'] = np.array(row['chs'], dtype=np.int32)
                         row['data'] = np.array(row['data'], dtype=np.float32).reshape(len(row['chs']), -1)
                         key = file + f'_{idx}'
+
                         yield key, row
         except Exception as e:
             logger.error(f"Error generating examples: {str(e)}")
@@ -323,31 +352,86 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
         self._run_func_parallel(self._rm_s3_worker, [path], n_proc=1)
 
     def clean_arrow_set(self):
+        """Clean arrow dataset cache for current fs and config."""
         try:
-            if not self.config.data_path.startswith('s3://'):
-                shutil.rmtree(os.path.join(self.config.data_path, self.config.dataset_name, self.config.name), ignore_errors=True)
+            # Arrow cache path: data_path/config_name (data_path already includes dataset_name/fs_id)
+            arrow_path = os.path.join(self.config.data_path, self.config.dataset_name, self.config.name)
+            if not self.config.database_proc_root.startswith('s3://'):
+                shutil.rmtree(arrow_path, ignore_errors=True)
             else:
                 pass
-                # self._rm_s3_path(os.path.join(self.config.data_path, self.config.dataset_name, self.config.name), n_proc=self.config.s3_delete_worker)
-            logger.info(f'{self.config.dataset_name} arrow set cleared.')
+                # self._rm_s3_path(arrow_path, n_proc=self.config.s3_delete_worker)
+            logger.info(f'{self.config.get_fs_id()}/{self.config.dataset_name}/{self.config.name} arrow set cleared.')
         except Exception as e:
             logger.error(f'Error occurred during clean arrow dataset: {e}')
 
-    def clean_disk_cache(self):
+    def clean_mid_cache(self):
+        """Clean middle parquet cache for current fs and config."""
         try:
-            shutil.rmtree(self.summary_path, ignore_errors=True)
+            # Mid cache path: mid_path/config_name (mid_path already includes dataset_name/fs_id)
+            mid_cache_path = os.path.join(self.config.mid_path, self.config.name)
             if not self.config.is_remote_fs:
-                shutil.rmtree(os.path.join(self.config.mid_path, self.config.name), ignore_errors=True)
+                shutil.rmtree(mid_cache_path, ignore_errors=True)
             else:
                 pass
-                # self._rm_s3_path(self.config.mid_path, n_proc=self.config.s3_delete_worker)
-            logger.info(f'{self.config.dataset_name} cache cleared.')
+                # self._rm_s3_path(mid_cache_path, n_proc=self.config.s3_delete_worker)
+            logger.info(f'{self.config.get_fs_id()}/{self.config.dataset_name}/{self.config.name} mid cache cleared.')
+        except Exception as e:
+            logger.error(f'Error occurred during clean mid cache: {e}')
+
+    def clean_summary_cache(self, clean_shared_info: bool = False):
+        """
+        Clean summary cache files for current fs and config.
+
+        :param clean_shared_info: If True, also clean shared files (info_csv, will affect all fs versions)
+        """
+        try:
+            # Remove fs-specific files: done marker and mid_file_csv
+            done_marker = os.path.join(self.summary_path, f'{self.config.name}_{self.config.get_fs_id()}.done')
+            if os.path.exists(done_marker):
+                os.remove(done_marker)
+                logger.info(f'Removed done marker: {done_marker}')
+
+            # mid_file_csv is fs-specific, always clean it
+            if os.path.exists(self.mid_file_csv_path):
+                os.remove(self.mid_file_csv_path)
+                logger.info(f'Removed cache files csv: {self.mid_file_csv_path}')
+
+            # Optionally clean shared files (affects all fs versions)
+            if clean_shared_info:
+                if os.path.exists(self.info_csv_path):
+                    os.remove(self.info_csv_path)
+                    logger.info(f'Removed shared info csv: {self.info_csv_path}')
+
+            logger.info(f'{self.config.get_fs_id()}/{self.config.dataset_name}/{self.config.name} summary cache cleared.')
+        except Exception as e:
+            logger.error(f'Error occurred during clean summary cache: {e}')
+
+    def clean_disk_cache(self, clean_shared_info: bool = False):
+        """
+        Clean all disk caches for current fs and config.
+
+        :param clean_shared_info: If True, also clean the shared info_csv (will affect all fs versions)
+        """
+        try:
+            self.clean_summary_cache(clean_shared_info=clean_shared_info)
+            self.clean_mid_cache()
+            logger.info(f'{self.config.get_fs_id()}/{self.config.dataset_name}/{self.config.name} all disk cache cleared.')
         except FileNotFoundError as e:
             logger.error(f'{self.config.dataset_name} cache not exist: {e}')
         except PermissionError:
             logger.error(f'Permission Denied')
         except Exception as e:
             logger.error(f'Error occurred during clean builder cache: {e}')
+
+    def clean_all_cache(self, clean_shared_info: bool = False):
+        """
+        Clean all caches including arrow set for current fs and config.
+
+        :param clean_shared_info: If True, also clean the shared info_csv (will affect all fs versions)
+        """
+        self.clean_disk_cache(clean_shared_info=clean_shared_info)
+        self.clean_arrow_set()
 
     def _generate_middle_files(self, df: DataFrame, n_proc: Optional[int] = None):
         rows = df.to_dict(orient='records')
@@ -356,7 +440,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
             desc='Generating wnd samples and persisting parquet files')
 
         mid_dfs = [item for item in results if item is not None]
-        mid_df = pd.concat(mid_dfs, ignore_index=True, axis=0)
+        mid_df: DataFrame = pd.concat(mid_dfs, ignore_index=True, axis=0)
         mid_df.to_csv(self.mid_file_csv_path, index=False)
 
     def _build_output_dir(self, split: str, filename: str):
@@ -368,8 +452,8 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
 
     def _persist_example_file(self, sample: dict):
         # pretrain datasets have no ground truth will be assigned a label item which indicates all signal array
-        path, montage, label, split = (
-            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'])
+        path, montage, label, split, subject = (
+            sample['path'], sample['montage'], json.loads(sample['label']), sample['split'], sample['subject'])
         try:
             with self._read_raw_data(path, preload=True, verbose=False) as data:
                 data = self._select_data_channels(data, path, montage)
@@ -382,6 +466,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
                     return None
 
                 df = pd.DataFrame(data=examples)
+                df['subject'] = str(subject)
                 filename = f"{self._encode_path(path)}.parquet"
                 output_path = self._build_output_dir(split, filename)
 
@@ -491,19 +576,23 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
                 if self.config.is_finetune:
                     example_dict['label'] = label_idx
                 example_dicts.append(example_dict)
+
             wnds.extend(example_dicts)
         return wnds
 
     def _mark_preproc_done(self):
-        with open(os.path.join(self.summary_path, f'{self.config.name}.done'), 'w'):
+        # Done marker is sampling rate specific
+        with open(os.path.join(self.summary_path, f'{self.config.name}_{self.config.get_fs_id()}.done'), 'w'):
             pass
 
     def _is_preproc_cached(self):
-        return os.path.exists(os.path.join(self.summary_path, f'{self.config.name}.done'))
+        # Check done marker for specific sampling rate
+        return os.path.exists(os.path.join(self.summary_path, f'{self.config.name}_{self.config.get_fs_id()}.done'))
 
     def _walk_raw_data_files(self):
         logger.info('Walking eeg data files...')
-        scan_path = os.path.join(self.config.raw_path, self.config.scan_sub_dir)
+        # noinspection PyTypeChecker
+        scan_path: str = os.path.join(self.config.raw_path, self.config.scan_sub_dir)
         raw_data_files = []
         for root, dirs, files in os.walk(scan_path):
             for file in files:
@@ -712,7 +801,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
         if montage in self._std_chs_idx_cache.keys():
             return self._std_chs_idx_cache[montage].copy()
         chs = self._get_chs_name_by_montage(montage, is_std=True)
-        idx = np.ascontiguousarray(self.electrode_set.get_electrodes_index(chs))
+        idx: ndarray = np.ascontiguousarray(self.electrode_set.get_electrodes_index(chs))
         self._std_chs_idx_cache[montage] = idx
         return idx.copy()
 
@@ -748,13 +837,13 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
         return df
 
     @staticmethod
-    def _iterative_greedy_split(y_weighted, ratios):
+    def _iterative_greedy_split(y_weighted: ndarray, ratios: ndarray):
         n_subjects = y_weighted.shape[0]
         total_weights = y_weighted.sum(axis=0)
         ratios = np.array(ratios)
         ratios = ratios * (1 / ratios.sum())
 
-        splits = [{
+        splits: list[dict[str, list | ndarray]] = [{
             'indices': [],
             'current_weights': np.zeros(y_weighted.shape[1]),
             'target_weights': ratio * total_weights
@@ -768,7 +857,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
             related.sort(key=lambda x: -x[1])
 
             for i, _ in related:
-                best_split = None
+                best_split: dict[str, list | ndarray] = {}
                 min_def = float('inf')
 
                 for s in splits:
@@ -835,6 +924,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
                     continue
                 else:
                     idx = self.config.category.index(label[0])
+                    # noinspection PyTypeChecker
                     start = self._milli_sec_to_pts(label[1])
                     end = self._milli_sec_to_pts(label[2] if label[2] > 0 else times[i] * 1000)
                     n_wnd, remain_pts = divmod(end - start, self.config.wnd_len)
@@ -847,7 +937,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
 
         unique_subjects = np.unique(subjects)
         label_names = self.config.category
-        y_weighted = np.zeros((len(unique_subjects), len(label_names)), dtype=np.int64)
+        y_weighted: ndarray = np.zeros((len(unique_subjects), len(label_names)), dtype=np.int64)
         subject_idx = {s: i for i, s in enumerate(unique_subjects)}
 
         for subj, label_tuple in zip(subjects, labels):
@@ -856,7 +946,7 @@ class EEGDatasetBuilder(datasets.GeneratorBasedBuilder, ABC):
             weight = np.bincount(np.array(label), weights=np.array(wnd, dtype=np.int64), minlength=len(self.config.category))
             y_weighted[idx] += weight.astype(np.int64)
 
-        ratios = np.array([1 - self.config.valid_ratio - self.config.test_ratio,
+        ratios: ndarray = np.array([1 - self.config.valid_ratio - self.config.test_ratio,
                            self.config.valid_ratio, self.config.test_ratio], dtype=np.float32)
         split_mask = np.array([split in splits_name for split in self.split_corr], dtype=bool)
         split_indices = self._iterative_greedy_split(y_weighted, ratios=ratios[split_mask])

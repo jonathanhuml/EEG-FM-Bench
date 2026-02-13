@@ -1,31 +1,34 @@
 import logging
 
 import datasets
+import torch
 from torch import Tensor
 from torch.utils.data import DataLoader
 
 from baseline.abstract.classifier import MultiHeadClassifier
-from common.config import AbstractConfig
+from baseline.abstract.config import AbstractConfig
 from baseline.abstract.factory import ModelRegistry
-from plot.base_visualizer import BaseVisualizer
+from plot.utils.base_visualizer import BaseVisualizer
 
-logger = logging.getLogger()
+
+logger = logging.getLogger("plot_vis")
 
 
 class BaselineVisualizer(BaseVisualizer):
     def __init__(self, model_config: AbstractConfig, vis_args):
-        if model_config.model.pretrained_path not in [None, ""]:
-            raise ValueError('Visualizer only supports finetune models')
-
         super().__init__(model_config, vis_args)
 
     def build_model(self):
         logger.info(f"Building {self.vis_args.model_type} model for visualization")
 
+        # Get trainer class
         trainer_class = ModelRegistry.get_trainer_class(self.vis_args.model_type)
         self.trainer = trainer_class(self.cfg)
 
-        self.trainer.setup_distributed()
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.trainer.setup_device(device)
+        self.trainer.setup_analysis_mode()
+        self.device = self.trainer.device
         if self.cfg.multitask:
             self.trainer.collect_dataset_info(mixed=True)
         else:
@@ -40,6 +43,7 @@ class BaselineVisualizer(BaseVisualizer):
         return self.model
 
     def create_dataloader(self, ds_name, ds_config) -> DataLoader:
+        """Create a dataloader for the Baseline model."""
         if self.vis_args.split == 'train':
             split = datasets.Split.TRAIN
         elif self.vis_args.split == 'valid':
@@ -52,12 +56,15 @@ class BaselineVisualizer(BaseVisualizer):
         return dataloader
 
     def extract_model_t_sne_features(self, ds_name: str) -> Tensor:
+        """Extract features from the Baseline model."""
         model = self.get_model_from_ddp()
 
+        # For models with a single classifier
         classifier: MultiHeadClassifier = model.classifier
         return classifier.cls_feature.clone().detach().cpu()
 
     def find_target_layer(self):
+        """Find the target layer for Grad-CAM."""
         model = self.get_model_from_ddp()
 
         return model

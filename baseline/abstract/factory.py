@@ -3,7 +3,7 @@ Factory classes for creating baseline models, adapters, and trainers.
 """
 
 from typing import Type, Dict, Any, Optional
-from common.config import AbstractConfig
+from baseline.abstract.config import AbstractConfig
 from baseline.abstract.adapter import AbstractDataLoaderFactory
 from baseline.abstract.trainer import AbstractTrainer
 

@@ -210,8 +210,8 @@ class BCIC1ABuilder(EEGDatasetBuilder):
 
 
 if __name__ == "__main__":
-    builder = BCIC1ABuilder('finetune')
-    builder.clean_disk_cache()
+    builder = BCIC1ABuilder('pretrain')
+    # builder.clean_disk_cache()
     builder.preproc()
     builder.download_and_prepare(num_proc=4)
     dataset = builder.as_dataset()

@@ -79,8 +79,9 @@ class AdftdBuilder(EEGDatasetBuilder):
         self._load_meta_info()
 
     def _load_meta_info(self):
-        df = pd.read_csv(
-            os.path.join(self.config.raw_path, self.config.scan_sub_dir, 'participants.tsv'), sep='\t')
+        # noinspection PyTypeChecker
+        csv_path: str = os.path.join(self.config.raw_path, self.config.scan_sub_dir, 'participants.tsv')
+        df = pd.read_csv(csv_path, sep='\t')
 
         self.sub_meta: DataFrame = df
 
@@ -161,6 +162,7 @@ class AdftdBuilder(EEGDatasetBuilder):
             )
             bids_path = mne_bids.get_bids_path_from_fname(file_path)
             raw = mne_bids.read_raw_bids(bids_path, verbose=verbose)
+            raw = raw.load_data()
             return raw
 
 

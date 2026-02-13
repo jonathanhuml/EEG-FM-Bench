@@ -1,0 +1,120 @@
+# REVE Unified (Multitask) Training Configuration
+# Train a single shared model on multiple datasets
+
+# Training pattern flags
+seed: 42
+master_port: 51104
+multitask: true
+model_type: 'reve'
+
+# Data configuration
+data:
+  batch_size: 32
+  num_workers: 2
+  datasets:
+    tuab: 'finetune'
+    seed: 'finetune_sub_dependent'
+    hmc: 'finetune'
+    # ...
+
+# REVE model configuration
+model:
+  # Pretrained weights
+  pretrained_path: null
+  pos_bank_pretrained_path: null
+
+  # Architecture parameters
+  embed_dim: 512
+  depth: 22
+  heads: 8
+  head_dim: 64
+  mlp_dim_ratio: 2.66
+  use_geglu: true
+
+  # Positional encoding
+  freqs: 4
+  noise_ratio: 0.0025
+
+  # Patch configuration
+  patch_size: 200
+  patch_overlap: 20
+
+  # Regularization
+  dropout: 0.1
+
+  # Classifier head configuration
+  classifier_head:
+    head_type: 'avg_pool'  # Options: avg_pool, attention_pool, dual_stream_fusion, flatten_mlp
+    
+    # Common parameters
+    hidden_dims: [128]
+    dropout: 0.3
+    
+    # Attention Pool parameters (for attention_pool)
+    attn_n_head: 4
+    attn_head_dim: 64
+    
+    # Dual Stream Fusion parameters (for dual_stream_fusion)
+    fusion_mode: 'dual'  # Options: time_first, channel_first, dual
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+# Training configuration
+training:
+  max_epochs: 12
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  # Optimizer settings
+  lr_schedule: "reduce_on_plateau"  # Uses cosine after warmup
+  max_lr: 2.4e-4
+  min_lr: 2.4e-5
+  eps: 1e-9
+  warmup_epochs: 2
+  warmup_scale: 1e-1
+  encoder_lr_scale: 0.1
+
+  # Training options
+  use_amp: true
+  freeze_encoder: false
+  warmup_freeze_encoder: true
+  warmup_freeze_encoder_epochs: 1
+
+  # Adam betas for StableAdamW
+  adam_beta_1: 0.9
+  adam_beta_2: 0.95
+
+  # LoRA configuration
+  lora:
+    use_lora: false
+    lora_r: 8
+    lora_alpha: 16
+    lora_dropout: 0.0
+    lora_target_modules: ['default']
+    lora_exclude_modules: null
+    lora_target_type: 'default'  # Options: default, full, attention, ffn
+    lora_scope: 'transformer'    # Options: transformer, full
+    lora_lr_scale: 1.0
+
+# Logging configuration
+logging:
+  experiment_name: "reve"
+  run_dir: "assets/run"
+
+  # Cloud logging
+  use_cloud: true
+  cloud_backend: "wandb"
+
+  project: "reve"
+  tags:
+    - "reve"
+    - "unified"
+    - "full"
+    - "debug"
+
+  # Logging intervals
+  log_step_interval: 1
+  ckpt_interval: 5

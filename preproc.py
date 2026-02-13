@@ -3,7 +3,7 @@ from typing import Type
 
 from omegaconf import DictConfig, OmegaConf
 
-from common.config import PreprocArgs
+from common.conf import BasePreprocArgs
 from common.log import setup_log
 from common.path import get_conf_file_path
 from data.processor.builder import EEGDatasetBuilder
@@ -14,26 +14,27 @@ logger = logging.getLogger('preproc')
 
 
 def prepare_dataset(
-        conf: PreprocArgs,
+        conf: BasePreprocArgs,
         builder_cls: Type[EEGDatasetBuilder],
         dataset_name: str,
         config_name: str
 ):
     try:
-        logger.info(f"Preparing dataset {dataset_name} {config_name}...")
-        builder = builder_cls(config_name)
+        logger.info(f"Preparing dataset {dataset_name} {config_name} at fs={conf.fs}Hz...")
+        builder = builder_cls(config_name, fs=conf.fs)
         if conf.clean_middle_cache:
-            builder.clean_disk_cache()
+            builder.clean_disk_cache(clean_shared_info=conf.clean_shared_info)
         builder.preproc(n_proc=conf.num_preproc_mid_workers)
+        # logger.info(f"Dataset {dataset_name} {config_name} is preprocessed.")
         builder.download_and_prepare(num_proc=conf.num_preproc_arrow_writers)
         dataset = builder.as_dataset()
-        logger.info(f"Dataset {dataset_name} {config_name} is prepared.")
+        logger.info(f"Dataset {dataset_name} {config_name} at fs={conf.fs}Hz is prepared.")
         logger.info(f"{dataset}")
     except Exception as e:
         logger.error(f"Preparation of dataset {dataset_name} {config_name} exit with error: {e}.")
 
 
-def preproc(conf: PreprocArgs):
+def preproc(conf: BasePreprocArgs):
     dataset_names = conf.pretrain_datasets
     dataset_configs = ['pretrain' for _ in dataset_names]
     dataset_names.extend(conf.finetune_datasets.keys())
@@ -62,12 +63,12 @@ if __name__ == '__main__':
     else:
         file_cfg = OmegaConf.create({})
 
-    code_cfg = OmegaConf.create(PreprocArgs().model_dump())
+    code_cfg = OmegaConf.create(BasePreprocArgs().model_dump())
     
     setup_log()
     cfg = OmegaConf.merge(code_cfg, file_cfg, cli_args)
     cfg = OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
     logger.info(cfg)
-    conf = PreprocArgs.model_validate(cfg)
+    cfg = BasePreprocArgs.model_validate(cfg)
 
-    preproc(conf)
+    preproc(cfg)

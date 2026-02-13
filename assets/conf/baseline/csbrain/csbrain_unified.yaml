@@ -1,0 +1,110 @@
+# CSBrain Unified (Multitask) Training Configuration
+# Train a single shared model on multiple datasets
+
+# Training pattern flags
+seed: 42
+master_port: 51102
+multitask: true
+model_type: 'csbrain'
+fs: 200
+
+# Data configuration
+data:
+  batch_size: 32
+  num_workers: 2
+  patch_size: 200
+  max_seq_len: 2048
+  datasets:
+    tuab: 'finetune'
+    seed: 'finetune_sub_dependent'
+    hmc: 'finetune'
+    # ...
+
+# CSBrain model configuration
+model:
+  pretrained_path: null
+
+  # Classifier head configuration
+  classifier_head:
+    head_type: 'avg_pool'  # Options: avg_pool, attention_pool, dual_stream_fusion, flatten_mlp
+    
+    # Common parameters
+    hidden_dims: [128]
+    dropout: 0.3
+    
+    # Attention Pool parameters (for attention_pool)
+    attn_n_head: 4
+    attn_head_dim: 50
+    
+    # Dual Stream Fusion parameters (for dual_stream_fusion)
+    fusion_mode: 'dual'  # Options: time_first, channel_first, dual
+    fusion_n_head: 4
+    fusion_head_dim: 50
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 2048
+    
+    # Flatten MLP parameters (for flatten_mlp)
+  
+  # Architecture parameters
+  in_dim: 200
+  out_dim: 200
+  d_model: 200
+  dim_feedforward: 800
+  n_layer: 12
+  nhead: 8
+  
+  # Temporal embedding kernel sizes (List[tuple])
+  tem_embed_kernel_sizes: [[1], [3], [5]]
+  
+  # Classification head
+  grad_cam: false
+  t_sne: false
+
+# Training configuration
+training:
+  max_epochs: 30
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  
+  # Learning rate schedule
+  lr_schedule: "cosine"
+  max_lr: 1.0e-4
+  min_lr: 1.0e-5
+  warmup_epochs: 3
+  warmup_scale: 1.0e-1
+  encoder_lr_scale: 0.5  # backbone_lr = max_lr * encoder_lr_scale
+  
+  use_amp: true
+  freeze_encoder: false  # CSBrain typically fine-tunes the encoder
+  
+  label_smoothing: 0.1
+
+  # LoRA configuration
+  lora:
+    use_lora: false
+    lora_r: 8
+    lora_alpha: 16
+    lora_dropout: 0.0
+    lora_target_modules: ['default']
+    lora_exclude_modules: null
+    lora_target_type: 'default'  # Options: default, full, attention, ffn
+    lora_scope: 'transformer'    # Options: transformer, full
+    lora_lr_scale: 1.0
+
+# Logging configuration
+logging:
+  experiment_name: "csbrain"
+  run_dir: "assets/run"
+  
+  use_cloud: true
+  cloud_backend: "wandb"
+  project: "csbrain"
+  tags:
+    - "csbrain"
+    - "unified"
+    - "avg_pool"
+    - "debug"
+    
+  log_step_interval: 1
+  ckpt_interval: 1

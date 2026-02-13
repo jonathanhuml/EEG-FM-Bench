@@ -7,16 +7,15 @@ class TrainStage(Enum):
     ALL = 'all'
 
 
-class PriorType(Enum):
-    HYBRID = 'hybrid'
-    REGION = 'region'
-    NETWORK = 'network'
-    NONE = 'none'
-
-
 class TemporalConvType(Enum):
     STRIDE = 'stride'
     MULTISCALE = 'multiscale'
+
+
+class SpectralType(Enum):
+    FFT = 'fft'
+    STFT = 'stft'
+    NO = 'no'
 
 
 class StdFactorType(Enum):
@@ -44,7 +43,7 @@ class EncoderTaskType(Enum):
 
 
 class DatasetTaskType(Enum):
-    UNKNOWN                 = 4
+    DEFAULT                 = 4
     CLINICAL                = 5
     MOTOR_IMAGINARY         = 6
     MOTOR_EXECUTION         = 7
@@ -58,4 +57,3 @@ class DatasetTaskType(Enum):
     VISUAL                  = 15
     AUDIO                   = 16
     ERP                     = 17
-    # MULTI                   = 18

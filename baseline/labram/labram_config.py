@@ -5,7 +5,7 @@ LABRAM Configuration that inherits from AbstractConfig.
 from typing import Dict, Optional, List
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 
 
 class LabramDataArgs(BaseDataArgs):
@@ -18,10 +18,7 @@ class LabramDataArgs(BaseDataArgs):
 class LabramModelArgs(BaseModelArgs):
     """LABRAM model configuration."""
     # Pretrained model path
-    pretrained_path: str = "/path/to/your/code/baseline/labram/ckpt/labram-base.pth"
-
-    # Model architecture
-    model_name: str = "labram_base_patch200_200"
+    pretrained_path: Optional[str] = None
     
     # Input configuration
     eeg_size: int = 2000
@@ -37,8 +34,8 @@ class LabramModelArgs(BaseModelArgs):
     mlp_ratio: float = 4.0
 
     # Regularization
-    dropout_rate: float = 0.0
-    attn_dropout_rate: float = 0.0
+    dropout_rate: float = 0.1
+    attn_dropout_rate: float = 0.1
     drop_path_rate: float = 0.1
 
     # Model initialization
@@ -53,10 +50,6 @@ class LabramModelArgs(BaseModelArgs):
     use_shared_rel_pos_bias: bool = False
     use_mean_pooling: bool = True
 
-    # Classification head
-    head_dropout: float = 0.1
-    mlp_hidden_dim: list[int] = Field(default_factory=lambda: [128])
-
 
 class LabramTrainingArgs(BaseTrainingArgs):
     """LABRAM training configuration."""
@@ -64,7 +57,7 @@ class LabramTrainingArgs(BaseTrainingArgs):
 
     weight_decay: float = 0.05
     weight_decay_end: Optional[float] = None
-    max_grad_norm: float = 1.0
+    max_grad_norm: float = 3.0
 
     # Learning rate schedule
     lr_schedule: str = "cosine"  # 'cosine' or 'cycle'
@@ -92,8 +85,7 @@ class LabramTrainingArgs(BaseTrainingArgs):
 class LabramLoggingArgs(BaseLoggingArgs):
     """LABRAM logging configuration."""
     experiment_name: str = "labram"
-    output_dir: str = "/path/to/your/code/baseline/labram/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/labram/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -114,6 +106,7 @@ class LabramConfig(AbstractConfig):
     """LABRAM configuration that extends AbstractConfig."""
     
     model_type: str = "labram"
+    fs: int = 200
     
     data: LabramDataArgs = Field(default_factory=LabramDataArgs)
     model: LabramModelArgs = Field(default_factory=LabramModelArgs)

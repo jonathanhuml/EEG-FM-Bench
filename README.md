@@ -9,7 +9,7 @@
 
 *A comprehensive benchmark for systematic and standardized evaluation of EEG foundation models*
 
-[✨ Features](#-key-features) • [📈 Results](#-benchmark-results) • [📁 Project Structure](#-project-structure) • [🚀 Quick Start](#-quick-start) • [📊 Datasets](#-datasets) • [🏗️ Models](#️-supported-models)
+[✨ Features](#-key-features) • [📈 Results](#-benchmark-results) • [📁 Project Structure](#-project-structure) • [🚀 Quick Start](#-quick-start) • [📊 Datasets](#-datasets) • [🏗️ Models](#-supported-models)
 
 [🖥️ HPC](#-high-performance-computing) • [📖 Documentation](#-documentation) • [🤝 Limitations & Contributing](#-limitations--contributing) • [📚 Others](#-citations)
 
@@ -21,16 +21,28 @@
 
 EEG-FM-Bench addresses a critical gap in neuroscience AI research: the lack of standardized evaluation frameworks for EEG foundation models. As these models rapidly proliferate, inconsistent evaluation methods have made fair comparisons nearly impossible, hindering scientific progress.
 
+
+
 <div align="center">
   <img src="assets/img/pipeline.png" alt="EEG-FM-Bench Pipeline" width="600">
 </div>
 
 **Our contributions:**
-- 🎯 **Unified Benchmark Platform**: First comprehensive framework for standardized EEG-FM evaluation
-- 📚 **Diverse Task Suite**: 14 datasets across 10 canonical EEG paradigms 
-- 🔬 **Multiple Evaluation Strategies**: Frozen backbone, full fine-tuning, and multi-task learning
-- 🎨 **Rich Analysis Tools**: Quantitative metrics + qualitative visualizations (t-SNE, Integrated Gradients)
-- 🔄 **Reproducible Science**: Open-source codebase with standardized protocols
+- 🎯 **Unified Benchmark Platform**: An open-source suite integrating standardized protocols, diverse tasks, and diagnostic tools for end-to-end EEG-FM evaluation
+- 📚 **Diverse Task Suite**: 14 datasets across 10 canonical EEG paradigms
+- 🔬 **Systematic Baselines**: Empirical study of SOTA EEG-FMs under matched preprocessing and optimization across multiple fine-tuning strategies
+- 🎨 **Diagnostic Toolkit**: Gradient- and representation-based analyses to probe transfer mechanisms and identify pre-training bottlenecks
+- 🔄 **Reproducible Science**: Configuration-driven pipeline with unified preprocessing, evaluation, and analysis entrypoints
+
+
+## 🆕 What’s Updated (v2)
+
+Compared to earlier **v1**, we now add significant new features and insights:
+- **Broader evaluation design**: fine-tuning strategies (**frozen-backbone / full-parameter / LoRA**) × task setups (**single-task / multi-task**) × classifier heads (**avg pooling / attention pooling / temporal-spatial-embedding aggregation**)
+- **Diagnostic analyses beyond metrics**: gradient-space + representation-space tools for studying transfer and fine-tuning dynamics (e.g., gradient cosine similarity, subspace affinity, CKA, RSA)
+- **New benchmark insights**: multi-task learning as a **regularizer** in data-scarce EEG, and **gradient conflicts / objective misalignment** as a pre-training efficiency bottleneck
+- **Scaling**: performance does **not** simply follow “bigger is better”; compact EEG-specific inductive biases can outperform much larger models
+
 
 ## ✨ Key Features
 
@@ -41,6 +53,12 @@ Comprehensive evaluation of state-of-the-art EEG foundation models:
 - **CBraMod** - Criss-cross attention for spatio-temporal modeling
 - **EEGPT** - Dual self-supervised universal representation learning
 - **LaBraM** - Large brain model with vector quantization
+- **CSBrain** - Brain-region-aware attention for EEG decoding
+- **REVE** - 4D Fourier positional embedding + 19TB pre-training datasets
+
+General time-series foundation models:
+- **Mantis** - Token generation + ViT backbone for multivariate time series
+- **MOMENT** - Time-series foundation model (T5 encoder backbone)
 
 Additional classical model support:
 - **EEGNet** - Well-Known compact CNN for EEG
@@ -57,9 +75,9 @@ Additional classical model support:
 **Note**: This repository provides the benchmark framework and evaluation code. **Datasets must be downloaded separately** from their original sources due to licensing restrictions.
 
 ### 🔧 **Advanced Evaluation Framework**
-- **Frozen Backbone**: Evaluate representation quality without task-specific adaptation
-- **Full Fine-tuning**: Assess model adaptability to downstream tasks  
-- **Multi-task Learning**: Test knowledge sharing across diverse EEG paradigms
+- **Fine-tuning strategies**: Frozen-backbone, full-parameter, and parameter-efficient adaptation (**LoRA**)
+- **Task setups**: Single-task (one dataset at a time) and multi-task (mixture across all downstream tasks)
+- **Classifier heads**: MLP with patch average pooling, MLP with attention pooling, and high-capacity aggregation over temporal/spatial/embedding dimensions
 - **Standardized Preprocessing**: Unified pipeline (filtering, resampling, segmentation)
 - **Robust Metrics**: Balanced accuracy, weighted F1, AUROC, AUC-PR, Cohen's Kappa
 
@@ -67,18 +85,27 @@ Additional classical model support:
 - **t-SNE Embeddings**: Visualize learned feature representations
 - **Integrated Gradients**: Understand model decision-making processes across different architectures
 - **Neurophysiological Validation**: Ensure models focus on relevant brain regions
+- **Gradient/Representation Dynamics (New)**: Two-stage pipeline (collect → visualize) for studying optimization dynamics across paradigms (e.g., scratch vs pretrained, pretrain vs finetune, multi-dataset joint)
+- **Quantitative diagnostics**: gradient cosine similarity, gradient subspace affinity, CKA, and RSA for controlled comparisons across training settings and model components
 
 ## 📈 Benchmark Results
 
 ### Key Findings
 
-🔍 **Generalization Gap**: Frozen backbone evaluation reveals that many current foundation models struggle with out-of-the-box transfer, achieving near-random performance on many tasks.
+🔍 **Generalization Gap (Frozen-backbone)**: Many models show limited out-of-the-box transfer, indicating pre-trained representations alone are often insufficient for novel downstream tasks.
 
-🎯 **Architecture Matters**: Models with EEG-specific designs (CBraMod, EEGPT) consistently outperform generic transformers.
+🔄 **Multi-task as Regularizer**: Multi-task fine-tuning consistently alleviates overfitting in data-scarce EEG settings and improves cross-paradigm generalization.
 
-🔄 **Multi-task Magic**: Joint training across paradigms significantly boosts performance, especially for underperforming models.
+🧩 **Classifier Head Matters (But is Task-dependent)**: Temporal/spatial/embedding aggregation tends to help most in motor imagery, while pooling heads remain competitive elsewhere.
 
-### Sample Results (Balanced Accuracy %)
+🧠 **Fine-tuning Dynamics**: Layer-wise analyses suggest pre-training stabilizes Transformer backbones and shifts optimization burden toward input embedding/adaptation components.
+
+⚙️ **Pre-training Efficiency Bottleneck**: Gradient conflicts between reconstruction-style objectives and downstream tasks indicate **objective misalignment**, limiting gains from simply scaling pre-training data.
+
+📏 **Scaling Deviates from “Bigger is Better”**: Compact architectures with EEG-specific inductive biases can outperform significantly larger models.
+
+### Sample Results
+See paper for complete results, analysis and visualizations.
 
 <div align="center">
   <img src="assets/img/result-1.png" alt="Sample Results Table 1" width="800">
@@ -87,15 +114,10 @@ Additional classical model support:
   <img src="assets/img/result-2.png" alt="Sample Results Table 2" width="800">
 </div>
 
-
-*Results shown for separate full fine-tuning strategy. See paper for complete analysis and visualizations.*
-
 ### Visualizations
 <div align="center">
   <img src="assets/img/vis.png" alt="Benchmark Visualization Results" width="800">
 </div>
-
-
 
 
 ## 📁 Project Structure
@@ -103,12 +125,17 @@ Additional classical model support:
 ```
 EEG-FM-Bench/
 ├── assets/                # Configuration templates & resources
-│   └── conf/example/      #    Example configs for models & datasets
+│   └── conf/              #    YAML configs (analysis / baseline / preproc / s3)
 ├── baseline/              # Foundation model implementations  
 │   ├── abstract/          #    Base class to be inherited for other models
+│   ├── analysis/          #    Gradient/feature analysis toolkit
 │   ├── bendr/             #    BENDR: Transformer + contrastive learning
 │   ├── biot/              #    BIOT: Cross-data biosignal learning
 │   ├── cbramod/           #    CBraMod: Criss-cross attention
+│   ├── reve/              #    REVE: Fourier PE + 19TB datasets
+│   ├── csbrain/           #    CSBrain: Brain-region-aware attention
+│   ├── mantis/            #    Mantis: Token generation + ViT
+│   ├── moment/            #    MOMENT: Time-series FM (T5 encoder)
 │   ├── eegpt/             #    EEGPT: Dual self-supervised learning
 │   ├── labram/            #    LaBraM: Vector quantized brain model
 │   ├── eegnet/            #    EEGNet: Compact CNN baseline
@@ -118,10 +145,12 @@ EEG-FM-Bench/
 │   ├── dataset/           #    14 benchmark dataset definitions
 │   └── processor/         #    Standardized preprocessing pipeline
 ├── plot/                  # Advanced visualization tools
-├── slurm/                 # HPC cluster job scripts
+├── scripts/               # Helper scripts (bash + slurm)
 ├── baseline_main.py       # Main training entry point for model training and evaluation
+├── analysis_run.py         # Analysis stage-1 entry (collect gradients/features)
+├── analysis_vis.py         # Analysis stage-2 entry (analysis visualization)
 ├── preproc.py             # Data preprocessing pipeline execution script
-├── visualize.py           # Visualization generation (t-SNE, Integrated Gradients)
+├── plot_vis.py            # Visualization generation (t-SNE, Grad-CAM, Integrated Gradients)
 └── requirements.txt       # Python package dependencies 
 ```
 
@@ -134,34 +163,54 @@ EEG-FM-Bench/
 git clone https://github.com/xw1216/EEG-FM-Bench.git
 cd EEG-FM-Bench
 
+# Please install torch by official command in https://pytorch.org/get-started/locally/
+# torchaudio is not supported since torch 2.9
+pip3 install torch torchaudio torchvision
+
 # Install dependencies
 pip install -r requirements.txt
+
+# These packages are required in some scenarios but may cause conflicts with other packages
+# braindecode : required by EEGNet and EEGConformer, but needs torch < 2.9
+# moabb : required by BENDR
+# captum : supports numpy > 2.0, install with --no-deps option
 ```
 
 ### ⚙️ Configuration Setup
 
-Step 1: **Update project paths** in `./common/path.py`:
-```python
-RUN_ROOT =
-LOG_ROOT =
-DATABASE_RAW_ROOT =
-DATABASE_PROC_ROOT =
-DATABASE_CACHE_ROOT =
+Step 1: **Set project paths** (via environment variables; defaults to `./assets/...` if not set).
+
+You can define the path in `./common/path.py` directly, or set environment variables in your shell profile for more flexibility.
+
+For bash/zsh:
+```bash
+export EEGFM_PROJECT_ROOT=$PWD
+export EEGFM_CONF_ROOT=$PWD/assets/conf
+export EEGFM_RUN_ROOT=$PWD/assets/run
 ```
 
-Step 2: **Configure your experiment** using YAML files like examples in `assets/conf/example/`, values not assigned will be set according to pydantic model class:
+For PowerShell:
+```powershell
+$env:EEGFM_PROJECT_ROOT = (Get-Location).Path
+$env:EEGFM_CONF_ROOT = "$env:EEGFM_PROJECT_ROOT/assets/conf"
+$env:EEGFM_RUN_ROOT = "$env:EEGFM_PROJECT_ROOT/assets/run"
+```
+
+Step 2: **Configure your experiment** using YAML files under `assets/conf/` (values not assigned will be filled by the corresponding Pydantic config class):
 ```yaml
-# Example: assets/conf/example/eegpt/eegpt.yaml
+# Example: assets/conf/baseline/eegpt/eegpt_unified.yaml
 model:
   pretrained_path: "/path/to/eegpt/weights"
 data:
   batch_size: 128
   num_workers: 4
+  datasets:
+    tuab: 'finetune'
 training:
   max_lr: 1e-4
   max_epochs: 50
 log:
-  output_dir: "/path/to/run/log"
+  run_dir: "/path/to/run"
 ```
 
 ### 🔄 Pipeline Execution
@@ -171,23 +220,52 @@ log:
 # First, download datasets from their original sources (see Dataset Guide)
 # Then preprocess with standardized pipeline
 # Config file can be identified by absolute path or relative path to CONF_ROOT
-python preproc.py conf_file=preproc/preproc_remote.yaml
+python preproc.py conf_file=preproc/preproc_example.yaml
 ```
 
-#### Step 2: Model Evaluation
+#### Step 2: Model Fine-tuning & Evaluation
 ```bash
 # Fine-Tuning (examples for different models)
-python baseline_main.py conf_file=example/eegpt/eegpt.yaml model_type=eegpt
+python baseline_main.py conf_file=baseline/eegpt/eegpt_unified.yaml model_type=eegpt
+
+# List model types supported by the unified entrypoint
+python baseline_main.py list-models
 ```
 
 #### Step 3: Analysis & Visualization
 ```bash
 # Generate t-SNE embeddings
-python visualize.py t_sne example/eegpt/eegpt.yaml /path/to/t_sne_config_eegpt.yaml
+python plot_vis.py t_sne assets/conf/baseline/csbrain/csbrain_unified.yaml plot/configs/example/tsne_config_csbrain.yaml
 
 # Create integrated gradients analysis
-python visualize.py integrated_gradients example/eegpt/eegpt.yaml /path/to/integrated_gradients_config_eegpt.yaml
+python plot_vis.py integrated_gradients assets/conf/baseline/csbrain/csbrain_unified.yaml plot/configs/example/integrated_gradients_config_csbrain.yaml
 ```
+
+#### Step 4: Gradient/Representation Analysis (New)
+
+This analysis is a two-stage workflow:
+1) **Stage-1 collection**: run lightweight training loops and save gradients/features to disk (no plotting at runtime)
+2) **Stage-2 visualization**: generate figures from the saved tensors/metrics
+
+```bash
+# Stage-1: collect gradients/features
+python analysis_run.py \
+  --config assets/conf/analysis/analysis_example.yaml \
+  --trainer-config assets/conf/baseline/csbrain/csbrain_unified.yaml
+
+# Stage-2: visualize a single run/seed
+# Tip: --data-dir can point to the run root (auto-discovered) or a specific seed directory.
+python analysis_vis.py \
+  --data-dir ./analysis_results/scratch_vs_pretrained_YYYYMMDD_HHMMSS
+```
+
+Supported paradigms (see `assets/conf/analysis/analysis_example.yaml`):
+- `scratch_vs_pretrained`
+- `pretrain_vs_finetune`
+- `multi_dataset_joint`
+
+Current analysis runner supports model types:
+- `cbramod`, `labram`, `reve`, `csbrain`, `mantis`, `moment`
 
 ## 📊 Datasets
 
@@ -282,7 +360,7 @@ DATABASE_RAW_ROOT/
 **Step 5: Configure Paths**
 ```bash
 # Update preprocessing configuration with your data paths
-vim assets/conf/example/preproc/preproc_remote.yaml
+vim assets/conf/preproc/preproc_example.yaml
 # Edit the YAML file to add your downloaded datasets to preproc list
 ```
 
@@ -294,6 +372,8 @@ vim assets/conf/example/preproc/preproc_remote.yaml
 - **Large File Sizes**: Plan for **several GBs per dataset**
 - **Directory Structure**: Must **exactly match** the expectations in dataset files
 - **Preprocessing Pipeline**: All parameters are **pre-configured** for consistency
+
+**Some datasets may require additional steps** (e.g., converting formats, organizing files) - please refer to the implementation code in each dataset file for details. **Some `.gdf` and `.cnt` data files may require conversion to `.set` format to avoid compatibility issues on specific platforms (especially on Debian-based Linux distributions) and MNE versions**.
 
 
 ## 🏗️ Supported Models
@@ -307,10 +387,17 @@ vim assets/conf/example/preproc/preproc_remote.yaml
 | **CBraMod** | Criss-cross Attention | dual-branch spatio-temporal modeling |
 | **EEGPT** | Dual-branch Transformer | momentum latent feature alignment |
 | **LaBraM** | Vector Quantized VAE + Transformer | Discrete neural codebook |
+| **CSBrain** | Transformer | Brain-region-aware attention |
+| **REVE** | Transformer | 4D Fourier positional embedding + 19TB datasets |
+| **Mantis** | ViT-style Transformer | Token generation for multivariate time series |
+| **MOMENT** | T5 Encoder | Time-series foundation model backbone |
+
 
 ### Classical Baselines
 - **EEGNet**: Compact CNN for EEG classification
 - **EEGConformer**: Hybrid CNN-Transformer architecture combining local feature extraction with global attention
+
+**Note**: The unified entrypoint `baseline_main.py` runs *registered* models in `baseline/__init__.py`. If you want to run additional classical baselines through the same registry mechanism (disabled due to package conflicts), register their config/trainer there (see the commented examples).
 
 ## 🖥️ High-Performance Computing
 
@@ -318,10 +405,10 @@ vim assets/conf/example/preproc/preproc_remote.yaml
 
 ```bash
 # Large-scale preprocessing (after downloading datasets)
-sbatch slurm/preproc_submit.slurm conf_file=your_preproc_config.yaml
+sbatch scripts/slurm/preproc_submit.slurm conf_file=your_preproc_config.yaml
 
 # Distributed model training (examples for different models)
-sbatch slurm/baseline_submit.slurm conf_file=your_model_config.yaml model_type=eegpt
+sbatch scripts/slurm/baseline_submit.slurm conf_file=your_model_config.yaml model_type=eegpt
 ```
 
 ### Resource Requirements
@@ -339,10 +426,9 @@ All experiments use YAML configuration files that must match the Pydantic struct
 <summary><b>📋 Complete Configuration Example</b></summary>
 
 ```yaml
-# Configuration file structure (matches Pydantic BaseModel hierarchy)
 # Training pattern flags
 seed: 42
-master_port: 51002
+master_port: 51001
 multitask: true
 model_type: 'eegpt'
 
@@ -352,29 +438,45 @@ data:
   num_workers: 1
   datasets:
     tuab: 'finetune'
+    seed: 'finetune_sub_dependent'
+    hmc: 'finetune'
+    # ...
+
 
 # EEGPT-specific model configuration
 model:
   # Pretrained weights - each model will load from this checkpoint
-  pretrained_path: "/path/to/your/ckpt"
+  pretrained_path: null
 
-  # Channel adaptation
-  use_channel_conv: false
-  conv_chan_dim: 22
+  # Classifier head configuration
+  classifier_head:
+    head_type: 'avg_pool'  # Options: avg_pool, attention_pool, dual_stream_fusion, flatten_mlp
+    
+    # Common parameters
+    hidden_dims: [128]
+    dropout: 0.3
 
-  head_dropout: 0.1
-  mlp_hidden_dim: [128]
+  # EEGPT architecture parameters
+  patch_size: 64
+  patch_stride: 32
+  embed_num: 4
+  embed_dim: 512
+  depth: 8
+  num_heads: 8
+  mlp_ratio: 4.0
 
 # Training configuration
 training:
   max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 3.0
 
   # Optimizer settings
-  lr_schedule: "onecycle"  # 'onecycle' or 'cosine'
   max_lr: 5e-4
   encoder_lr_scale: 0.1    # Scale factor for encoder learning rate
   warmup_epochs: 5
   warmup_scale: 1e-2
+  min_lr: 1e-6            # For CosineAnnealingLR
 
   # Training options
   freeze_encoder: false     # Whether to freeze encoder weights
@@ -382,26 +484,27 @@ training:
 
   label_smoothing: 0.1    # Label smoothing factor
 
+  # LoRA configuration
+  lora:
+    use_lora: false
+    lora_r: 8
+
 # Logging configuration
 logging:
   experiment_name: "eegpt"
-  output_dir: "/path/to/your/log"
-  ckpt_dir: "/path/to/save/ckpt"
+  run_dir: "assets/run"
   
   # Cloud logging configuration
   use_cloud: true
-  cloud_backend: "wandb"
   
-  # Cloud logging parameters (works for both wandb and comet)
-  project: 'eegpt'
-  api_key: null      # API key (or set via WANDB_API_KEY environment variables)
+  project: 'eegpt'           # Project name (uses experiment_name if not specified)
   offline: false
   
-  tags: ['eegpt']
+  tags: ['eegpt', 'unified', 'full', "debug"]
 
   # Logging intervals
   log_step_interval: 1      # Log every N steps
-  ckpt_interval: 5       # Evaluate and save ckpt every N epochs
+  ckpt_interval: 5       # Evaluate every N epochs
 ```
 </details>
 
@@ -563,7 +666,7 @@ ModelRegistry.register_model(
 - `baseline/your_model/your_model_trainer.py` 
 - `baseline/your_model/your_model_config.py`
 - `baseline/your_model/model.py`
-- `assets/conf/example/your_model/your_model.yaml`
+- `assets/conf/baseline/your_model/your_model_unified.yaml`
 
 **For reference, see existing model implementations:**
 - `baseline/conformer/` - EEGConformer for classic implementation example
@@ -620,7 +723,7 @@ If you use EEG-FM-Bench in your research, please cite our paper:
 When using specific models, please also cite the original papers:
 
 <details>
-<summary><b>Foundation Model Citations</b></summary>
+<summary><b>EEG Foundation Model Citations</b></summary>
 
 ```bibtex
 @article{kostas2021bendr,
@@ -662,6 +765,41 @@ When using specific models, please also cite the original papers:
   title={Large brain model for learning generic representations with tremendous EEG data in BCI},
   author={Jiang, Wei-Bang and Zhao, Li-Ming and Lu, Bao-Liang},
   journal={arXiv preprint arXiv:2405.18765},
+  year={2024}
+}
+
+@article{Ouahidi2025reve,
+  title={REVE: A Foundation Model for EEG - Adapting to Any Setup with Large-Scale Pretraining on 25,000 Subjects},
+  author={Yassine El Ouahidi and Jonathan Lys and Philipp Th{\"o}lke and Nicolas Farrugia and Bastien Pasdeloup and Vincent Gripon and Karim Jerbi and Giulia Lioi},
+  journal={ArXiv},
+  year={2025},
+  volume={abs/2510.21585},
+}
+
+@article{zhou2025csbrain,
+  title={CSBrain: A Cross-scale Spatiotemporal Brain Foundation Model for EEG Decoding},
+  author={Zhou, Yuchen and Wu, Jiamin and Ren, Zichen and Yao, Zhouheng and Lu, Weiheng and Peng, Kunyu and Zheng, Qihao and Song, Chunfeng and Ouyang, Wanli and Gou, Chao},
+  journal={arXiv preprint arXiv:2506.23075},
+  year={2025}
+}
+```
+</details>
+
+<details>
+<summary><b>General Time-Series Foundation Model Citations</b></summary>
+
+```bibtex
+@article{feofanov2025mantis,
+  title={Mantis: Lightweight calibrated foundation model for user-friendly time series classification},
+  author={Feofanov, Vasilii and Wen, Songkang and Alonso, Marius and Ilbert, Romain and Guo, Hongbo and Tiomoko, Malik and Pan, Lujia and Zhang, Jianfeng and Redko, Ievgen},
+  journal={arXiv preprint arXiv:2502.15637},
+  year={2025}
+}
+
+@article{goswami2024moment,
+  title={Moment: A family of open time-series foundation models},
+  author={Goswami, Mononito and Szafer, Konrad and Choudhry, Arjun and Cai, Yifu and Li, Shuo and Dubrawski, Artur},
+  journal={arXiv preprint arXiv:2402.03885},
   year={2024}
 }
 ```

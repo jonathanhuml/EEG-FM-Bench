@@ -202,6 +202,15 @@ class TuarBuilder(EEGDatasetBuilder):
         return chs_std
 
 if __name__ == "__main__":
+    # minio_conf = {
+    # 'endpoint_url': 'http://127.0.0.1:9000',
+    # 'key': 'VP1BHUXR4sRtKt3LD7Pc',
+    # 'secret': 'H3t0DRjMD5qemFv0ZBXoGXE6q5wnvqVHRPbVNXhH',
+    # 'client_kwargs':{'verify': False, "region_name": ""},
+    # 'asynchronous': False
+    # }
+    # fs = s3fs.S3FileSystem(**minio_conf)
+
     builder = TuarBuilder('finetune')
     builder.clean_disk_cache()
     builder.preproc()

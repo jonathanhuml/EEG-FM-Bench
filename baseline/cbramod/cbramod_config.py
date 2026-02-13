@@ -5,7 +5,7 @@ CBraMod Configuration that inherits from AbstractConfig.
 from typing import Dict, Optional, List
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 
 
 class CBraModDataArgs(BaseDataArgs):
@@ -28,10 +28,6 @@ class CBraModModelArgs(BaseModelArgs):
     
     # Regularization
     dropout_rate: float = 0.1
-    
-    # Classification head
-    head_dropout: float = 0.1
-    mlp_hidden_dim: list[int] = Field(default_factory=lambda: [128])
 
 
 class CBraModTrainingArgs(BaseTrainingArgs):
@@ -55,8 +51,7 @@ class CBraModTrainingArgs(BaseTrainingArgs):
 
 class CBraModLoggingArgs(BaseLoggingArgs):
     experiment_name: str = "cbramod"
-    output_dir: str = "/path/to/your/code/baseline/cbramod/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/cbramod/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -75,6 +70,7 @@ class CBraModLoggingArgs(BaseLoggingArgs):
 
 class CBraModConfig(AbstractConfig):
     model_type: str = "cbramod"
+    fs: int = 200
     
     data: CBraModDataArgs = Field(default_factory=CBraModDataArgs)
     model: CBraModModelArgs = Field(default_factory=CBraModModelArgs)

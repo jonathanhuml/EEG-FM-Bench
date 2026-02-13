@@ -1,10 +1,10 @@
 import logging
 import os
 from functools import partial
+from typing import Tuple
 
 import torch
 from torch import nn
-from timm.loss.cross_entropy import LabelSmoothingCrossEntropy
 
 from baseline.abstract.classifier import MultiHeadClassifier
 from baseline.abstract.trainer import AbstractTrainer
@@ -32,7 +32,8 @@ class LabramUnifiedModel(nn.Module):
         # Data comes in as (batch, n_channels, n_timepoints)
         x = batch['data']
         chans_id = batch['chans_id'][0]
-        ds_name = batch['montage'][0].split('/')[0]
+        montage = batch['montage'][0]
+        ds_name = montage.split('/')[0]
         batch_size, n_channels, n_timepoints = x.shape
         
         # Calculate patch parameters
@@ -46,6 +47,7 @@ class LabramUnifiedModel(nn.Module):
         chans_id = nn.functional.pad(chans_id+1, (1, 0), value=0)
 
         # Get features from encoder
+        # features shape: [batch, n_ch * n_patches, embed_dim]
         features = self.encoder.forward_features(
             data,
             input_chans=chans_id,
@@ -55,7 +57,13 @@ class LabramUnifiedModel(nn.Module):
         if self.grad_cam:
             self.grad_cam_activation = features.transpose(1, 2)
 
-        logits = self.classifier(features, ds_name)
+        # Reshape features to 4D: [B, T, C, D]
+        embed_dim = features.shape[-1]
+        features = features.view(batch_size, n_channels, n_patches, embed_dim)
+        features = features.permute(0, 2, 1, 3)  # [B, n_patches, n_channels, D] = [B, T, C, D]
+
+        # Pass montage; classifier will handle montage/ds_name split internally
+        logits = self.classifier(features, montage)
 
         return logits
 
@@ -82,7 +90,7 @@ class LabramTrainer(AbstractTrainer):
         
         # Loss function
         if self.cfg.training.label_smoothing > 0:
-            self.loss_fn = LabelSmoothingCrossEntropy(smoothing=self.cfg.training.label_smoothing)
+            self.loss_fn = nn.CrossEntropyLoss(label_smoothing=self.cfg.training.label_smoothing)
         else:
             self.loss_fn = nn.CrossEntropyLoss()
 
@@ -119,17 +127,30 @@ class LabramTrainer(AbstractTrainer):
         # Create a classifier - always use multi-head for compatibility
         embed_dim = cfg.embed_dim
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
+        head_cfg = cfg.classifier_head
+
+        # Build ds_shape_info for FLATTEN_MLP head type
+        # Shape info: montage_key -> (n_patches, n_channels, embed_dim)
+        ds_shape_info = {}
+        for ds_name, info in self.ds_info.items():
+            for montage_key, (n_timepoints, n_channels) in info['shape_info'].items():
+                n_patches = n_timepoints // cfg.patch_size
+                ds_shape_info[montage_key] = (n_patches, n_channels, embed_dim)
 
         self.classifier = MultiHeadClassifier(
             embed_dim=embed_dim,
             head_configs=head_configs,
-            mlp_dims=cfg.mlp_hidden_dim,
-            dropout=cfg.head_dropout,
+            head_cfg=head_cfg,
+            ds_shape_info=ds_shape_info,
             t_sne=cfg.t_sne,
         )
         logger.info(f"Created multi-head classifier with heads: {list(head_configs.keys())}")
 
-        self.load_checkpoint(self.cfg.model.pretrained_path)
+        if self.cfg.model.pretrained_path:
+            self.load_checkpoint(self.cfg.model.pretrained_path)
+        else:
+            logger.info("No pretrained path specified, starting from scratch")
+
         logger.info(f"Model setup complete for {list(self.ds_info.keys())}")
 
         model = LabramUnifiedModel(
@@ -137,11 +158,13 @@ class LabramTrainer(AbstractTrainer):
             self.classifier,
             grad_cam=self.cfg.model.grad_cam
         )
+        
+        # Apply LoRA if enabled
+        model = self.apply_lora(model)
+        
         model = model.to(self.device)
 
-        model = torch.nn.parallel.DistributedDataParallel(
-            model, device_ids=[self.local_rank], find_unused_parameters=True
-        )
+        model = self.maybe_wrap_ddp(model, find_unused_parameters=True)
 
         self.model = model
 
@@ -176,6 +199,120 @@ class LabramTrainer(AbstractTrainer):
         
         logger.info("Successfully loaded pretrained encoder weights")
 
+    def pretrain_step_for_analysis(
+        self,
+        batch: dict,
+        mask_ratio: float = 0.5,
+        mask_strategy: str = "random_mixed",
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Pretrain step with MSE reconstruction objective.
+
+        This performs a single pretraining step:
+        1. Mask input patches
+        2. Forward through encoder
+        3. Reconstruct masked patches (using simple linear head)
+        4. Compute MSE loss on masked positions only
+
+        Args:
+            batch: Input batch
+            mask_ratio: Fraction of patches to mask
+            mask_strategy: Masking strategy
+
+        Returns:
+            (loss, logits, mask): Reconstruction loss, predicted patches, mask
+        """
+        # Create masked batch
+        masked_batch, mask, original_patches = self.create_masked_batch(
+            batch, mask_ratio, mask_strategy
+        )
+
+        with torch.amp.autocast('cuda', enabled=self.cfg.training.use_amp, dtype=torch.bfloat16):
+            # Get encoder output
+            encoder = getattr(self.model, 'encoder', self.model)
+
+            # Forward through encoder
+            # Most encoders expect [B, C, n_patches, patch_size]
+            data = masked_batch['data']
+            chans_id = masked_batch['chans_id'][0]
+            batch_size, n_channels, n_timepoints = data.shape
+
+            patch_size = getattr(encoder, 'patch_size', 200)
+            n_patches = n_timepoints // patch_size
+
+            # Reshape for encoder
+            data_patches = data[:, :, :n_patches * patch_size].view(
+                batch_size, n_channels, n_patches, patch_size
+            )
+
+            chans_id = nn.functional.pad(chans_id + 1, (1, 0), value=0)
+
+            # Get features from encoder
+            # Output shape varies by model, typically [B, C, n_patches, D] or [B, T, D]
+            features = encoder(data_patches, input_chans=chans_id, return_patch_tokens=True)
+
+            # Handle different output shapes
+            if features.dim() == 3:
+                # [B, T, D] - typical transformer output
+                # Reshape to [B, C, n_patches, D] if possible
+                if features.shape[1] == n_channels * n_patches:
+                    features = features.view(batch_size, n_channels, n_patches, -1)
+                else:
+                    # Use as-is, project to reconstruction
+                    embed_dim = features.shape[-1]
+                    if self._pretrain_recon_head is None:
+                        head = torch.nn.Linear(embed_dim, patch_size)
+                        head = head.to(features.device).to(features.dtype)
+                        target_model = getattr(self.model, "module", self.model)
+                        target_model._pretrain_recon_head = head
+                        self._pretrain_recon_head = head
+                        if self.optimizer is not None:
+                            self.optimizer.add_param_group({
+                                "params": self._pretrain_recon_head.parameters(),
+                                "lr": self.cfg.training.max_lr,
+                            })
+                    reconstructed = self._pretrain_recon_head(features)
+                    # This path needs special handling - skip for now
+                    raise NotImplementedError("3D output reconstruction not fully implemented")
+
+            if features.dim() == 4:
+                # [B, C, n_patches, D]
+                embed_dim = features.shape[-1]
+
+                # Create reconstruction head if not exists (register on model)
+                if self._pretrain_recon_head is None:
+                    head = torch.nn.Linear(embed_dim, patch_size)
+                    head = head.to(features.device).to(features.dtype)
+                    # Register on underlying model for checkpointing
+                    target_model = getattr(self.model, "module", self.model)
+                    target_model._pretrain_recon_head = head
+                    self._pretrain_recon_head = head
+                    # Ensure optimizer updates this head if optimizer already built
+                    if self.optimizer is not None:
+                        self.optimizer.add_param_group({
+                            "params": self._pretrain_recon_head.parameters(),
+                            "lr": self.cfg.training.max_lr,
+                        })
+
+                # Reconstruct: [B, C, n_patches, patch_size]
+                reconstructed = self._pretrain_recon_head(features)
+            else:
+                raise ValueError(f"Unexpected feature shape: {features.shape}")
+
+        # Compute MSE loss on masked positions only
+        # mask: [B, C, n_patches], original_patches: [B, C, n_patches, patch_size]
+        mask_expanded = mask.unsqueeze(-1).expand_as(original_patches)
+
+        # Only compute loss on masked patches
+        pred_masked = reconstructed[mask_expanded]
+        target_masked = original_patches[mask_expanded]
+
+        if pred_masked.numel() == 0:
+            # No masked patches (edge case)
+            loss = torch.tensor(0.0, device=reconstructed.device, requires_grad=True)
+        else:
+            loss = torch.nn.functional.mse_loss(pred_masked.float(), target_masked.float())
+
+        return loss, reconstructed, mask
 
 def main():
     """Main function for standalone execution."""

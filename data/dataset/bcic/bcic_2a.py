@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import warnings
@@ -8,8 +7,6 @@ from typing import Optional, Union, Any
 import datasets
 import mne.io
 import numpy as np
-import pandas as pd
-import s3fs
 from mne.io import BaseRaw
 from pandas import DataFrame
 
@@ -179,4 +176,16 @@ if __name__ == "__main__":
     builder.download_and_prepare(num_proc=2)
     dataset = builder.as_dataset()
     print(dataset)
+    #
+    # labels = torch.tensor(dataset['train']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
+    #
+    # labels = torch.tensor(dataset['validation']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
+    #
+    # labels = torch.tensor(dataset['test']['label'], dtype=torch.int32)
+    # labels = torch.bincount(labels, minlength=4)
+    # print(labels)
 

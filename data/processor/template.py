@@ -36,7 +36,7 @@ class TemplateConfig(EEGConfig):
     is_notched: bool = True
 
     dataset_name: Optional[str] = 'template'
-    task_type: DatasetTaskType = DatasetTaskType.UNKNOWN
+    task_type: DatasetTaskType = DatasetTaskType.DEFAULT
     file_ext: str = 'edf'
     montage: dict[str, list[str]] = field(default_factory=lambda: {
         '10_20': [

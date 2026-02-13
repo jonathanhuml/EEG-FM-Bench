@@ -5,7 +5,7 @@ EEGPT Configuration that inherits from AbstractConfig.
 from typing import Dict, Optional, List
 from pydantic import Field
 
-from common.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
+from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
 
 
 class EegptDataArgs(BaseDataArgs):
@@ -18,7 +18,7 @@ class EegptDataArgs(BaseDataArgs):
 class EegptModelArgs(BaseModelArgs):
     """EEGPT model configuration."""
     # Pretrained model path
-    pretrained_path: str = "/path/to/your/code/baseline/eegpt/ckpt/eegpt_mcae_58chs_4s_large4E.ckpt"
+    pretrained_path: Optional[str] = None
 
     # Architecture parameters
     patch_size: int = 64
@@ -46,8 +46,6 @@ class EegptModelArgs(BaseModelArgs):
     linear_probe1_dim: int = 16
     linear_probe1_max_norm: float = 1.0
     linear_probe2_max_norm: float = 0.25
-    head_dropout: float = 0.3
-    mlp_hidden_dim: list[int] = Field(default_factory=lambda: [128])
 
 
 class EegptTrainingArgs(BaseTrainingArgs):
@@ -76,8 +74,7 @@ class EegptTrainingArgs(BaseTrainingArgs):
 class EegptLoggingArgs(BaseLoggingArgs):
     """EEGPT logging configuration."""
     experiment_name: str = "eegpt"
-    output_dir: str = "/path/to/your/code/baseline/eegpt/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/eegpt/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -98,6 +95,7 @@ class EegptConfig(AbstractConfig):
     """EEGPT configuration that extends AbstractConfig."""
     
     model_type: str = "eegpt"
+    fs: int = 256
     
     data: EegptDataArgs = Field(default_factory=EegptDataArgs)
     model: EegptModelArgs = Field(default_factory=EegptModelArgs)

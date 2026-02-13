@@ -280,6 +280,7 @@ class BrainLatBuilder(EEGDatasetBuilder):
         valid_ratio = self.config.valid_ratio
         test_ratio = self.config.test_ratio
 
+        # Get the subject list for each group
         grouped = df.groupby('group')['subject'].unique()
 
         val_subjects = []
@@ -287,23 +288,27 @@ class BrainLatBuilder(EEGDatasetBuilder):
 
         for group, subjects in grouped.items():
             subjects = list(subjects)
-            np.random.shuffle(subjects)
+            np.random.shuffle(subjects)  # shuffle order randomly
 
             n_total = len(subjects)
             n_val = int(valid_ratio * n_total)
             n_test = int(test_ratio * n_total)
 
+            # Adjust test count to avoid exceeding the remaining subjects
             if n_val + n_test > n_total:
                 n_test = n_total - n_val
 
+            # Ensure test count is non-negative
             n_test = max(n_test, 0)
 
+            # Select subjects for valid and test
             group_val = subjects[:n_val]
             group_test = subjects[n_val:n_val + n_test]
 
             val_subjects.extend(group_val)
             test_subjects.extend(group_test)
 
+        # Update split column
         df.loc[df['subject'].isin(val_subjects), 'split'] = 'valid'
         df.loc[df['subject'].isin(test_subjects), 'split'] = 'test'
 

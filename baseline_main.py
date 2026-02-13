@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
+"""
+Unified Baseline Model Training Script
+
+This script provides a unified interface for training different baseline models
+(EEGPT, LABRAM, etc.) using the abstract class architecture.
+
+Usage:
+    python baseline_main.py conf_file=assets/conf/eegpt/eegpt_unified.yaml model_type=eegpt
+    python baseline_main.py conf_file=assets/conf/labram/labram_config.yaml model_type=labram
+
+The config file should contain all necessary parameters for training.
+The model_type parameter specifies which model architecture to use.
+"""
+
 import sys
-from pathlib import Path
 
 from omegaconf import OmegaConf
 
@@ -51,10 +64,6 @@ def main():
     # Validate configuration
     if not cfg.validate_config():
         raise ValueError(f"Invalid configuration for model type: {model_type}")
-    
-    # Setup output directory
-    output_dir = Path(cfg.logging.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Create and run trainer
     trainer = ModelRegistry.create_trainer(cfg)

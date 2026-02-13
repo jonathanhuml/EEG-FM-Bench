@@ -81,7 +81,7 @@ class HBNConfig(EEGConfig):
     filter_notch: float = 60.0
 
     dataset_name: Optional[str] = 'hbn'
-    task_type: DatasetTaskType = DatasetTaskType.UNKNOWN
+    task_type: DatasetTaskType = DatasetTaskType.DEFAULT
     file_ext: str = 'set'
     montage: dict[str, list[str]] = field(default_factory=lambda: {
         'EGI_128': [
@@ -346,6 +346,7 @@ class HBNBuilder(EEGDatasetBuilder):
             )
             bids_path = mne_bids.get_bids_path_from_fname(file_path)
             raw = mne_bids.read_raw_bids(bids_path, verbose=verbose)
+            raw = raw.load_data()
             return raw
         # bids_path = mne_bids.get_bids_path_from_fname(file_path)
         # raw = mne_bids.read_raw_bids(bids_path, verbose=verbose)

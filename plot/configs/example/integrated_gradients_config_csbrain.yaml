@@ -1,0 +1,40 @@
+# IntegratedGradients visualization config
+# For the CSBrain model
+
+# Model type
+model_type: 'csbrain'
+
+# Checkpoint path (optional)
+ckpt_path: 'assets/ckpt/baseline/csbrain/model.ckpt'
+
+# Output directory
+output_dir: 'plot/output/csbrain/integrated_gradients'
+
+# Random seed
+seed: 42
+
+# Dataset config
+datasets:
+    seed: 'finetune_sub_dependent'
+    hmc: 'finetune'
+
+# Tags
+tag: ['csbrain', 'integrated_gradients', 'test']
+
+# Data config
+split: "test"  # Dataset split: train, valid, test
+
+# IntegratedGradients parameters
+n_steps: 10  # Number of integration steps for IntegratedGradients
+baseline_type: "random"  # Baseline type: zero, random, gaussian
+ig_target: "channel"
+
+# NoiseTunnel parameters
+noise_tunnel_type: "smoothgrad"  # Noise tunnel type: smoothgrad, smoothgrad_sq, vargrad
+noise_tunnel_samples: 10  # Number of noise samples
+noise_tunnel_stdevs: 0.2  # Noise standard deviation
+
+# Visualization parameters
+num_batch: 1000  # Number of batches to process
+generate_class_average: true  # Whether to generate class-average visualizations
+generate_per_sample: true

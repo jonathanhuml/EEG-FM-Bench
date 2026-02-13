@@ -10,8 +10,8 @@ from torch.utils.data import Dataset, DataLoader
 from datasets import Dataset as HFDataset
 import datasets
 
-from common.distributed.loader import DistributedGroupBatchSampler
 from data.processor.wrapper import load_concat_eeg_datasets, get_dataset_montage
+from common.distributed.loader import DistributedGroupBatchSampler
 
 
 logger = logging.getLogger('baseline')
@@ -177,6 +177,7 @@ class AbstractDataLoaderFactory(ABC):
         self,
         datasets_config: Dict[str, str],
         split: datasets.NamedSplit,
+        fs: int,
         num_replicas: int = 1,
         rank: int = 0,
     ):
@@ -194,7 +195,8 @@ class AbstractDataLoaderFactory(ABC):
             dataset_names=dataset_names,
             builder_configs=config_names,
             split=split,
-            cast_label=True
+            cast_label=True,
+            fs=fs,
         )
 
         # Create adapter
@@ -232,6 +234,7 @@ class AbstractDataLoaderFactory(ABC):
         self,
         datasets_config: Dict[str, str],
         mixed: bool,
+        fs: int,
         num_replicas: int,
         rank: int,
         split: datasets.NamedSplit,
@@ -240,6 +243,7 @@ class AbstractDataLoaderFactory(ABC):
             return self.loading_dataset(
                 datasets_config=datasets_config,
                 split=split,
+                fs=fs,
                 num_replicas=num_replicas,
                 rank=rank,
             )
@@ -249,6 +253,7 @@ class AbstractDataLoaderFactory(ABC):
                 loader, sampler = self.loading_dataset(
                     datasets_config={dataset_name: config_name},
                     split=split,
+                    fs=fs,
                     num_replicas=num_replicas,
                     rank=rank
                 )

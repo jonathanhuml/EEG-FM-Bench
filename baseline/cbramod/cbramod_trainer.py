@@ -39,15 +39,18 @@ class CBraModUnifiedModel(nn.Module):
 
         data = x.view(batch_size, n_channels, n_patches, self.patch_size)
         
-        # [batch_size, n_channels, n_patches, out_dim]
+        # encoder output: [batch_size, n_channels, n_patches, out_dim]
         features = self.encoder(data)
 
         if self.grad_cam:
             self.grad_cam_activation = features
 
-        features = features.view(batch_size, -1, self.out_dim)
+        # Reshape features to 4D: [B, T, C, D]
+        # features is [B, C, n_patches, out_dim], permute to [B, n_patches, C, out_dim] = [B, T, C, D]
+        features = features.permute(0, 2, 1, 3)
 
-        logits = self.classifier(features, ds_name)
+        # Pass montage; classifier will handle montage/ds_name split internally
+        logits = self.classifier(features, montage)
         
         return logits
 
@@ -93,20 +96,31 @@ class CBraModTrainer(AbstractTrainer):
 
         embed_dim = cfg.out_dim
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
+        head_cfg = cfg.classifier_head
+
+        # Build ds_shape_info for FLATTEN_MLP head type
+        # Shape info: montage_key -> (n_patches, n_channels, embed_dim)
+        ds_shape_info = {}
+        for ds_name, info in self.ds_info.items():
+            for montage_key, (n_timepoints, n_channels) in info['shape_info'].items():
+                n_patches = n_timepoints // cfg.in_dim  # in_dim is patch_size
+                ds_shape_info[montage_key] = (n_patches, n_channels, embed_dim)
 
         self.classifier = MultiHeadClassifier(
             embed_dim=embed_dim,
-            mlp_dims=self.cfg.model.mlp_hidden_dim,
             head_configs=head_configs,
-            dropout=self.cfg.model.head_dropout,
-            t_sne=self.cfg.model.t_sne,
+            head_cfg=head_cfg,
+            ds_shape_info=ds_shape_info,
+            t_sne=cfg.t_sne,
         )
         logger.info(f"Created multi-head classifier with heads: {list(head_configs.keys())}")
 
         # Load checkpoint if specified
         if self.cfg.model.pretrained_path:
             self.load_checkpoint(self.cfg.model.pretrained_path)
-        
+        else:
+            logger.info("No pretrained path specified, starting from scratch")
+
         logger.info(f"Model setup complete for {list(self.ds_info.keys())}")
 
         model = CBraModUnifiedModel(
@@ -114,11 +128,13 @@ class CBraModTrainer(AbstractTrainer):
             self.classifier,
             grad_cam=self.cfg.model.grad_cam
         )
+        
+        # Apply LoRA if enabled
+        model = self.apply_lora(model)
+        
         model = model.to(self.device)
 
-        model = torch.nn.parallel.DistributedDataParallel(
-            model, device_ids=[self.local_rank], find_unused_parameters=True
-        )
+        model = self.maybe_wrap_ddp(model, find_unused_parameters=True)
 
         self.model = model
 

@@ -1,11 +1,11 @@
 import logging
-from typing import Type
+from typing import Type, Optional
 
-import datasets
 import torch
-from datasets import Dataset, concatenate_datasets, Value
+import datasets
 from torch import Tensor
 from torch.utils.data import DataLoader
+from datasets import Dataset, concatenate_datasets, Value
 
 from data.dataset.adftd import AdftdBuilder
 from data.dataset.bcic.bcic_1a import BCIC1ABuilder
@@ -92,6 +92,35 @@ def get_dataset_patch_len(dataset_name: str, config_name: str) -> int:
     config: EEGConfig = DATASET_SELECTOR[dataset_name].builder_configs.get(config_name)
     return config.wnd_div_sec
 
+
+def get_dataset_shape_info(dataset_name: str, config_name: str, fs: int) -> dict[str, tuple[int, int]]:
+    """
+    Get shape information for each montage in a dataset.
+
+    Args:
+        dataset_name: Name of the dataset
+        config_name: Configuration name
+        fs: Sampling frequency
+
+    Returns:
+        Dict mapping montage_key -> (n_timepoints, n_channels)
+    """
+    builder_cls = DATASET_SELECTOR[dataset_name]
+    builder: EEGDatasetBuilder = builder_cls(config_name=config_name)
+
+    config: EEGConfig = builder.config
+    n_timepoints = int(config.wnd_div_sec * fs)
+
+    shape_info: dict[str, tuple[int, int]] = {}
+    for montage_name in config.montage.keys():
+        montage_key = f'{dataset_name}/{montage_name}'
+        chs = builder.standardize_chs_names(montage_name)
+        n_channels = len(chs)
+        shape_info[montage_key] = (n_timepoints, n_channels)
+
+    return shape_info
+
+
 def get_dataset_n_class(dataset_name: str, config_name: str) -> int:
     config: EEGConfig = DATASET_SELECTOR[dataset_name].builder_configs.get(config_name)
     return len(config.category)
@@ -101,6 +130,7 @@ def get_dataset_category(dataset_name: str, config_name: str) -> list[str]:
     return config.category
 
 def get_dataset_montage(dataset_name: str, config_name: str) -> dict[str, list[str]]:
+    # Note: This function needs builder instance to call standardize_chs_names()
     builder_cls = DATASET_SELECTOR[dataset_name]
     builder: EEGDatasetBuilder = builder_cls(config_name=config_name)
     montage_names = builder.config.montage.keys()
@@ -119,28 +149,53 @@ def load_concat_eeg_datasets(
         weight_option: str = 'statistics',
         add_ds_name: bool = False,
         cast_label: bool = False,
+        fs: Optional[int] = None,
 ) -> tuple[Dataset, list[Tensor]]:
+    """
+    Load and concatenate multiple EEG datasets.
+
+    :param dataset_names: List of dataset names to load
+    :param builder_configs: List of builder config names (e.g., 'pretrain', 'finetune')
+    :param split: Dataset split to load (TRAIN, VALIDATION, TEST)
+    :param weight_option: Weight calculation option for class imbalance
+    :param add_ds_name: Whether to add dataset name column
+    :param cast_label: Whether to cast label to int64
+    :param fs: Target sampling rate (must match preprocessed data)
+    :return: Tuple of concatenated dataset and weight list
+    """
     dataset_list = []
     weight_list = []
+
+    if fs is None:
+        raise ValueError('fs for dataset loader must be specified')
+
     for ds_name, ds_config in zip(dataset_names, builder_configs):
         try:
             builder_cls = DATASET_SELECTOR[ds_name]
-            builder = builder_cls(config_name=ds_config)
+            builder = builder_cls(config_name=ds_config, fs=fs)
+            log.info(f'Loading {ds_name}-{ds_config} at fs={fs}Hz from {builder.cache_dir}')
             # noinspection PyTypeChecker
             dataset: Dataset = builder.as_dataset(split=split)
             if add_ds_name:
                 dataset = dataset.add_column('ds_name', [ds_name for _ in range(len(dataset))])
 
             if 'label' in dataset.column_names:
-                label = torch.tensor(dataset['label'], dtype=torch.int32)
-                label_cnt = torch.bincount(label, minlength=get_dataset_n_class(ds_name, ds_config))
-                log.info(f'Sample distribution for {ds_name}-{ds_config} {split}: {label_cnt}')
-                weight = calc_distribution_weight(len(dataset), label_cnt, weight_option)
+                n_class = get_dataset_n_class(ds_name, ds_config)
+                if n_class > 1:
+                    label = torch.tensor(dataset['label'], dtype=torch.int32)
+                    label_cnt = torch.bincount(label, minlength=n_class)
+                    log.info(f'Sample distribution for {ds_name}-{ds_config} {split}: {label_cnt}')
+                    weight = calc_distribution_weight(len(dataset), label_cnt, weight_option)
+                    weight_list.append(weight)
 
-                weight_list.append(weight)
-
-                if cast_label:
-                    dataset = dataset.cast_column('label', Value('int64'))
+                    if cast_label:
+                        dataset = dataset.cast_column('label', Value('int64'))
+                else:
+                    # Regression: do NOT cast label to int64; and use a dummy weight tensor for API consistency.
+                    log.info(
+                        f'Sample distribution for {ds_name}-{ds_config} {split}: regression (n_class=1), skip bincount'
+                    )
+                    weight_list.append(torch.ones(1, dtype=torch.int64))
 
             dataset_list.append(dataset)
         except KeyError:
@@ -166,7 +221,7 @@ def calc_distribution_weight(n: int, label_cnt: Tensor, option: str):
 
 if __name__ == '__main__':
     # data = load_concat_eeg_datasets(['seed_v', 'tuab'])
-    data, distribution = load_concat_eeg_datasets(['tuab'], ['finetune'])
+    data, distribution = load_concat_eeg_datasets(['tuab'], ['finetune'], fs=256)
     loader = DataLoader(data, batch_size=32)
 
     for batch in loader:

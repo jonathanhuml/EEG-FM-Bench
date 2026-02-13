@@ -177,9 +177,9 @@ class InriaBciBuilder(EEGDatasetBuilder):
 
 
 if __name__ == "__main__":
-    builder = InriaBciBuilder('finetune')
-    builder.clean_disk_cache()
+    builder = InriaBciBuilder('pretrain')
+    # builder.clean_disk_cache()
     builder.preproc()
-    builder.download_and_prepare(num_proc=1)
+    builder.download_and_prepare(num_proc=2)
     dataset = builder.as_dataset()
     print(dataset)

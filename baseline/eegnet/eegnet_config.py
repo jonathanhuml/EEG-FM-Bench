@@ -12,8 +12,7 @@ from baseline.abstract.classical import ClassicalLoggingArgs, ClassicalConfig, C
 class EegNetLoggingArgs(ClassicalLoggingArgs):
     """EegNet logging configuration."""
     experiment_name: str = "eegnet"
-    output_dir: str = "/path/to/your/code/baseline/eegnet/log"
-    ckpt_dir: str = "/path/to/your/code/baseline/eegnet/ckpt"
+    run_dir: str = "assets/run"
 
     # Cloud logging options
     use_cloud: bool = True
@@ -34,6 +33,7 @@ class EegNetConfig(ClassicalConfig):
     """EegNet configuration that extends AbstractConfig."""
 
     model_type: str = "eegnet"
+    fs: int = 256
 
     data: ClassicalDataArgs = Field(default_factory=ClassicalDataArgs)
     model: ClassicalModelArgs = Field(default_factory=ClassicalModelArgs)
