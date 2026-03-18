@@ -44,3 +44,4 @@ transformers
 scikit-learn
 huggingface_hub
 linear_attention_transformer
+zuna
