@@ -24,6 +24,8 @@ from baseline.moment import MomentConfig, MomentDataLoaderFactory, MomentTrainer
 from baseline.reve.reve_adapter import ReveDataLoaderFactory
 from baseline.reve.reve_config import ReveConfig
 from baseline.reve.reve_trainer import ReveTrainer
+from baseline.zuna.zuna_config import ZunaConfig
+from baseline.zuna.zuna_trainer import ZunaTrainer, ZunaDataLoaderFactory
 
 ModelRegistry.register_model(
     model_type='eegpt',
@@ -100,4 +102,11 @@ ModelRegistry.register_model(
     config_class=MomentConfig,
     adapter_class=MomentDataLoaderFactory,
     trainer_class=MomentTrainer
+)
+
+ModelRegistry.register_model(
+    model_type='zuna',
+    config_class=ZunaConfig,
+    adapter_class=ZunaDataLoaderFactory,
+    trainer_class=ZunaTrainer
 )

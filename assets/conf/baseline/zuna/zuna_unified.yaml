@@ -1,0 +1,72 @@
+# ZUNA Unified Training Configuration
+# Compatible datasets: TUEV (5s, 21ch), Mimul-11 (5s, 60ch), Things-EEG-2 (5s, 63ch)
+# Encoder is always frozen — only the classifier head is trained.
+#
+# Usage:
+#   python baseline_main.py conf_file=assets/conf/baseline/zuna/zuna_unified.yaml model_type=zuna
+
+seed: 42
+master_port: 51200
+multitask: true
+model_type: 'zuna'
+
+data:
+  batch_size: 4        # packed sequence is memory-heavy; keep small
+  num_workers: 2
+  datasets:
+    tuev: 'finetune'
+    mimul_11: 'finetune'
+    things_eeg_2: 'finetune'
+
+model:
+  pretrained_repo: 'Zyphra/ZUNA'
+  pretrained_weights_file: 'model-00001-of-00001.safetensors'
+  pretrained_config_file: 'config.json'
+
+  n_fine: 32            # raw samples per token (must match pretrained model)
+  encoder_output_dim: 32  # latent dim (informational; read from HF config at runtime)
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+    attn_n_head: 4
+    attn_head_dim: 64
+    fusion_mode: 'dual'
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0   # unused — encoder is frozen
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'zuna'
+  run_dir: 'assets/run'
+  use_cloud: true
+  cloud_backend: 'wandb'
+  project: 'zuna'
+  entity: null
+  api_key: null
+  offline: false
+  tags: ['zuna', 'frozen', 'unified']
+  log_step_interval: 1
+  ckpt_interval: 5
