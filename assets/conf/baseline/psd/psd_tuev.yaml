@@ -29,12 +29,12 @@ model:
   fmax: 45.0
 
   classifier_head:
-    head_type: 'avg_pool'
+    head_type: 'dual_stream_fusion'
     hidden_dims: [128]
     dropout: 0.3
     attn_n_head: 4
     attn_head_dim: 64
-    fusion_mode: 'dual'
+    fusion_mode: 'time_first'
     fusion_n_head: 4
     fusion_head_dim: 64
     fusion_use_rope: true

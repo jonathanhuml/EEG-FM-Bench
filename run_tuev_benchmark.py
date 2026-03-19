@@ -477,6 +477,8 @@ def parse_args() -> argparse.Namespace:
                    help="Path to pretrained BENDR conv-encoder checkpoint (.pt).")
     p.add_argument("--biot-ckpt",       default=None, metavar="PATH",
                    help="Path to pretrained BIOT encoder checkpoint (.ckpt).")
+    p.add_argument("--gpu", default=None, metavar="ID",
+                   help="GPU device index to use, e.g. --gpu 2 (sets CUDA_VISIBLE_DEVICES).")
     return p.parse_args()
 
 
@@ -485,6 +487,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     auto_download = not args.no_auto_download
+
+    if args.gpu is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+        logger.info(f"CUDA_VISIBLE_DEVICES={args.gpu}")
 
     setup_environment()
 
