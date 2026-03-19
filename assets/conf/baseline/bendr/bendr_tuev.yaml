@@ -1,0 +1,94 @@
+# BENDR — single-task frozen-backbone on TUEV
+# Table 4 reproduction: avg_pool head, freeze_encoder=true, 256 Hz
+#
+# NOTE: pretrained_path and pretrained_conv_path are optional.
+# If not provided, the encoder starts from random initialisation (frozen random
+# projection) — a valid lower-bound control, but NOT the paper-equivalent
+# result.  To reproduce Table 4 exactly, supply paths to pretrained BENDR
+# weights (contextualiser and convolutional encoder respectively).
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/bendr/bendr_tuev.yaml model_type=bendr
+
+seed: 42
+master_port: 51201
+multitask: false    # single dataset → run_separate_training path
+model_type: 'bendr'
+fs: 256
+
+data:
+  batch_size: 64
+  num_workers: 2
+  datasets:
+    tuev: 'finetune'
+
+model:
+  # Leave null to run with frozen random encoder (control baseline).
+  # Set to a local .pt path to load pretrained weights.
+  pretrained_path: null        # contextualiser checkpoint
+  pretrained_conv_path: null   # conv-encoder checkpoint
+
+  emb_dim: 512
+  conv_width: [3, 2, 2, 2, 2, 2]
+  conv_stride: [3, 2, 2, 2, 2, 2]
+  conv_drop_rate: 0.0
+  conv_proj_head: false
+
+  ffn_dim: 3076
+  heads: 8
+  context_layers: 8
+  context_drop_rate: 0.15
+  activation: 'gelu'
+  position_encoder: 25
+  layer_drop: 0.0
+
+  mask_p_t: 0.1
+  mask_p_c: 0.004
+  mask_t_span: 6
+
+  max_channels: 22   # TUEV uses 21 channels; 22 gives headroom
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+    attn_n_head: 4
+    attn_head_dim: 64
+    fusion_mode: 'dual'
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 1e-4
+  encoder_lr_scale: 0.0   # encoder is frozen
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 1e-6
+
+  freeze_encoder: true
+  use_amp: true
+  finetuning: true
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'bendr_tuev'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['bendr', 'tuev', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10

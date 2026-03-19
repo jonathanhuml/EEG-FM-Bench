@@ -1,0 +1,22 @@
+# t-SNE visualization config for BENDR on TUEV
+model_type: 'bendr'
+
+ckpt_path: ''
+
+output_dir: 'assets/vis/tuev/bendr/tsne'
+
+seed: 42
+
+datasets:
+  tuev: 'finetune'
+
+tag: ['bendr', 'tuev', 'tsne']
+
+split: 'test'
+
+num_batch: 500
+perplexity: 30
+small_perplexity: 10
+use_pca: false
+pca_dims: 50
+max_iter: 1000

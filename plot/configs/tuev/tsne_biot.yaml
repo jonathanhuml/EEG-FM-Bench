@@ -1,0 +1,22 @@
+# t-SNE visualization config for BIOT on TUEV
+model_type: 'biot'
+
+ckpt_path: ''
+
+output_dir: 'assets/vis/tuev/biot/tsne'
+
+seed: 42
+
+datasets:
+  tuev: 'finetune'
+
+tag: ['biot', 'tuev', 'tsne']
+
+split: 'test'
+
+num_batch: 500
+perplexity: 30
+small_perplexity: 10
+use_pca: false
+pca_dims: 50
+max_iter: 1000

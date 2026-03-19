@@ -46,6 +46,12 @@ _ZUNA_NUM_BINS = 50
 _CH_NAME_ALIASES: Dict[str, str] = {
     'A1': 'TP9',
     'A2': 'TP10',
+    # TUEV TCP montage uses all-caps; MNE standard montages use mixed case
+    'FP1': 'Fp1',
+    'FP2': 'Fp2',
+    'FZ':  'Fz',
+    'CZ':  'Cz',
+    'PZ':  'Pz',
 }
 
 
@@ -170,8 +176,10 @@ class ZunaUnifiedModel(nn.Module):
             # eeg_r:  [n_ch * n_coarse, n_fine]
             # cpd_r:  [n_ch * n_coarse, 3]
             # tc_r:   [n_ch * n_coarse, 1]
-            tokens_list.append(eeg_r)
-            tok_idx_list.append(torch.cat([cpd_r, tc_r], dim=1))  # [seq_len, 4]
+            # chop_and_reshape_signals may return CPU tensors regardless of input device
+            dev = x.device
+            tokens_list.append(eeg_r.to(dev))
+            tok_idx_list.append(torch.cat([cpd_r.to(dev), tc_r.to(dev)], dim=1))  # [seq_len, 4]
             seq_lens_list.append(int(seq_len))
 
         # ── Pack into single sequence ──────────────────────────────────────────

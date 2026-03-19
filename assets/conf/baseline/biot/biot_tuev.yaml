@@ -1,0 +1,80 @@
+# BIOT — single-task frozen-backbone on TUEV
+# Table 4 reproduction: avg_pool head, freeze_encoder=true, 200 Hz
+#
+# NOTE: BIOT operates at 200 Hz. TUEV must be preprocessed at 200 Hz
+# separately (tuev_preproc_200.yaml) before running this config.
+#
+# NOTE: pretrained_path is optional.  Without it, the encoder starts from
+# random initialisation (frozen random projection — control baseline).
+# Provide a local .pt path to load pretrained BIOT weights for paper-equivalent
+# results.
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/biot/biot_tuev.yaml model_type=biot
+
+seed: 42
+master_port: 51202
+multitask: false
+model_type: 'biot'
+fs: 200
+
+data:
+  batch_size: 32
+  num_workers: 2
+  datasets:
+    tuev: 'finetune'
+
+model:
+  pretrained_path: null   # set to local .pt path for pretrained weights
+
+  emb_size: 256
+  heads: 8
+  depth: 4
+  max_channels: 22
+  n_fft: 200
+  hop_length: 100
+  use_channel_conv: true
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+    attn_n_head: 4
+    attn_head_dim: 64
+    fusion_mode: 'dual'
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0   # encoder is frozen
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'biot_tuev'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['biot', 'tuev', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10

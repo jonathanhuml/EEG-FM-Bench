@@ -24,6 +24,8 @@ from baseline.moment import MomentConfig, MomentDataLoaderFactory, MomentTrainer
 from baseline.reve.reve_adapter import ReveDataLoaderFactory
 from baseline.reve.reve_config import ReveConfig
 from baseline.reve.reve_trainer import ReveTrainer
+from baseline.psd.psd_config import PSDConfig
+from baseline.psd.psd_trainer import PSDTrainer
 from baseline.zuna.zuna_config import ZunaConfig
 from baseline.zuna.zuna_trainer import ZunaTrainer, ZunaDataLoaderFactory
 
@@ -102,6 +104,13 @@ ModelRegistry.register_model(
     config_class=MomentConfig,
     adapter_class=MomentDataLoaderFactory,
     trainer_class=MomentTrainer
+)
+
+ModelRegistry.register_model(
+    model_type='psd',
+    config_class=PSDConfig,
+    adapter_class=None,
+    trainer_class=PSDTrainer
 )
 
 ModelRegistry.register_model(

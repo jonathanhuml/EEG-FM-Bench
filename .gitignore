@@ -19,3 +19,17 @@ data.lock
 *.pt
 *.ckpt
 *.pth
+
+# Generated data / run artifacts
+assets/data/
+assets/run/
+assets/weights/
+
+# Visualizations — keep images and result tables, ignore everything else
+assets/vis/*
+!assets/vis/**/*.png
+!assets/vis/**/*.jpg
+!assets/vis/**/*.svg
+!assets/vis/**/*.html
+!assets/vis/**/*.csv
+!assets/vis/**/*.xlsx

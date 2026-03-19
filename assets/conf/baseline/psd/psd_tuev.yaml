@@ -1,0 +1,72 @@
+# PSD — single-task frozen-feature baseline on TUEV
+# Table 4 reproduction: avg_pool head, freeze_encoder=true (no-op), 256 Hz
+#
+# WelchPSDEncoder is parameter-free: it computes log-power spectra via rfft.
+# Only the classification head is trained.
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/psd/psd_tuev.yaml model_type=psd
+
+seed: 42
+master_port: 51203
+multitask: false
+model_type: 'psd'
+fs: 256
+
+data:
+  batch_size: 64
+  num_workers: 2
+  datasets:
+    tuev: 'finetune'
+
+model:
+  # Welch PSD parameters
+  nperseg: 256       # window length in samples (256 = 1 s at 256 Hz)
+  noverlap: null     # null → nperseg // 2 (50% overlap)
+  # Frequency band filter (Hz).  null = keep all bins.
+  fmin: 1.0
+  fmax: 45.0
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+    attn_n_head: 4
+    attn_head_dim: 64
+    fusion_mode: 'dual'
+    fusion_n_head: 4
+    fusion_head_dim: 64
+    fusion_use_rope: true
+    fusion_rope_theta: 10000.0
+    fusion_max_seq_len: 1024
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0   # encoder has no parameters
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true    # no-op for PSD, kept for framework consistency
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'psd_tuev'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['psd', 'tuev', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10

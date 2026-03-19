@@ -1,0 +1,8 @@
+# TUEV preprocessing at 256 Hz
+# Used by ZUNA and BENDR (both operate at 256 Hz)
+fs: 256
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 6
+pretrain_datasets: []
+finetune_datasets:
+  tuev: 'finetune'

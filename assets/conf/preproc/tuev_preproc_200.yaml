@@ -1,0 +1,8 @@
+# TUEV preprocessing at 200 Hz
+# Used by BIOT (operates at 200 Hz)
+fs: 200
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 6
+pretrain_datasets: []
+finetune_datasets:
+  tuev: 'finetune'
