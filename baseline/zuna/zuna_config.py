@@ -44,6 +44,11 @@ class ZunaTrainingArgs(BaseTrainingArgs):
     use_amp: bool = False
     freeze_encoder: bool = True     # Zuna encoder is always frozen
 
+    # Embedding cache — pre-compute encoder output once, train classifier on disk cache
+    cache_features: bool = False
+    features_cache_dir: Optional[str] = None  # path to save/load cached embeddings
+    precompute_batch_size: int = 8            # batch size used only during precomputation
+
 
 class ZunaLoggingArgs(BaseLoggingArgs):
     """ZUNA logging configuration."""

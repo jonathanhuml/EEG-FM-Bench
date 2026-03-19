@@ -11,8 +11,8 @@ multitask: true    # single shared model (unified training path)
 model_type: 'zuna'
 
 data:
-  batch_size: 32
-  num_workers: 2
+  batch_size: 256   # large batch is fine — only the MLP head trains on cached features
+  num_workers: 4
   datasets:
     tuev: 'finetune'
 
@@ -41,14 +41,14 @@ model:
   t_sne: false  # set to true when running plot_vis.py
 
 training:
-  max_epochs: 50
+  max_epochs: 100
   weight_decay: 0.01
   max_grad_norm: 1.0
 
   lr_schedule: 'cosine'
   max_lr: 4e-4
   encoder_lr_scale: 0.0   # encoder is frozen; this has no effect
-  warmup_epochs: 5
+  warmup_epochs: 3
   warmup_scale: 1e-2
   pct_start: 0.2
   min_lr: 4e-6
@@ -59,11 +59,16 @@ training:
   lora:
     use_lora: false
 
+  # Embedding cache — pre-compute encoder output once, train only the MLP head
+  cache_features: true
+  features_cache_dir: 'assets/data/cache/zuna_tuev'
+  precompute_batch_size: 8   # batch size used during one-time encoder precomputation
+
 logging:
   experiment_name: 'zuna_tuev'
   run_dir: 'assets/run'
   use_cloud: false
   offline: false
-  tags: ['zuna', 'tuev', 'frozen', 'avg_pool', 'single_task']
+  tags: ['zuna', 'tuev', 'frozen', 'avg_pool', 'single_task', 'cached']
   log_step_interval: 10
   ckpt_interval: 10
