@@ -156,14 +156,26 @@ def main():
     )
     parser.add_argument('--methods', nargs='*', default=['psd', 'zuna', 'bendr', 'biot'],
                         help='Methods to include when auto-discovering (default: all four)')
-    parser.add_argument('--run-dir', default='assets/run/log/baseline',
-                        help='Base directory for log auto-discovery')
+    parser.add_argument('--run-dir', default=None,
+                        help='Base log directory, e.g. assets/run/avg_pool/log/baseline. '
+                             'If omitted, defaults to assets/run/log/baseline.')
+    parser.add_argument('--run-tag', default=None,
+                        help='Experiment tag used with --run-tag in the benchmark script '
+                             '(sets run-dir to assets/run/<TAG>/log/baseline).')
     parser.add_argument('--test', action='store_true',
                         help='Also plot test curves as dashed lines')
     parser.add_argument('--out', default='assets/vis/training_curves/balanced_acc.png',
                         help='Output image path')
     parser.add_argument('--dataset', default='TUEV')
     args = parser.parse_args()
+
+    # Resolve run directory
+    run_dir = args.run_dir
+    if run_dir is None:
+        if args.run_tag:
+            run_dir = f'assets/run/{args.run_tag}/log/baseline'
+        else:
+            run_dir = 'assets/run/log/baseline'
 
     if args.logs:
         method_logs = {}
@@ -173,7 +185,7 @@ def main():
     else:
         method_logs = {}
         for method in args.methods:
-            log = _latest_log(method, args.run_dir)
+            log = _latest_log(method, run_dir)
             if log:
                 method_logs[method] = log
                 print(f"[auto] {method}: {log}")

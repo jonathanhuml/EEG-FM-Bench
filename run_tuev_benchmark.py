@@ -276,24 +276,39 @@ def _extract_test_metrics(output: str, model_type: str) -> dict[str, float]:
 
     The AbstractTrainer logs lines such as:
       INFO  test tuev/01_tcp_ar/balanced_acc: 0.850, tuev/01_tcp_ar/f1_weighted: 0.847
+    Also parses PARAM_COUNT lines:
+      INFO  PARAM_COUNT encoder=172000000 classifier=45678 total=... trainable=...
     """
     metrics: dict[str, float] = {}
+
+    # Parse test metrics
     pattern = re.compile(r"test\s+(.*)")
     matches = pattern.findall(output)
     if not matches:
         logger.warning(f"[{model_type}] No test metrics found in output.")
-        return metrics
-    last_line = matches[-1]
-    for kv in last_line.split(","):
-        kv = kv.strip()
-        if ":" not in kv:
-            continue
-        k, _, v = kv.partition(":")
-        leaf = k.strip().split("/")[-1]
-        try:
-            metrics[leaf] = float(v.strip())
-        except ValueError:
-            pass
+    else:
+        last_line = matches[-1]
+        for kv in last_line.split(","):
+            kv = kv.strip()
+            if ":" not in kv:
+                continue
+            k, _, v = kv.partition(":")
+            leaf = k.strip().split("/")[-1]
+            try:
+                metrics[leaf] = float(v.strip())
+            except ValueError:
+                pass
+
+    # Parse parameter counts
+    param_pattern = re.compile(
+        r"PARAM_COUNT\s+encoder=(\d+)\s+classifier=(\d+)\s+total=(\d+)\s+trainable=(\d+)"
+    )
+    param_match = param_pattern.search(output)
+    if param_match:
+        metrics["encoder_params"]    = int(param_match.group(1))
+        metrics["classifier_params"] = int(param_match.group(2))
+        metrics["trainable_params"]  = int(param_match.group(4))
+
     return metrics
 
 
@@ -330,6 +345,19 @@ def patch_yaml_inplace(yaml_path: str, key_path: str, value: str) -> None:
     path.write_text("\n".join(new_lines) + "\n")
 
 
+HEAD_TYPE_OVERRIDES: dict[str, list[str]] = {
+    "avg_pool":       ["model.classifier_head.head_type=avg_pool"],
+    "attention_pool": ["model.classifier_head.head_type=attention_pool"],
+    "flatten_mlp":    ["model.classifier_head.head_type=flatten_mlp"],
+    "time_first":     ["model.classifier_head.head_type=dual_stream_fusion",
+                       "model.classifier_head.fusion_mode=time_first"],
+    "channel_first":  ["model.classifier_head.head_type=dual_stream_fusion",
+                       "model.classifier_head.fusion_mode=channel_first"],
+    "dual":           ["model.classifier_head.head_type=dual_stream_fusion",
+                       "model.classifier_head.fusion_mode=dual"],
+}
+
+
 def run_model(
     model_type: str,
     port: int,
@@ -337,6 +365,8 @@ def run_model(
     bendr_conv_ckpt: Optional[str] = None,
     biot_ckpt: Optional[str] = None,
     auto_download: bool = True,
+    run_tag: Optional[str] = None,
+    head_type: Optional[str] = None,
 ) -> dict[str, float]:
     """Train one model and return its final test metrics."""
     logger.info("-" * 60)
@@ -345,6 +375,17 @@ def run_model(
 
     conf = MODEL_CONFIGS[model_type]
     extra: list[str] = []
+
+    # Experiment organisation
+    if run_tag:
+        extra.append(f"logging.run_dir=assets/run/{run_tag}")
+
+    # Classifier head override
+    if head_type:
+        if head_type not in HEAD_TYPE_OVERRIDES:
+            raise ValueError(f"Unknown head type '{head_type}'. "
+                             f"Choose from: {list(HEAD_TYPE_OVERRIDES)}")
+        extra.extend(HEAD_TYPE_OVERRIDES[head_type])
 
     if model_type == "bendr":
         if not bendr_ctx_ckpt and not bendr_conv_ckpt and auto_download:
@@ -375,6 +416,9 @@ def run_model(
     else:
         logger.warning(f"[{model_type}] Could not parse test metrics; check log files.")
     return metrics
+
+
+
 
 
 # ── Visualization ──────────────────────────────────────────────────────────────
@@ -426,26 +470,40 @@ def run_tsne_visualization(model_type: str) -> None:
 
 # ── Results table ─────────────────────────────────────────────────────────────
 
-def print_results_table(all_results: dict[str, dict[str, float]]) -> None:
+def print_results_table(
+    all_results: dict[str, dict[str, float]],
+    head_type: Optional[str] = None,
+    run_tag: Optional[str] = None,
+) -> None:
     """Print a comparison table similar to Table 4 of the paper."""
-    header = f"\n{'═'*65}"
+    head_label = head_type or "yaml default"
+    tag_label  = run_tag   or "assets/run"
+    W = 80
+    header = f"\n{'═'*W}"
     print(header)
     print("  TUEV — 6-class epileptiform event classification")
-    print("  Single-task · Frozen backbone · Avg-pool head")
-    print(f"{'═'*65}")
-    print(f"  {'Method':<22}  {'Bal. Acc':>10}  {'F1 weighted':>12}")
-    print(f"  {'-'*59}")
+    print(f"  Single-task · Frozen backbone · Head: {head_label} · Run: {tag_label}")
+    print(f"{'═'*W}")
+    print(f"  {'Method':<10}  {'Bal. Acc':>10}  {'F1':>8}  {'Clf params':>12}  {'Enc params':>12}  {'Trainable':>12}")
+    print(f"  {'-'*(W-2)}")
     order = ["PSD", "BENDR", "BIOT", "ZUNA"]
     for name in order:
         m = all_results.get(name)
         if m is None:
             continue
-        bal = m.get("balanced_acc", float("nan"))
-        f1w = m.get("f1_weighted",  float("nan"))
-        print(f"  {name:<22}  {bal:>10.4f}  {f1w:>12.4f}")
+        bal  = m.get("balanced_acc",      float("nan"))
+        f1   = m.get("f1",                float("nan"))
+        clf  = m.get("classifier_params", float("nan"))
+        enc  = m.get("encoder_params",    float("nan"))
+        trai = m.get("trainable_params",  float("nan"))
+
+        def fmt_p(v):
+            return f"{int(v):,}" if not (isinstance(v, float) and v != v) else "n/a"
+
+        print(f"  {name:<10}  {bal:>10.4f}  {f1:>8.4f}  {fmt_p(clf):>12}  {fmt_p(enc):>12}  {fmt_p(trai):>12}")
     print(header)
     print("  Notes:")
-    print("    PSD = log-power rfft encoder, only head trained.")
+    print("    PSD = Welch log-power encoder, only head trained.")
     print("    BENDR/BIOT without pretrained weights = frozen random encoder.")
     print("    Supply --bendr-ctx-ckpt / --biot-ckpt (or use --no-auto-download)")
     print("    to control whether pretrained weights are used.")
@@ -479,6 +537,14 @@ def parse_args() -> argparse.Namespace:
                    help="Path to pretrained BIOT encoder checkpoint (.ckpt).")
     p.add_argument("--gpu", default=None, metavar="ID",
                    help="GPU device index to use, e.g. --gpu 2 (sets CUDA_VISIBLE_DEVICES).")
+    p.add_argument("--run-tag", default=None, metavar="TAG",
+                   help="Experiment tag for output organisation. Logs go to "
+                        "assets/run/<TAG>/log/... (default: assets/run/).")
+    p.add_argument("--head-type", default=None,
+                   choices=list(HEAD_TYPE_OVERRIDES),
+                   help="Classifier head type to use for all models, overriding the yaml. "
+                        "Options: avg_pool, attention_pool, flatten_mlp, time_first, "
+                        "channel_first, dual.")
     return p.parse_args()
 
 
@@ -520,6 +586,8 @@ def main() -> None:
                     bendr_conv_ckpt=args.bendr_conv_ckpt,
                     biot_ckpt=args.biot_ckpt,
                     auto_download=auto_download,
+                    run_tag=args.run_tag,
+                    head_type=args.head_type,
                 )
                 all_results[model.upper()] = m
             except RuntimeError as exc:
@@ -540,7 +608,7 @@ def main() -> None:
                 logger.warning(f"Visualisation failed for {model}: {exc}")
 
     # ── Results table ─────────────────────────────────────────────────────────
-    print_results_table(all_results)
+    print_results_table(all_results, head_type=args.head_type, run_tag=args.run_tag)
 
 
 if __name__ == "__main__":

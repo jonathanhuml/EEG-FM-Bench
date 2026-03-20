@@ -565,6 +565,9 @@ class ZunaTrainer(AbstractTrainer):
         test_ds  = self._load_cached_dataset(cache_dir, 'test')
 
         # 5. Replace self.model with classifier-only ZunaCachedModel
+        # Log param counts before swapping model (encoder still accessible via raw_model)
+        self.log_model_param_counts()
+
         cached_model = ZunaCachedModel(raw_model.classifier)
         cached_model = cached_model.to(self.device)
         cached_model = self.maybe_wrap_ddp(cached_model, find_unused_parameters=False)

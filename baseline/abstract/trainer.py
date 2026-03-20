@@ -1381,12 +1381,31 @@ class AbstractTrainer(ABC):
             logger.info("Using unified/multitask training pattern - single shared model")
             self.run_separate_training()
 
+    def log_model_param_counts(self):
+        """Log encoder, classifier head, and total parameter counts."""
+        if not get_is_master():
+            return
+        raw = self.model.module if hasattr(self.model, 'module') else self.model
+
+        total     = sum(p.numel() for p in raw.parameters())
+        trainable = sum(p.numel() for p in raw.parameters() if p.requires_grad)
+
+        encoder_params    = sum(p.numel() for p in raw.encoder.parameters())    if hasattr(raw, 'encoder')    else 0
+        classifier_params = sum(p.numel() for p in raw.classifier.parameters()) if hasattr(raw, 'classifier') else 0
+
+        logger.info(
+            f"PARAM_COUNT encoder={encoder_params} "
+            f"classifier={classifier_params} "
+            f"total={total} trainable={trainable}"
+        )
+
     def run_unified_training(self):
         """Original unified training loop for multitask or single dataset training."""
         torch.distributed.barrier()
 
         self.collect_dataset_info(mixed=True)
         model = self.setup_model()
+        self.log_model_param_counts()
 
         train_loader, train_sampler = self.create_dataloader(datasets.Split.TRAIN)
         valid_loaders, _ = self.create_dataloader(datasets.Split.VALIDATION)
@@ -1435,6 +1454,7 @@ class AbstractTrainer(ABC):
 
             self.collect_dataset_info(mixed=False, ds_name=ds_name)
             model = self.setup_model()
+            self.log_model_param_counts()
 
             train_loader, train_sampler = self.create_single_dataloader(ds_name, ds_config, datasets.Split.TRAIN)
             valid_loader, _ = self.create_single_dataloader(ds_name, ds_config, datasets.Split.VALIDATION)
