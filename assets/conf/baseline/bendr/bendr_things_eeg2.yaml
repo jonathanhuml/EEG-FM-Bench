@@ -1,0 +1,81 @@
+# BENDR — single-task frozen-backbone on THINGS-EEG2
+# Binary classification: non-target vs target (RSVP paradigm)
+#
+# max_channels=20: pretrained conv encoder was trained with 20 channels.
+# The conv_router projects THINGS-EEG2's 64 channels → 20 before the encoder.
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/bendr/bendr_things_eeg2.yaml model_type=bendr
+
+seed: 42
+master_port: 51301
+multitask: false
+model_type: 'bendr'
+fs: 256
+
+data:
+  batch_size: 64
+  num_workers: 2
+  datasets:
+    things_eeg_2: 'finetune'
+
+model:
+  pretrained_path: null        # contextualiser checkpoint; auto-downloaded by benchmark script
+  pretrained_conv_path: null   # conv-encoder checkpoint
+
+  emb_dim: 512
+  conv_width: [3, 2, 2, 2, 2, 2]
+  conv_stride: [3, 2, 2, 2, 2, 2]
+  conv_drop_rate: 0.0
+  conv_proj_head: false
+
+  ffn_dim: 3076
+  heads: 8
+  context_layers: 8
+  context_drop_rate: 0.15
+  activation: 'gelu'
+  position_encoder: 25
+  layer_drop: 0.0
+
+  mask_p_t: 0.1
+  mask_p_c: 0.004
+  mask_t_span: 6
+
+  max_channels: 20   # pretrained encoder constraint; conv_router maps 64 → 20
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 1e-4
+  encoder_lr_scale: 0.0
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 1e-6
+
+  freeze_encoder: true
+  use_amp: true
+  finetuning: true
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'bendr_things_eeg2'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['bendr', 'things_eeg2', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10
