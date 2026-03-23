@@ -68,8 +68,8 @@ class ThingsEEG2Config(EEGConfig):
     valid_ratio: float = 0.20
     test_ratio: float = 0.20
     wnd_div_sec: int = 5
-    suffix_path: str = 'THINGS-EEG-2'
-    scan_sub_dir: str = "data"
+    suffix_path: str = 'things-eeg2'
+    scan_sub_dir: str = 'raw-eeg'
 
     n_test_seq = 204
     n_train_seq = 840

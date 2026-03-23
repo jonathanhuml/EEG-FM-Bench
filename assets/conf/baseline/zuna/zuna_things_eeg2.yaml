@@ -1,0 +1,64 @@
+# ZUNA — single-task frozen-backbone on THINGS-EEG2
+# Binary classification: non-target vs target (RSVP paradigm)
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/zuna/zuna_things_eeg2.yaml model_type=zuna
+
+seed: 42
+master_port: 51300
+multitask: true
+model_type: 'zuna'
+
+data:
+  batch_size: 256
+  num_workers: 4
+  datasets:
+    things_eeg_2: 'finetune'
+
+model:
+  pretrained_repo: 'Zyphra/ZUNA'
+  pretrained_weights_file: 'model-00001-of-00001.safetensors'
+  pretrained_config_file: 'config.json'
+
+  n_fine: 32
+  encoder_output_dim: 32
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+
+  t_sne: false
+
+training:
+  max_epochs: 100
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0
+  warmup_epochs: 3
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+  cache_features: true
+  features_cache_dir: 'assets/data/cache/zuna_things_eeg2'
+  precompute_batch_size: 8
+
+logging:
+  experiment_name: 'zuna_things_eeg2'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['zuna', 'things_eeg2', 'frozen', 'avg_pool', 'single_task', 'cached']
+  log_step_interval: 10
+  ckpt_interval: 10

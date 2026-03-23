@@ -1115,10 +1115,10 @@ class AbstractTrainer(ABC):
     def train_epoch(self, train_loader: DataLoader, train_sampler: DistributedGroupBatchSampler):
         self.model.train()
         if self.cfg.training.freeze_encoder:
-            if torch.distributed.is_available() and torch.distributed.is_initialized():
-                self.model.module.encoder.eval()
-            else:
-                self.model.encoder.eval()
+            raw = self.model.module if (torch.distributed.is_available() and torch.distributed.is_initialized()) else self.model
+            for attr in ('encoder', 'contextualizer'):
+                if hasattr(raw, attr):
+                    getattr(raw, attr).eval()
 
         train_sampler.set_epoch(self.epoch)
 
@@ -1405,7 +1405,6 @@ class AbstractTrainer(ABC):
 
         self.collect_dataset_info(mixed=True)
         model = self.setup_model()
-        self.log_model_param_counts()
 
         train_loader, train_sampler = self.create_dataloader(datasets.Split.TRAIN)
         valid_loaders, _ = self.create_dataloader(datasets.Split.VALIDATION)
@@ -1414,8 +1413,9 @@ class AbstractTrainer(ABC):
         if not isinstance(train_loader, DataLoader) or not isinstance(train_sampler, DistributedGroupBatchSampler):
             raise TypeError('train_loader and train_sampler must be of type DataLoader')
 
-        # Setup optimizer and scheduler
+        # Setup optimizer and scheduler (freeze happens here)
         self.setup_optimizer_and_scheduler(model, train_loader)
+        self.log_model_param_counts()
 
         logger.info(f"Training setup complete. Starting {self.cfg.training.max_epochs} epochs...")
 
@@ -1454,7 +1454,6 @@ class AbstractTrainer(ABC):
 
             self.collect_dataset_info(mixed=False, ds_name=ds_name)
             model = self.setup_model()
-            self.log_model_param_counts()
 
             train_loader, train_sampler = self.create_single_dataloader(ds_name, ds_config, datasets.Split.TRAIN)
             valid_loader, _ = self.create_single_dataloader(ds_name, ds_config, datasets.Split.VALIDATION)
@@ -1467,8 +1466,9 @@ class AbstractTrainer(ABC):
             if not isinstance(test_loader, DataLoader):
                 raise TypeError('test_loader must be of type DataLoader')
 
-            # Setup optimizer and scheduler
+            # Setup optimizer and scheduler (freeze happens here)
             self.setup_optimizer_and_scheduler(model, train_loader)
+            self.log_model_param_counts()
 
             logger.info(f"Per dataset training setup complete for {ds_name}. ")
             logger.info(f"Starting {self.cfg.training.max_epochs} epochs...")

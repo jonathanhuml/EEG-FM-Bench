@@ -1,0 +1,12 @@
+# THINGS-EEG2 preprocessing at 256 Hz
+# Used by PSD, ZUNA, and BENDR (all operate at 256 Hz)
+#
+# Set EEGFM_DATABASE_RAW_ROOT=/data/datasets/bci/eeg2image before running.
+# Raw files expected at: ${EEGFM_DATABASE_RAW_ROOT}/things-eeg2/raw-eeg/sub-XX/ses-XX/
+# Behavioral labels at:  ${EEGFM_DATABASE_RAW_ROOT}/things-eeg2/behaviour/sub-XX/ses-XX/behavioral_data.npy
+fs: 256
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 6
+pretrain_datasets: []
+finetune_datasets:
+  things_eeg_2: 'finetune'

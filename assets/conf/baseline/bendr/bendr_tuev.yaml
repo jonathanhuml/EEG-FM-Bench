@@ -47,7 +47,7 @@ model:
   mask_p_c: 0.004
   mask_t_span: 6
 
-  max_channels: 22   # TUEV uses 21 channels; 22 gives headroom
+  max_channels: 20   # pretrained encoder was trained with 20 channels
 
   classifier_head:
     head_type: 'dual_stream_fusion'

@@ -1,0 +1,10 @@
+# THINGS-EEG2 preprocessing at 200 Hz
+# Used by BIOT (operates at 200 Hz)
+#
+# Set EEGFM_DATABASE_RAW_ROOT=/data/datasets/bci/eeg2image before running.
+fs: 200
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 6
+pretrain_datasets: []
+finetune_datasets:
+  things_eeg_2: 'finetune'

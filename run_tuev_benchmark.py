@@ -346,15 +346,20 @@ def patch_yaml_inplace(yaml_path: str, key_path: str, value: str) -> None:
 
 
 HEAD_TYPE_OVERRIDES: dict[str, list[str]] = {
-    "avg_pool":       ["model.classifier_head.head_type=avg_pool"],
-    "attention_pool": ["model.classifier_head.head_type=attention_pool"],
-    "flatten_mlp":    ["model.classifier_head.head_type=flatten_mlp"],
-    "time_first":     ["model.classifier_head.head_type=dual_stream_fusion",
-                       "model.classifier_head.fusion_mode=time_first"],
-    "channel_first":  ["model.classifier_head.head_type=dual_stream_fusion",
-                       "model.classifier_head.fusion_mode=channel_first"],
-    "dual":           ["model.classifier_head.head_type=dual_stream_fusion",
-                       "model.classifier_head.fusion_mode=dual"],
+    "avg_pool":              ["model.classifier_head.head_type=avg_pool"],
+    "attention_pool":        ["model.classifier_head.head_type=attention_pool"],
+    "flatten_mlp":           ["model.classifier_head.head_type=flatten_mlp"],
+    "time_first":            ["model.classifier_head.head_type=dual_stream_fusion",
+                              "model.classifier_head.fusion_mode=time_first"],
+    "channel_first":         ["model.classifier_head.head_type=dual_stream_fusion",
+                              "model.classifier_head.fusion_mode=channel_first"],
+    "dual":                  ["model.classifier_head.head_type=dual_stream_fusion",
+                              "model.classifier_head.fusion_mode=dual"],
+    "linear_pool":           ["model.classifier_head.head_type=avg_pool",
+                              "model.classifier_head.hidden_dims=[]"],
+    "linear_pool_time_first":["model.classifier_head.head_type=dual_stream_fusion",
+                              "model.classifier_head.fusion_mode=time_first",
+                              "model.classifier_head.hidden_dims=[]"],
 }
 
 
@@ -537,6 +542,10 @@ def parse_args() -> argparse.Namespace:
                    help="Path to pretrained BIOT encoder checkpoint (.ckpt).")
     p.add_argument("--gpu", default=None, metavar="ID",
                    help="GPU device index to use, e.g. --gpu 2 (sets CUDA_VISIBLE_DEVICES).")
+    p.add_argument("--port-base", type=int, default=29499, metavar="PORT",
+                   help="Base port for torchrun rendezvous. Models use base, base+1, base+2, base+3. "
+                        "Use different values when running multiple benchmark instances in parallel "
+                        "(default: 29499).")
     p.add_argument("--run-tag", default=None, metavar="TAG",
                    help="Experiment tag for output organisation. Logs go to "
                         "assets/run/<TAG>/log/... (default: assets/run/).")
@@ -575,7 +584,8 @@ def main() -> None:
         logger.info("STEP 2: Training models")
         logger.info("=" * 60)
 
-        ports = {"psd": 29499, "zuna": 29500, "bendr": 29501, "biot": 29502}
+        base = args.port_base
+        ports = {"psd": base, "zuna": base + 1, "bendr": base + 2, "biot": base + 3}
 
         for model in args.models:
             try:
