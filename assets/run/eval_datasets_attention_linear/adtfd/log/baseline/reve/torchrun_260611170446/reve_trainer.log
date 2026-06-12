@@ -1,0 +1,27 @@
+0:INFO    26-06-11 17:04:46.725 +00:00:02 - trainer.py:220 - log dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/reve/torchrun_260611170446, checkpoint dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/reve/torchrun_260611170446
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:222 - Starting reve training with 1 dataset(s): ['adftd']
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1370 - Starting reve training with configuration:
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1371 -   - Datasets: 1 ['adftd']
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1372 -   - Multitask: True
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1373 -   - Max epochs: 50
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1374 -   - Output directory: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/reve/torchrun_260611170446 -- /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/reve/torchrun_260611170446
+0:INFO    26-06-11 17:04:46.726 +00:00:02 - trainer.py:1378 - Using separate models training pattern - one model per dataset
+0:INFO    26-06-11 17:04:46.734 +00:00:02 - trainer.py:509 - Collecting dataset information for multitask ...
+0:INFO    26-06-11 17:04:46.751 +00:00:02 - trainer.py:520 - Dataset adftd - finetune for mixed set
+0:INFO    26-06-11 17:04:46.751 +00:00:02 - reve_trainer.py:104 - Setting up Reve model architecture...
+0:INFO    26-06-11 17:04:47.091 +00:00:02 - reve_trainer.py:133 - Created multi-head classifier with heads: ['adftd']
+0:INFO    26-06-11 17:04:47.091 +00:00:02 - reve_trainer.py:163 - Loading pretrained weights from: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/weights/reve/model.safetensors
+0:INFO    26-06-11 17:04:47.359 +00:00:02 - reve_trainer.py:211 - Successfully loaded pretrained encoder weights
+0:INFO    26-06-11 17:04:47.360 +00:00:02 - reve_trainer.py:140 - Model setup complete for ['adftd']
+0:INFO    26-06-11 17:04:47.478 +00:00:02 - trainer.py:581 - Creating main training dataloader...
+0:INFO    26-06-11 17:04:47.573 +00:00:03 - adapter.py:73 - Added montage adftd/10_20 for dataset adftd: 19 channels
+0:INFO    26-06-11 17:04:47.573 +00:00:03 - adapter.py:80 - reve: Dataset Adapter analysis complete:
+0:INFO    26-06-11 17:04:47.573 +00:00:03 - adapter.py:81 -   - Total samples: 4743
+0:INFO    26-06-11 17:04:47.573 +00:00:03 - adapter.py:82 -   - Available montages: ['adftd/10_20']
+0:INFO    26-06-11 17:04:47.573 +00:00:03 - adapter.py:84 -   - adftd/10_20: 19 channels
+0:INFO    26-06-11 17:04:48.091 +00:00:03 - trainer.py:581 - Creating main training dataloader...
+0:INFO    26-06-11 17:04:48.134 +00:00:03 - adapter.py:73 - Added montage adftd/10_20 for dataset adftd: 19 channels
+0:INFO    26-06-11 17:04:48.134 +00:00:03 - adapter.py:80 - reve: Dataset Adapter analysis complete:
+0:INFO    26-06-11 17:04:48.134 +00:00:03 - adapter.py:81 -   - Total samples: 1115
+0:INFO    26-06-11 17:04:48.134 +00:00:03 - adapter.py:82 -   - Available montages: ['adftd/10_20']
+0:INFO    26-06-11 17:04:48.134 +00:00:03 - adapter.py:84 -   - adftd/10_20: 19 channels

@@ -1,0 +1,17 @@
+0:INFO    26-06-11 17:03:44.327 +00:00:01 - trainer.py:220 - log dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/zuna/torchrun_260611170344, checkpoint dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/zuna/torchrun_260611170344
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:222 - Starting zuna training with 1 dataset(s): ['adftd']
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1370 - Starting zuna training with configuration:
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1371 -   - Datasets: 1 ['adftd']
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1372 -   - Multitask: True
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1373 -   - Max epochs: 50
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1374 -   - Output directory: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/zuna/torchrun_260611170344 -- /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/zuna/torchrun_260611170344
+0:INFO    26-06-11 17:03:44.328 +00:00:01 - trainer.py:1378 - Using separate models training pattern - one model per dataset
+0:INFO    26-06-11 17:03:44.333 +00:00:01 - trainer.py:509 - Collecting dataset information for multitask ...
+0:INFO    26-06-11 17:03:44.352 +00:00:01 - trainer.py:520 - Dataset adftd - finetune for mixed set
+0:INFO    26-06-11 17:03:47.722 +00:00:05 - zuna_trainer.py:490 - Setting up ZUNA from AY2latent checkpoint /data/groups/bci/checkpoints/bci/ZUNA2_5e-4/checkpoints/0000052500
+0:INFO    26-06-11 17:03:52.601 +00:00:10 - zuna_trainer.py:510 - ZUNA encoder loaded: latent_dim=32, params=172,101,664
+0:INFO    26-06-11 17:03:52.638 +00:00:10 - zuna_trainer.py:114 - ZUNA: built positions for adftd/10_20 (19 ch)
+0:INFO    26-06-11 17:03:52.639 +00:00:10 - zuna_trainer.py:547 - ZUNA classifier built for: ['adftd']
+0:INFO    26-06-11 17:03:53.203 +00:00:10 - zuna_trainer.py:748 - [cache] Cache directory: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/feature_cache/zuna_adtfd
+0:INFO    26-06-11 17:03:53.204 +00:00:10 - zuna_trainer.py:611 - [cache] Encoding 'train' split …
+0:INFO    26-06-11 17:04:15.485 +00:00:32 - zuna_trainer.py:638 -   [train] step 0 / 4743

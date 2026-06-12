@@ -1,0 +1,972 @@
+0:INFO    26-06-11 16:40:28.351 +00:00:01 - trainer.py:220 - log dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/biot/torchrun_260611164028, checkpoint dir: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/biot/torchrun_260611164028
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:222 - Starting biot training with 1 dataset(s): ['adftd']
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1370 - Starting biot training with configuration:
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1371 -   - Datasets: 1 ['adftd']
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1372 -   - Multitask: True
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1373 -   - Max epochs: 50
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1374 -   - Output directory: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/log/baseline/biot/torchrun_260611164028 -- /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/biot/torchrun_260611164028
+0:INFO    26-06-11 16:40:28.354 +00:00:01 - trainer.py:1378 - Using separate models training pattern - one model per dataset
+0:INFO    26-06-11 16:40:28.359 +00:00:01 - trainer.py:509 - Collecting dataset information for multitask ...
+0:INFO    26-06-11 16:40:28.377 +00:00:01 - trainer.py:520 - Dataset adftd - finetune for mixed set
+0:INFO    26-06-11 16:40:28.377 +00:00:01 - biot_trainer.py:113 - Setting up BIOT model architecture...
+0:INFO    26-06-11 16:40:28.377 +00:00:01 - biot_trainer.py:117 - Target channels: 18
+0:INFO    26-06-11 16:40:28.459 +00:00:01 - biot_trainer.py:135 - Created dynamic convolution router: ['adftd']
+0:INFO    26-06-11 16:40:28.459 +00:00:01 - biot_trainer.py:155 - Created multi-head classifier with heads: ['adftd']
+0:INFO    26-06-11 16:40:28.460 +00:00:01 - biot_trainer.py:190 - Loading pretrained weights from: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/weights/biot/EEG-six-datasets-18-channels.ckpt
+0:INFO    26-06-11 16:40:28.493 +00:00:01 - biot_trainer.py:201 - Successfully loaded pretrained encoder weights
+0:INFO    26-06-11 16:40:28.508 +00:00:01 - biot_trainer.py:178 - Model setup complete for ['adftd']
+0:INFO    26-06-11 16:40:28.508 +00:00:01 - trainer.py:581 - Creating main training dataloader...
+0:INFO    26-06-11 16:40:30.160 +00:00:03 - trainer.py:581 - Creating main training dataloader...
+0:INFO    26-06-11 16:40:30.605 +00:00:03 - trainer.py:581 - Creating main training dataloader...
+0:INFO    26-06-11 16:40:31.030 +00:00:04 - trainer.py:722 - Encoder parameters frozen
+0:INFO    26-06-11 16:40:31.031 +00:00:04 - trainer.py:1396 - PARAM_COUNT encoder=3186706 classifier=1027 total=3188093 trainable=1387
+0:INFO    26-06-11 16:40:31.031 +00:00:04 - trainer.py:1420 - Training setup complete. Starting 50 epochs...
+0:INFO    26-06-11 16:40:54.067 +00:00:27 - trainer.py:1181 - train epoch: 0, step: 0, loss_ce: 2.14674e+01, acc: 0.250, grad_norm: 8.63964e+02, header_lr: 4.000000e-06
+0:INFO    26-06-11 16:40:54.248 +00:00:27 - trainer.py:1181 - train epoch: 0, step: 10, loss_ce: 1.35510e+01, acc: 0.312, grad_norm: 6.29834e+02, header_lr: 9.315436e-06
+0:INFO    26-06-11 16:40:54.427 +00:00:27 - trainer.py:1181 - train epoch: 0, step: 20, loss_ce: 9.82011e+00, acc: 0.312, grad_norm: 5.57029e+02, header_lr: 1.463087e-05
+0:INFO    26-06-11 16:40:54.615 +00:00:27 - trainer.py:1181 - train epoch: 0, step: 30, loss_ce: 1.17666e+01, acc: 0.062, grad_norm: 7.04220e+02, header_lr: 1.994631e-05
+0:INFO    26-06-11 16:40:54.808 +00:00:27 - trainer.py:1181 - train epoch: 0, step: 40, loss_ce: 1.42725e+01, acc: 0.219, grad_norm: 6.55402e+02, header_lr: 2.526174e-05
+0:INFO    26-06-11 16:40:54.985 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 50, loss_ce: 4.47031e+00, acc: 0.281, grad_norm: 1.98393e+02, header_lr: 3.057718e-05
+0:INFO    26-06-11 16:40:55.165 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 60, loss_ce: 9.10969e+00, acc: 0.312, grad_norm: 4.28125e+02, header_lr: 3.589262e-05
+0:INFO    26-06-11 16:40:55.344 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 70, loss_ce: 5.10397e+00, acc: 0.281, grad_norm: 1.77742e+02, header_lr: 4.120805e-05
+0:INFO    26-06-11 16:40:55.522 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 80, loss_ce: 3.42446e+00, acc: 0.281, grad_norm: 2.41667e+02, header_lr: 4.652349e-05
+0:INFO    26-06-11 16:40:55.698 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 90, loss_ce: 3.40688e+00, acc: 0.406, grad_norm: 2.74945e+02, header_lr: 5.183893e-05
+0:INFO    26-06-11 16:40:55.875 +00:00:28 - trainer.py:1181 - train epoch: 0, step: 100, loss_ce: 8.88087e+00, acc: 0.312, grad_norm: 3.77750e+02, header_lr: 5.715436e-05
+0:INFO    26-06-11 16:40:56.051 +00:00:29 - trainer.py:1181 - train epoch: 0, step: 110, loss_ce: 3.44216e+00, acc: 0.250, grad_norm: 2.16116e+02, header_lr: 6.246980e-05
+0:INFO    26-06-11 16:40:56.228 +00:00:29 - trainer.py:1181 - train epoch: 0, step: 120, loss_ce: 3.50676e+00, acc: 0.188, grad_norm: 1.71709e+02, header_lr: 6.778523e-05
+0:INFO    26-06-11 16:40:56.407 +00:00:29 - trainer.py:1181 - train epoch: 0, step: 130, loss_ce: 2.18960e+00, acc: 0.156, grad_norm: 1.37783e+02, header_lr: 7.310067e-05
+0:INFO    26-06-11 16:40:56.584 +00:00:29 - trainer.py:1181 - train epoch: 0, step: 140, loss_ce: 1.31464e+01, acc: 0.312, grad_norm: 4.32823e+02, header_lr: 7.841611e-05
+0:INFO    26-06-11 16:40:56.723 +00:00:29 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:19.652 +00:00:52 - trainer.py:1265 - adftd/eval epoch: 0, loss: 2.4861, acc: 0.324, balanced_acc: 0.293, cohen_kappa: -0.082, f1: 0.282
+0:INFO    26-06-11 16:41:19.652 +00:00:52 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:41.813 +00:01:14 - trainer.py:1265 - adftd/test epoch: 0, loss: 2.6574, acc: 0.401, balanced_acc: 0.339, cohen_kappa: 0.019, f1: 0.324
+0:INFO    26-06-11 16:41:41.878 +00:01:14 - trainer.py:1181 - train epoch: 1, step: 150, loss_ce: 1.42318e+01, acc: 0.250, grad_norm: 8.46113e+02, header_lr: 8.373154e-05
+0:INFO    26-06-11 16:41:42.053 +00:01:15 - trainer.py:1181 - train epoch: 1, step: 160, loss_ce: 2.22062e+00, acc: 0.219, grad_norm: 1.08681e+02, header_lr: 8.904698e-05
+0:INFO    26-06-11 16:41:42.230 +00:01:15 - trainer.py:1181 - train epoch: 1, step: 170, loss_ce: 3.19949e+00, acc: 0.250, grad_norm: 1.86151e+02, header_lr: 9.436242e-05
+0:INFO    26-06-11 16:41:42.413 +00:01:15 - trainer.py:1181 - train epoch: 1, step: 180, loss_ce: 1.52410e+00, acc: 0.250, grad_norm: 2.96502e+01, header_lr: 9.967785e-05
+0:INFO    26-06-11 16:41:42.626 +00:01:15 - trainer.py:1181 - train epoch: 1, step: 190, loss_ce: 2.55730e+00, acc: 0.281, grad_norm: 1.65851e+02, header_lr: 1.049933e-04
+0:INFO    26-06-11 16:41:42.823 +00:01:15 - trainer.py:1181 - train epoch: 1, step: 200, loss_ce: 2.08165e+00, acc: 0.156, grad_norm: 1.75853e+02, header_lr: 1.103087e-04
+0:INFO    26-06-11 16:41:43.002 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 210, loss_ce: 1.86254e+00, acc: 0.156, grad_norm: 1.12115e+02, header_lr: 1.156242e-04
+0:INFO    26-06-11 16:41:43.181 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 220, loss_ce: 2.54927e+00, acc: 0.312, grad_norm: 1.41257e+02, header_lr: 1.209396e-04
+0:INFO    26-06-11 16:41:43.359 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 230, loss_ce: 1.61048e+00, acc: 0.312, grad_norm: 6.97624e+01, header_lr: 1.262550e-04
+0:INFO    26-06-11 16:41:43.535 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 240, loss_ce: 1.92461e+00, acc: 0.344, grad_norm: 2.88498e+02, header_lr: 1.315705e-04
+0:INFO    26-06-11 16:41:43.712 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 250, loss_ce: 1.78565e+00, acc: 0.188, grad_norm: 2.52109e+02, header_lr: 1.368859e-04
+0:INFO    26-06-11 16:41:43.890 +00:01:16 - trainer.py:1181 - train epoch: 1, step: 260, loss_ce: 1.55697e+00, acc: 0.344, grad_norm: 1.56192e+02, header_lr: 1.422013e-04
+0:INFO    26-06-11 16:41:44.068 +00:01:17 - trainer.py:1181 - train epoch: 1, step: 270, loss_ce: 1.58670e+00, acc: 0.344, grad_norm: 1.68754e+02, header_lr: 1.475168e-04
+0:INFO    26-06-11 16:41:44.246 +00:01:17 - trainer.py:1181 - train epoch: 1, step: 280, loss_ce: 1.34983e+00, acc: 0.344, grad_norm: 2.26581e+02, header_lr: 1.528322e-04
+0:INFO    26-06-11 16:41:44.427 +00:01:17 - trainer.py:1181 - train epoch: 1, step: 290, loss_ce: 1.77108e+00, acc: 0.188, grad_norm: 2.85084e+02, header_lr: 1.581477e-04
+0:INFO    26-06-11 16:41:44.550 +00:01:17 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:44.926 +00:01:17 - trainer.py:1265 - adftd/eval epoch: 1, loss: 1.7744, acc: 0.432, balanced_acc: 0.402, cohen_kappa: 0.106, f1: 0.413
+0:INFO    26-06-11 16:41:44.926 +00:01:17 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:45.317 +00:01:18 - trainer.py:1265 - adftd/test epoch: 1, loss: 2.2833, acc: 0.385, balanced_acc: 0.333, cohen_kappa: 0.026, f1: 0.351
+0:INFO    26-06-11 16:41:45.394 +00:01:18 - trainer.py:1181 - train epoch: 2, step: 300, loss_ce: 1.34664e+00, acc: 0.312, grad_norm: 1.48553e+02, header_lr: 1.634631e-04
+0:INFO    26-06-11 16:41:45.570 +00:01:18 - trainer.py:1181 - train epoch: 2, step: 310, loss_ce: 1.45897e+00, acc: 0.406, grad_norm: 2.32673e+02, header_lr: 1.687785e-04
+0:INFO    26-06-11 16:41:45.747 +00:01:18 - trainer.py:1181 - train epoch: 2, step: 320, loss_ce: 1.30036e+00, acc: 0.312, grad_norm: 6.98655e+01, header_lr: 1.740940e-04
+0:INFO    26-06-11 16:41:45.925 +00:01:18 - trainer.py:1181 - train epoch: 2, step: 330, loss_ce: 1.30687e+00, acc: 0.375, grad_norm: 1.32099e+02, header_lr: 1.794094e-04
+0:INFO    26-06-11 16:41:46.104 +00:01:19 - trainer.py:1181 - train epoch: 2, step: 340, loss_ce: 1.11937e+00, acc: 0.469, grad_norm: 1.59348e+02, header_lr: 1.847248e-04
+0:INFO    26-06-11 16:41:46.281 +00:01:19 - trainer.py:1181 - train epoch: 2, step: 350, loss_ce: 1.34316e+00, acc: 0.219, grad_norm: 1.61793e+02, header_lr: 1.900403e-04
+0:INFO    26-06-11 16:41:46.458 +00:01:19 - trainer.py:1181 - train epoch: 2, step: 360, loss_ce: 2.86730e+00, acc: 0.406, grad_norm: 1.37992e+02, header_lr: 1.953557e-04
+0:INFO    26-06-11 16:41:46.636 +00:01:19 - trainer.py:1181 - train epoch: 2, step: 370, loss_ce: 1.22222e+00, acc: 0.500, grad_norm: 1.41898e+02, header_lr: 2.006711e-04
+0:INFO    26-06-11 16:41:46.813 +00:01:19 - trainer.py:1181 - train epoch: 2, step: 380, loss_ce: 1.27071e+00, acc: 0.594, grad_norm: 1.99627e+02, header_lr: 2.059866e-04
+0:INFO    26-06-11 16:41:46.992 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 390, loss_ce: 1.44410e+00, acc: 0.250, grad_norm: 1.68389e+02, header_lr: 2.113020e-04
+0:INFO    26-06-11 16:41:47.172 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 400, loss_ce: 3.34506e+00, acc: 0.312, grad_norm: 4.79332e+02, header_lr: 2.166174e-04
+0:INFO    26-06-11 16:41:47.353 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 410, loss_ce: 1.37448e+00, acc: 0.531, grad_norm: 1.74717e+02, header_lr: 2.219329e-04
+0:INFO    26-06-11 16:41:47.532 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 420, loss_ce: 1.37691e+00, acc: 0.438, grad_norm: 1.50594e+02, header_lr: 2.272483e-04
+0:INFO    26-06-11 16:41:47.711 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 430, loss_ce: 9.87228e-01, acc: 0.562, grad_norm: 2.49412e+01, header_lr: 2.325638e-04
+0:INFO    26-06-11 16:41:47.889 +00:01:20 - trainer.py:1181 - train epoch: 2, step: 440, loss_ce: 1.04610e+00, acc: 0.531, grad_norm: 1.22346e+02, header_lr: 2.378792e-04
+0:INFO    26-06-11 16:41:47.995 +00:01:21 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:48.374 +00:01:21 - trainer.py:1265 - adftd/eval epoch: 2, loss: 1.9402, acc: 0.543, balanced_acc: 0.492, cohen_kappa: 0.271, f1: 0.501
+0:INFO    26-06-11 16:41:48.374 +00:01:21 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:48.769 +00:01:21 - trainer.py:1265 - adftd/test epoch: 2, loss: 1.7577, acc: 0.432, balanced_acc: 0.383, cohen_kappa: 0.091, f1: 0.391
+0:INFO    26-06-11 16:41:48.861 +00:01:21 - trainer.py:1181 - train epoch: 3, step: 450, loss_ce: 1.06368e+00, acc: 0.438, grad_norm: 5.96824e+01, header_lr: 2.431946e-04
+0:INFO    26-06-11 16:41:49.039 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 460, loss_ce: 9.09974e-01, acc: 0.562, grad_norm: 6.94503e+01, header_lr: 2.485101e-04
+0:INFO    26-06-11 16:41:49.216 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 470, loss_ce: 9.03389e-01, acc: 0.594, grad_norm: 1.63252e+01, header_lr: 2.538255e-04
+0:INFO    26-06-11 16:41:49.395 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 480, loss_ce: 1.03425e+00, acc: 0.500, grad_norm: 7.32406e+01, header_lr: 2.591409e-04
+0:INFO    26-06-11 16:41:49.573 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 490, loss_ce: 1.31699e+00, acc: 0.438, grad_norm: 1.44127e+02, header_lr: 2.644564e-04
+0:INFO    26-06-11 16:41:49.751 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 500, loss_ce: 1.00973e+00, acc: 0.469, grad_norm: 1.03126e+02, header_lr: 2.697718e-04
+0:INFO    26-06-11 16:41:49.927 +00:01:22 - trainer.py:1181 - train epoch: 3, step: 510, loss_ce: 1.27283e+00, acc: 0.625, grad_norm: 1.22322e+02, header_lr: 2.750872e-04
+0:INFO    26-06-11 16:41:50.106 +00:01:23 - trainer.py:1181 - train epoch: 3, step: 520, loss_ce: 7.98370e-01, acc: 0.625, grad_norm: 1.64952e+01, header_lr: 2.804027e-04
+0:INFO    26-06-11 16:41:50.286 +00:01:23 - trainer.py:1181 - train epoch: 3, step: 530, loss_ce: 1.08740e+00, acc: 0.500, grad_norm: 8.45932e+01, header_lr: 2.857181e-04
+0:INFO    26-06-11 16:41:50.467 +00:01:23 - trainer.py:1181 - train epoch: 3, step: 540, loss_ce: 1.14591e+00, acc: 0.438, grad_norm: 7.53397e+01, header_lr: 2.910336e-04
+0:INFO    26-06-11 16:41:50.649 +00:01:23 - trainer.py:1181 - train epoch: 3, step: 550, loss_ce: 8.54811e-01, acc: 0.625, grad_norm: 5.51911e+01, header_lr: 2.963490e-04
+0:INFO    26-06-11 16:41:50.830 +00:01:23 - trainer.py:1181 - train epoch: 3, step: 560, loss_ce: 7.06304e-01, acc: 0.688, grad_norm: 2.57297e+01, header_lr: 3.016644e-04
+0:INFO    26-06-11 16:41:51.012 +00:01:24 - trainer.py:1181 - train epoch: 3, step: 570, loss_ce: 1.11310e+00, acc: 0.469, grad_norm: 8.76317e+01, header_lr: 3.069799e-04
+0:INFO    26-06-11 16:41:51.196 +00:01:24 - trainer.py:1181 - train epoch: 3, step: 580, loss_ce: 1.19081e+00, acc: 0.500, grad_norm: 1.03090e+02, header_lr: 3.122953e-04
+0:INFO    26-06-11 16:41:51.377 +00:01:24 - trainer.py:1181 - train epoch: 3, step: 590, loss_ce: 1.25663e+00, acc: 0.438, grad_norm: 8.11701e+01, header_lr: 3.176107e-04
+0:INFO    26-06-11 16:41:51.466 +00:01:24 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:51.853 +00:01:24 - trainer.py:1265 - adftd/eval epoch: 3, loss: 2.4101, acc: 0.527, balanced_acc: 0.481, cohen_kappa: 0.261, f1: 0.456
+0:INFO    26-06-11 16:41:51.854 +00:01:24 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:52.252 +00:01:25 - trainer.py:1265 - adftd/test epoch: 3, loss: 1.2278, acc: 0.448, balanced_acc: 0.406, cohen_kappa: 0.134, f1: 0.430
+0:INFO    26-06-11 16:41:52.364 +00:01:25 - trainer.py:1181 - train epoch: 4, step: 600, loss_ce: 8.57227e-01, acc: 0.562, grad_norm: 1.36006e+01, header_lr: 3.229262e-04
+0:INFO    26-06-11 16:41:52.541 +00:01:25 - trainer.py:1181 - train epoch: 4, step: 610, loss_ce: 9.78113e-01, acc: 0.594, grad_norm: 3.06171e+01, header_lr: 3.282416e-04
+0:INFO    26-06-11 16:41:52.721 +00:01:25 - trainer.py:1181 - train epoch: 4, step: 620, loss_ce: 1.04859e+00, acc: 0.656, grad_norm: 5.08396e+01, header_lr: 3.335570e-04
+0:INFO    26-06-11 16:41:52.901 +00:01:25 - trainer.py:1181 - train epoch: 4, step: 630, loss_ce: 8.18378e-01, acc: 0.594, grad_norm: 3.95788e+01, header_lr: 3.388725e-04
+0:INFO    26-06-11 16:41:53.099 +00:01:26 - trainer.py:1181 - train epoch: 4, step: 640, loss_ce: 8.73852e-01, acc: 0.562, grad_norm: 5.85192e+01, header_lr: 3.441879e-04
+0:INFO    26-06-11 16:41:53.286 +00:01:26 - trainer.py:1181 - train epoch: 4, step: 650, loss_ce: 9.39550e-01, acc: 0.594, grad_norm: 6.68076e+01, header_lr: 3.495034e-04
+0:INFO    26-06-11 16:41:53.467 +00:01:26 - trainer.py:1181 - train epoch: 4, step: 660, loss_ce: 1.17671e+01, acc: 0.656, grad_norm: 4.99924e+02, header_lr: 3.548188e-04
+0:INFO    26-06-11 16:41:53.647 +00:01:26 - trainer.py:1181 - train epoch: 4, step: 670, loss_ce: 7.74903e-01, acc: 0.562, grad_norm: 3.53562e+01, header_lr: 3.601342e-04
+0:INFO    26-06-11 16:41:53.827 +00:01:26 - trainer.py:1181 - train epoch: 4, step: 680, loss_ce: 7.50620e-01, acc: 0.594, grad_norm: 3.39797e+01, header_lr: 3.654497e-04
+0:INFO    26-06-11 16:41:54.007 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 690, loss_ce: 8.44902e-01, acc: 0.625, grad_norm: 4.69710e+01, header_lr: 3.707651e-04
+0:INFO    26-06-11 16:41:54.183 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 700, loss_ce: 9.72951e-01, acc: 0.656, grad_norm: 4.50276e+01, header_lr: 3.760805e-04
+0:INFO    26-06-11 16:41:54.362 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 710, loss_ce: 7.96101e-01, acc: 0.562, grad_norm: 1.43152e+01, header_lr: 3.813960e-04
+0:INFO    26-06-11 16:41:54.541 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 720, loss_ce: 7.62506e-01, acc: 0.688, grad_norm: 3.53715e+01, header_lr: 3.867114e-04
+0:INFO    26-06-11 16:41:54.721 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 730, loss_ce: 7.76609e-01, acc: 0.594, grad_norm: 3.42953e+01, header_lr: 3.920268e-04
+0:INFO    26-06-11 16:41:54.898 +00:01:27 - trainer.py:1181 - train epoch: 4, step: 740, loss_ce: 9.30295e-01, acc: 0.625, grad_norm: 4.45430e+01, header_lr: 3.973423e-04
+0:INFO    26-06-11 16:41:54.969 +00:01:28 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:55.350 +00:01:28 - trainer.py:1265 - adftd/eval epoch: 4, loss: 3.4696, acc: 0.584, balanced_acc: 0.533, cohen_kappa: 0.347, f1: 0.523
+0:INFO    26-06-11 16:41:55.350 +00:01:28 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:55.744 +00:01:28 - trainer.py:1265 - adftd/test epoch: 4, loss: 1.3529, acc: 0.429, balanced_acc: 0.414, cohen_kappa: 0.136, f1: 0.437
+0:INFO    26-06-11 16:41:55.875 +00:01:28 - trainer.py:1181 - train epoch: 5, step: 750, loss_ce: 9.09654e-01, acc: 0.469, grad_norm: 3.62576e+01, header_lr: 3.999995e-04
+0:INFO    26-06-11 16:41:56.058 +00:01:29 - trainer.py:1181 - train epoch: 5, step: 760, loss_ce: 7.44640e-01, acc: 0.656, grad_norm: 1.56283e+01, header_lr: 3.999951e-04
+0:INFO    26-06-11 16:41:56.259 +00:01:29 - trainer.py:1181 - train epoch: 5, step: 770, loss_ce: 6.24757e-01, acc: 0.719, grad_norm: 1.90108e+01, header_lr: 3.999864e-04
+0:INFO    26-06-11 16:41:56.437 +00:01:29 - trainer.py:1181 - train epoch: 5, step: 780, loss_ce: 5.37076e-01, acc: 0.714, grad_norm: 2.55815e+01, header_lr: 3.999734e-04
+0:INFO    26-06-11 16:41:56.616 +00:01:29 - trainer.py:1181 - train epoch: 5, step: 790, loss_ce: 9.38214e-01, acc: 0.625, grad_norm: 6.14492e+01, header_lr: 3.999560e-04
+0:INFO    26-06-11 16:41:56.795 +00:01:29 - trainer.py:1181 - train epoch: 5, step: 800, loss_ce: 6.72854e-01, acc: 0.719, grad_norm: 2.54039e+01, header_lr: 3.999343e-04
+0:INFO    26-06-11 16:41:56.983 +00:01:30 - trainer.py:1181 - train epoch: 5, step: 810, loss_ce: 2.17293e+00, acc: 0.562, grad_norm: 1.69355e+02, header_lr: 3.999082e-04
+0:INFO    26-06-11 16:41:57.167 +00:01:30 - trainer.py:1181 - train epoch: 5, step: 820, loss_ce: 6.76153e-01, acc: 0.750, grad_norm: 1.57289e+01, header_lr: 3.998778e-04
+0:INFO    26-06-11 16:41:57.355 +00:01:30 - trainer.py:1181 - train epoch: 5, step: 830, loss_ce: 1.79230e+01, acc: 0.594, grad_norm: 5.67211e+02, header_lr: 3.998430e-04
+0:INFO    26-06-11 16:41:57.761 +00:01:30 - trainer.py:1181 - train epoch: 5, step: 840, loss_ce: 1.71636e+00, acc: 0.656, grad_norm: 1.04123e+02, header_lr: 3.998039e-04
+0:INFO    26-06-11 16:41:57.949 +00:01:31 - trainer.py:1181 - train epoch: 5, step: 850, loss_ce: 6.80231e-01, acc: 0.750, grad_norm: 7.35284e+01, header_lr: 3.997604e-04
+0:INFO    26-06-11 16:41:58.345 +00:01:31 - trainer.py:1181 - train epoch: 5, step: 860, loss_ce: 1.30317e+00, acc: 0.656, grad_norm: 5.47663e+01, header_lr: 3.997126e-04
+0:INFO    26-06-11 16:41:58.533 +00:01:31 - trainer.py:1181 - train epoch: 5, step: 870, loss_ce: 5.15286e-01, acc: 0.781, grad_norm: 2.20235e+01, header_lr: 3.996605e-04
+0:INFO    26-06-11 16:41:58.718 +00:01:31 - trainer.py:1181 - train epoch: 5, step: 880, loss_ce: 6.79537e-01, acc: 0.688, grad_norm: 7.27299e+00, header_lr: 3.996040e-04
+0:INFO    26-06-11 16:41:58.900 +00:01:31 - trainer.py:1181 - train epoch: 5, step: 890, loss_ce: 7.29478e-01, acc: 0.688, grad_norm: 1.54156e+01, header_lr: 3.995432e-04
+0:INFO    26-06-11 16:41:58.953 +00:01:32 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:41:59.330 +00:01:32 - trainer.py:1265 - adftd/eval epoch: 5, loss: 3.5515, acc: 0.579, balanced_acc: 0.525, cohen_kappa: 0.338, f1: 0.499
+0:INFO    26-06-11 16:41:59.330 +00:01:32 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:41:59.731 +00:01:32 - trainer.py:1265 - adftd/test epoch: 5, loss: 1.3092, acc: 0.461, balanced_acc: 0.420, cohen_kappa: 0.153, f1: 0.448
+0:INFO    26-06-11 16:41:59.885 +00:01:32 - trainer.py:1181 - train epoch: 6, step: 900, loss_ce: 6.12517e-01, acc: 0.781, grad_norm: 1.33565e+01, header_lr: 3.994781e-04
+0:INFO    26-06-11 16:42:00.074 +00:01:33 - trainer.py:1181 - train epoch: 6, step: 910, loss_ce: 7.67295e-01, acc: 0.562, grad_norm: 1.59803e+01, header_lr: 3.994086e-04
+0:INFO    26-06-11 16:42:00.260 +00:01:33 - trainer.py:1181 - train epoch: 6, step: 920, loss_ce: 7.56661e-01, acc: 0.594, grad_norm: 2.18337e+01, header_lr: 3.993348e-04
+0:INFO    26-06-11 16:42:00.442 +00:01:33 - trainer.py:1181 - train epoch: 6, step: 930, loss_ce: 6.36865e-01, acc: 0.656, grad_norm: 1.50668e+01, header_lr: 3.992566e-04
+0:INFO    26-06-11 16:42:00.623 +00:01:33 - trainer.py:1181 - train epoch: 6, step: 940, loss_ce: 5.92370e-01, acc: 0.719, grad_norm: 2.85754e+01, header_lr: 3.991741e-04
+0:INFO    26-06-11 16:42:00.804 +00:01:33 - trainer.py:1181 - train epoch: 6, step: 950, loss_ce: 9.00072e+00, acc: 0.625, grad_norm: 7.31126e+02, header_lr: 3.990873e-04
+0:INFO    26-06-11 16:42:00.983 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 960, loss_ce: 1.04509e+00, acc: 0.625, grad_norm: 1.15760e+02, header_lr: 3.989962e-04
+0:INFO    26-06-11 16:42:01.165 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 970, loss_ce: 8.53597e-01, acc: 0.594, grad_norm: 3.97867e+01, header_lr: 3.989007e-04
+0:INFO    26-06-11 16:42:01.352 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 980, loss_ce: 1.23515e+00, acc: 0.594, grad_norm: 9.99117e+01, header_lr: 3.988010e-04
+0:INFO    26-06-11 16:42:01.534 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 990, loss_ce: 1.54214e+00, acc: 0.688, grad_norm: 1.28042e+02, header_lr: 3.986969e-04
+0:INFO    26-06-11 16:42:01.717 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 1000, loss_ce: 5.69357e-01, acc: 0.781, grad_norm: 1.99330e+01, header_lr: 3.985884e-04
+0:INFO    26-06-11 16:42:01.901 +00:01:34 - trainer.py:1181 - train epoch: 6, step: 1010, loss_ce: 8.45146e-01, acc: 0.688, grad_norm: 1.27558e+02, header_lr: 3.984757e-04
+0:INFO    26-06-11 16:42:02.085 +00:01:35 - trainer.py:1181 - train epoch: 6, step: 1020, loss_ce: 6.63172e-01, acc: 0.719, grad_norm: 3.20937e+01, header_lr: 3.983586e-04
+0:INFO    26-06-11 16:42:02.269 +00:01:35 - trainer.py:1181 - train epoch: 6, step: 1030, loss_ce: 6.96773e-01, acc: 0.750, grad_norm: 3.84888e+01, header_lr: 3.982373e-04
+0:INFO    26-06-11 16:42:02.450 +00:01:35 - trainer.py:1181 - train epoch: 6, step: 1040, loss_ce: 6.01969e-01, acc: 0.688, grad_norm: 8.23371e+00, header_lr: 3.981116e-04
+0:INFO    26-06-11 16:42:02.487 +00:01:35 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:02.860 +00:01:35 - trainer.py:1265 - adftd/eval epoch: 6, loss: 4.1510, acc: 0.542, balanced_acc: 0.492, cohen_kappa: 0.279, f1: 0.493
+0:INFO    26-06-11 16:42:02.861 +00:01:35 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:03.243 +00:01:36 - trainer.py:1265 - adftd/test epoch: 6, loss: 1.3528, acc: 0.514, balanced_acc: 0.489, cohen_kappa: 0.254, f1: 0.513
+0:INFO    26-06-11 16:42:03.406 +00:01:36 - trainer.py:1181 - train epoch: 7, step: 1050, loss_ce: 5.40609e-01, acc: 0.812, grad_norm: 9.76132e+00, header_lr: 3.979816e-04
+0:INFO    26-06-11 16:42:03.585 +00:01:36 - trainer.py:1181 - train epoch: 7, step: 1060, loss_ce: 5.64514e-01, acc: 0.719, grad_norm: 1.10465e+01, header_lr: 3.978474e-04
+0:INFO    26-06-11 16:42:03.768 +00:01:36 - trainer.py:1181 - train epoch: 7, step: 1070, loss_ce: 7.21455e-01, acc: 0.625, grad_norm: 2.35444e+01, header_lr: 3.977088e-04
+0:INFO    26-06-11 16:42:03.947 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1080, loss_ce: 6.35109e-01, acc: 0.781, grad_norm: 2.38914e+01, header_lr: 3.975659e-04
+0:INFO    26-06-11 16:42:04.125 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1090, loss_ce: 7.19456e-01, acc: 0.625, grad_norm: 2.09853e+01, header_lr: 3.974188e-04
+0:INFO    26-06-11 16:42:04.302 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1100, loss_ce: 7.10236e-01, acc: 0.688, grad_norm: 7.67086e+01, header_lr: 3.972673e-04
+0:INFO    26-06-11 16:42:04.481 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1110, loss_ce: 1.17742e+00, acc: 0.781, grad_norm: 6.08925e+01, header_lr: 3.971116e-04
+0:INFO    26-06-11 16:42:04.656 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1120, loss_ce: 6.85228e-01, acc: 0.688, grad_norm: 3.11015e+01, header_lr: 3.969515e-04
+0:INFO    26-06-11 16:42:04.835 +00:01:37 - trainer.py:1181 - train epoch: 7, step: 1130, loss_ce: 5.48832e-01, acc: 0.812, grad_norm: 4.17495e+01, header_lr: 3.967872e-04
+0:INFO    26-06-11 16:42:05.012 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1140, loss_ce: 5.26951e-01, acc: 0.750, grad_norm: 3.09398e+01, header_lr: 3.966186e-04
+0:INFO    26-06-11 16:42:05.190 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1150, loss_ce: 7.52258e-01, acc: 0.656, grad_norm: 8.74252e+00, header_lr: 3.964458e-04
+0:INFO    26-06-11 16:42:05.375 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1160, loss_ce: 2.36332e+00, acc: 0.656, grad_norm: 3.09171e+02, header_lr: 3.962687e-04
+0:INFO    26-06-11 16:42:05.555 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1170, loss_ce: 7.28680e-01, acc: 0.625, grad_norm: 2.27480e+01, header_lr: 3.960873e-04
+0:INFO    26-06-11 16:42:05.737 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1180, loss_ce: 8.31771e-01, acc: 0.781, grad_norm: 9.06113e+01, header_lr: 3.959016e-04
+0:INFO    26-06-11 16:42:05.912 +00:01:38 - trainer.py:1181 - train epoch: 7, step: 1190, loss_ce: 7.94327e-01, acc: 0.594, grad_norm: 3.37034e+01, header_lr: 3.957117e-04
+0:INFO    26-06-11 16:42:05.930 +00:01:38 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:06.303 +00:01:39 - trainer.py:1265 - adftd/eval epoch: 7, loss: 4.7733, acc: 0.609, balanced_acc: 0.548, cohen_kappa: 0.381, f1: 0.530
+0:INFO    26-06-11 16:42:06.303 +00:01:39 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:06.695 +00:01:39 - trainer.py:1265 - adftd/test epoch: 7, loss: 1.7150, acc: 0.513, balanced_acc: 0.466, cohen_kappa: 0.229, f1: 0.500
+0:INFO    26-06-11 16:42:06.875 +00:01:39 - trainer.py:1181 - train epoch: 8, step: 1200, loss_ce: 1.00187e+00, acc: 0.688, grad_norm: 7.39387e+01, header_lr: 3.955176e-04
+0:INFO    26-06-11 16:42:07.055 +00:01:40 - trainer.py:1181 - train epoch: 8, step: 1210, loss_ce: 6.16642e-01, acc: 0.719, grad_norm: 4.44142e+01, header_lr: 3.953192e-04
+0:INFO    26-06-11 16:42:07.235 +00:01:40 - trainer.py:1181 - train epoch: 8, step: 1220, loss_ce: 5.33961e-01, acc: 0.812, grad_norm: 1.16756e+01, header_lr: 3.951165e-04
+0:INFO    26-06-11 16:42:07.420 +00:01:40 - trainer.py:1181 - train epoch: 8, step: 1230, loss_ce: 5.68815e-01, acc: 0.812, grad_norm: 1.85712e+01, header_lr: 3.949096e-04
+0:INFO    26-06-11 16:42:07.600 +00:01:40 - trainer.py:1181 - train epoch: 8, step: 1240, loss_ce: 6.23911e-01, acc: 0.656, grad_norm: 2.48761e+01, header_lr: 3.946985e-04
+0:INFO    26-06-11 16:42:07.776 +00:01:40 - trainer.py:1181 - train epoch: 8, step: 1250, loss_ce: 5.19063e-01, acc: 0.750, grad_norm: 2.27364e+01, header_lr: 3.944831e-04
+0:INFO    26-06-11 16:42:07.954 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1260, loss_ce: 6.44594e-01, acc: 0.781, grad_norm: 3.61253e+01, header_lr: 3.942635e-04
+0:INFO    26-06-11 16:42:08.148 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1270, loss_ce: 7.12704e-01, acc: 0.781, grad_norm: 5.48763e+01, header_lr: 3.940397e-04
+0:INFO    26-06-11 16:42:08.326 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1280, loss_ce: 7.31146e-01, acc: 0.844, grad_norm: 5.97752e+01, header_lr: 3.938117e-04
+0:INFO    26-06-11 16:42:08.504 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1290, loss_ce: 5.52812e-01, acc: 0.750, grad_norm: 2.68571e+01, header_lr: 3.935795e-04
+0:INFO    26-06-11 16:42:08.683 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1300, loss_ce: 5.68006e-01, acc: 0.812, grad_norm: 2.18671e+01, header_lr: 3.933431e-04
+0:INFO    26-06-11 16:42:08.860 +00:01:41 - trainer.py:1181 - train epoch: 8, step: 1310, loss_ce: 3.84472e+00, acc: 0.625, grad_norm: 4.70506e+02, header_lr: 3.931024e-04
+0:INFO    26-06-11 16:42:09.038 +00:01:42 - trainer.py:1181 - train epoch: 8, step: 1320, loss_ce: 5.38171e-01, acc: 0.719, grad_norm: 2.63293e+01, header_lr: 3.928576e-04
+0:INFO    26-06-11 16:42:09.216 +00:01:42 - trainer.py:1181 - train epoch: 8, step: 1330, loss_ce: 6.41291e-01, acc: 0.688, grad_norm: 3.11748e+01, header_lr: 3.926086e-04
+0:INFO    26-06-11 16:42:09.391 +00:01:42 - trainer.py:1181 - train epoch: 8, step: 1340, loss_ce: 5.57905e-01, acc: 0.750, grad_norm: 6.59083e+01, header_lr: 3.923554e-04
+0:INFO    26-06-11 16:42:09.392 +00:01:42 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:09.767 +00:01:42 - trainer.py:1265 - adftd/eval epoch: 8, loss: 4.4847, acc: 0.440, balanced_acc: 0.426, cohen_kappa: 0.157, f1: 0.390
+0:INFO    26-06-11 16:42:09.767 +00:01:42 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:10.158 +00:01:43 - trainer.py:1265 - adftd/test epoch: 8, loss: 1.2799, acc: 0.478, balanced_acc: 0.453, cohen_kappa: 0.207, f1: 0.453
+0:INFO    26-06-11 16:42:10.348 +00:01:43 - trainer.py:1181 - train epoch: 9, step: 1350, loss_ce: 9.27045e-01, acc: 0.531, grad_norm: 6.58948e+01, header_lr: 3.920980e-04
+0:INFO    26-06-11 16:42:10.525 +00:01:43 - trainer.py:1181 - train epoch: 9, step: 1360, loss_ce: 5.74170e-01, acc: 0.750, grad_norm: 4.19086e+01, header_lr: 3.918364e-04
+0:INFO    26-06-11 16:42:10.702 +00:01:43 - trainer.py:1181 - train epoch: 9, step: 1370, loss_ce: 9.97900e-01, acc: 0.625, grad_norm: 6.42827e+01, header_lr: 3.915707e-04
+0:INFO    26-06-11 16:42:10.881 +00:01:43 - trainer.py:1181 - train epoch: 9, step: 1380, loss_ce: 3.63388e-01, acc: 0.875, grad_norm: 1.03425e+01, header_lr: 3.913008e-04
+0:INFO    26-06-11 16:42:11.061 +00:01:44 - trainer.py:1181 - train epoch: 9, step: 1390, loss_ce: 5.13575e-01, acc: 0.812, grad_norm: 6.24545e+01, header_lr: 3.910268e-04
+0:INFO    26-06-11 16:42:11.241 +00:01:44 - trainer.py:1181 - train epoch: 9, step: 1400, loss_ce: 7.00029e-01, acc: 0.656, grad_norm: 3.97457e+01, header_lr: 3.907486e-04
+0:INFO    26-06-11 16:42:11.420 +00:01:44 - trainer.py:1181 - train epoch: 9, step: 1410, loss_ce: 5.95262e-01, acc: 0.750, grad_norm: 2.07232e+01, header_lr: 3.904662e-04
+0:INFO    26-06-11 16:42:11.600 +00:01:44 - trainer.py:1181 - train epoch: 9, step: 1420, loss_ce: 7.10134e-01, acc: 0.750, grad_norm: 5.73962e+01, header_lr: 3.901798e-04
+0:INFO    26-06-11 16:42:11.779 +00:01:44 - trainer.py:1181 - train epoch: 9, step: 1430, loss_ce: 6.16921e-01, acc: 0.750, grad_norm: 4.74952e+01, header_lr: 3.898892e-04
+0:INFO    26-06-11 16:42:11.957 +00:01:45 - trainer.py:1181 - train epoch: 9, step: 1440, loss_ce: 3.62151e-01, acc: 0.875, grad_norm: 1.92450e+01, header_lr: 3.895944e-04
+0:INFO    26-06-11 16:42:12.136 +00:01:45 - trainer.py:1181 - train epoch: 9, step: 1450, loss_ce: 3.59598e-01, acc: 0.906, grad_norm: 9.07986e+00, header_lr: 3.892956e-04
+0:INFO    26-06-11 16:42:12.315 +00:01:45 - trainer.py:1181 - train epoch: 9, step: 1460, loss_ce: 5.05934e-01, acc: 0.844, grad_norm: 1.45402e+01, header_lr: 3.889926e-04
+0:INFO    26-06-11 16:42:12.494 +00:01:45 - trainer.py:1181 - train epoch: 9, step: 1470, loss_ce: 5.16870e-01, acc: 0.812, grad_norm: 1.05541e+01, header_lr: 3.886856e-04
+0:INFO    26-06-11 16:42:12.672 +00:01:45 - trainer.py:1181 - train epoch: 9, step: 1480, loss_ce: 7.27138e-01, acc: 0.719, grad_norm: 2.13883e+01, header_lr: 3.883744e-04
+0:INFO    26-06-11 16:42:12.831 +00:01:45 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:13.207 +00:01:46 - trainer.py:1265 - adftd/eval epoch: 9, loss: 4.8745, acc: 0.542, balanced_acc: 0.509, cohen_kappa: 0.295, f1: 0.522
+0:INFO    26-06-11 16:42:13.207 +00:01:46 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:13.606 +00:01:46 - trainer.py:1265 - adftd/test epoch: 9, loss: 1.4775, acc: 0.502, balanced_acc: 0.493, cohen_kappa: 0.243, f1: 0.510
+0:INFO    26-06-11 16:42:13.648 +00:01:46 - trainer.py:1181 - train epoch: 10, step: 1490, loss_ce: 6.74100e-01, acc: 0.781, grad_norm: 1.55160e+01, header_lr: 3.880591e-04
+0:INFO    26-06-11 16:42:13.828 +00:01:46 - trainer.py:1181 - train epoch: 10, step: 1500, loss_ce: 5.47970e-01, acc: 0.719, grad_norm: 2.31118e+01, header_lr: 3.877398e-04
+0:INFO    26-06-11 16:42:14.007 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1510, loss_ce: 6.14612e-01, acc: 0.719, grad_norm: 1.82829e+01, header_lr: 3.874164e-04
+0:INFO    26-06-11 16:42:14.187 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1520, loss_ce: 6.09798e-01, acc: 0.688, grad_norm: 1.11853e+01, header_lr: 3.870889e-04
+0:INFO    26-06-11 16:42:14.367 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1530, loss_ce: 8.59545e-01, acc: 0.750, grad_norm: 6.29706e+01, header_lr: 3.867573e-04
+0:INFO    26-06-11 16:42:14.550 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1540, loss_ce: 5.45948e-01, acc: 0.844, grad_norm: 1.59572e+01, header_lr: 3.864217e-04
+0:INFO    26-06-11 16:42:14.732 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1550, loss_ce: 6.38383e-01, acc: 0.812, grad_norm: 3.17303e+01, header_lr: 3.860821e-04
+0:INFO    26-06-11 16:42:14.916 +00:01:47 - trainer.py:1181 - train epoch: 10, step: 1560, loss_ce: 3.95973e-01, acc: 0.844, grad_norm: 1.67598e+01, header_lr: 3.857384e-04
+0:INFO    26-06-11 16:42:15.098 +00:01:48 - trainer.py:1181 - train epoch: 10, step: 1570, loss_ce: 5.82116e-01, acc: 0.719, grad_norm: 3.85855e+01, header_lr: 3.853907e-04
+0:INFO    26-06-11 16:42:15.280 +00:01:48 - trainer.py:1181 - train epoch: 10, step: 1580, loss_ce: 6.50259e-01, acc: 0.750, grad_norm: 2.90770e+02, header_lr: 3.850389e-04
+0:INFO    26-06-11 16:42:15.460 +00:01:48 - trainer.py:1181 - train epoch: 10, step: 1590, loss_ce: 9.51799e-01, acc: 0.844, grad_norm: 1.05628e+02, header_lr: 3.846831e-04
+0:INFO    26-06-11 16:42:15.641 +00:01:48 - trainer.py:1181 - train epoch: 10, step: 1600, loss_ce: 5.27284e-01, acc: 0.781, grad_norm: 5.19718e+01, header_lr: 3.843233e-04
+0:INFO    26-06-11 16:42:15.822 +00:01:48 - trainer.py:1181 - train epoch: 10, step: 1610, loss_ce: 4.77015e-01, acc: 0.781, grad_norm: 1.90496e+01, header_lr: 3.839595e-04
+0:INFO    26-06-11 16:42:16.002 +00:01:49 - trainer.py:1181 - train epoch: 10, step: 1620, loss_ce: 4.04004e-01, acc: 0.844, grad_norm: 1.68052e+01, header_lr: 3.835918e-04
+0:INFO    26-06-11 16:42:16.183 +00:01:49 - trainer.py:1181 - train epoch: 10, step: 1630, loss_ce: 1.12219e+00, acc: 0.688, grad_norm: 3.23258e+01, header_lr: 3.832200e-04
+0:INFO    26-06-11 16:42:16.325 +00:01:49 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:16.708 +00:01:49 - trainer.py:1265 - adftd/eval epoch: 10, loss: 5.3613, acc: 0.471, balanced_acc: 0.438, cohen_kappa: 0.188, f1: 0.431
+0:INFO    26-06-11 16:42:16.708 +00:01:49 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:17.106 +00:01:50 - trainer.py:1265 - adftd/test epoch: 10, loss: 1.2940, acc: 0.518, balanced_acc: 0.484, cohen_kappa: 0.249, f1: 0.504
+0:INFO    26-06-11 16:42:17.166 +00:01:50 - trainer.py:1181 - train epoch: 11, step: 1640, loss_ce: 4.08583e-01, acc: 0.812, grad_norm: 3.46988e+01, header_lr: 3.828442e-04
+0:INFO    26-06-11 16:42:17.343 +00:01:50 - trainer.py:1181 - train epoch: 11, step: 1650, loss_ce: 7.69056e-01, acc: 0.656, grad_norm: 2.33569e+01, header_lr: 3.824645e-04
+0:INFO    26-06-11 16:42:17.524 +00:01:50 - trainer.py:1181 - train epoch: 11, step: 1660, loss_ce: 2.59655e+01, acc: 0.656, grad_norm: 4.32476e+02, header_lr: 3.820808e-04
+0:INFO    26-06-11 16:42:17.705 +00:01:50 - trainer.py:1181 - train epoch: 11, step: 1670, loss_ce: 5.96058e-01, acc: 0.781, grad_norm: 2.96743e+01, header_lr: 3.816932e-04
+0:INFO    26-06-11 16:42:17.885 +00:01:50 - trainer.py:1181 - train epoch: 11, step: 1680, loss_ce: 1.89934e+00, acc: 0.812, grad_norm: 3.06143e+02, header_lr: 3.813016e-04
+0:INFO    26-06-11 16:42:18.065 +00:01:51 - trainer.py:1181 - train epoch: 11, step: 1690, loss_ce: 3.77427e-01, acc: 0.875, grad_norm: 1.55044e+01, header_lr: 3.809061e-04
+0:INFO    26-06-11 16:42:18.244 +00:01:51 - trainer.py:1181 - train epoch: 11, step: 1700, loss_ce: 7.11772e-01, acc: 0.688, grad_norm: 9.76636e+00, header_lr: 3.805067e-04
+0:INFO    26-06-11 16:42:18.423 +00:01:51 - trainer.py:1181 - train epoch: 11, step: 1710, loss_ce: 6.37955e-01, acc: 0.719, grad_norm: 1.73892e+01, header_lr: 3.801033e-04
+0:INFO    26-06-11 16:42:18.602 +00:01:51 - trainer.py:1181 - train epoch: 11, step: 1720, loss_ce: 5.73063e-01, acc: 0.781, grad_norm: 1.10654e+01, header_lr: 3.796961e-04
+0:INFO    26-06-11 16:42:18.781 +00:01:51 - trainer.py:1181 - train epoch: 11, step: 1730, loss_ce: 8.03019e-01, acc: 0.719, grad_norm: 6.12673e+01, header_lr: 3.792849e-04
+0:INFO    26-06-11 16:42:18.959 +00:01:52 - trainer.py:1181 - train epoch: 11, step: 1740, loss_ce: 4.18391e-01, acc: 0.857, grad_norm: 2.91918e+01, header_lr: 3.788698e-04
+0:INFO    26-06-11 16:42:19.137 +00:01:52 - trainer.py:1181 - train epoch: 11, step: 1750, loss_ce: 5.11981e-01, acc: 0.875, grad_norm: 1.66261e+01, header_lr: 3.784509e-04
+0:INFO    26-06-11 16:42:19.317 +00:01:52 - trainer.py:1181 - train epoch: 11, step: 1760, loss_ce: 6.15331e-01, acc: 0.844, grad_norm: 1.59429e+01, header_lr: 3.780280e-04
+0:INFO    26-06-11 16:42:19.497 +00:01:52 - trainer.py:1181 - train epoch: 11, step: 1770, loss_ce: 4.97558e-01, acc: 0.781, grad_norm: 1.32997e+01, header_lr: 3.776014e-04
+0:INFO    26-06-11 16:42:19.676 +00:01:52 - trainer.py:1181 - train epoch: 11, step: 1780, loss_ce: 5.20237e-01, acc: 0.812, grad_norm: 3.29477e+01, header_lr: 3.771708e-04
+0:INFO    26-06-11 16:42:19.798 +00:01:52 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:20.178 +00:01:53 - trainer.py:1265 - adftd/eval epoch: 11, loss: 5.2895, acc: 0.529, balanced_acc: 0.477, cohen_kappa: 0.260, f1: 0.473
+0:INFO    26-06-11 16:42:20.178 +00:01:53 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:20.576 +00:01:53 - trainer.py:1265 - adftd/test epoch: 11, loss: 2.0490, acc: 0.515, balanced_acc: 0.483, cohen_kappa: 0.244, f1: 0.512
+0:INFO    26-06-11 16:42:20.653 +00:01:53 - trainer.py:1181 - train epoch: 12, step: 1790, loss_ce: 2.45270e+01, acc: 0.812, grad_norm: 4.31412e+02, header_lr: 3.767364e-04
+0:INFO    26-06-11 16:42:20.826 +00:01:53 - trainer.py:1181 - train epoch: 12, step: 1800, loss_ce: 3.14627e-01, acc: 0.906, grad_norm: 4.76876e+00, header_lr: 3.762982e-04
+0:INFO    26-06-11 16:42:21.002 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1810, loss_ce: 4.31279e-01, acc: 0.812, grad_norm: 2.17767e+01, header_lr: 3.758562e-04
+0:INFO    26-06-11 16:42:21.179 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1820, loss_ce: 6.40109e-01, acc: 0.656, grad_norm: 2.55937e+01, header_lr: 3.754103e-04
+0:INFO    26-06-11 16:42:21.356 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1830, loss_ce: 7.64281e-01, acc: 0.688, grad_norm: 1.98225e+01, header_lr: 3.749606e-04
+0:INFO    26-06-11 16:42:21.533 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1840, loss_ce: 5.26755e-01, acc: 0.844, grad_norm: 1.53058e+01, header_lr: 3.745072e-04
+0:INFO    26-06-11 16:42:21.711 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1850, loss_ce: 5.53103e-01, acc: 0.781, grad_norm: 1.71863e+01, header_lr: 3.740499e-04
+0:INFO    26-06-11 16:42:21.889 +00:01:54 - trainer.py:1181 - train epoch: 12, step: 1860, loss_ce: 3.72174e-01, acc: 0.906, grad_norm: 1.30612e+01, header_lr: 3.735889e-04
+0:INFO    26-06-11 16:42:22.067 +00:01:55 - trainer.py:1181 - train epoch: 12, step: 1870, loss_ce: 3.53047e-01, acc: 0.906, grad_norm: 7.32477e+00, header_lr: 3.731241e-04
+0:INFO    26-06-11 16:42:22.245 +00:01:55 - trainer.py:1181 - train epoch: 12, step: 1880, loss_ce: 8.77033e-01, acc: 0.688, grad_norm: 8.37747e+01, header_lr: 3.726555e-04
+0:INFO    26-06-11 16:42:22.421 +00:01:55 - trainer.py:1181 - train epoch: 12, step: 1890, loss_ce: 5.97506e-01, acc: 0.688, grad_norm: 3.48086e+01, header_lr: 3.721832e-04
+0:INFO    26-06-11 16:42:22.598 +00:01:55 - trainer.py:1181 - train epoch: 12, step: 1900, loss_ce: 5.04287e-01, acc: 0.844, grad_norm: 2.87010e+01, header_lr: 3.717072e-04
+0:INFO    26-06-11 16:42:22.775 +00:01:55 - trainer.py:1181 - train epoch: 12, step: 1910, loss_ce: 3.11587e-01, acc: 0.906, grad_norm: 5.17678e+00, header_lr: 3.712274e-04
+0:INFO    26-06-11 16:42:22.952 +00:01:56 - trainer.py:1181 - train epoch: 12, step: 1920, loss_ce: 4.56988e-01, acc: 0.844, grad_norm: 1.30309e+01, header_lr: 3.707439e-04
+0:INFO    26-06-11 16:42:23.130 +00:01:56 - trainer.py:1181 - train epoch: 12, step: 1930, loss_ce: 3.57804e-01, acc: 0.844, grad_norm: 7.38625e+00, header_lr: 3.702568e-04
+0:INFO    26-06-11 16:42:23.235 +00:01:56 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:23.611 +00:01:56 - trainer.py:1265 - adftd/eval epoch: 12, loss: 6.1590, acc: 0.434, balanced_acc: 0.401, cohen_kappa: 0.130, f1: 0.368
+0:INFO    26-06-11 16:42:23.611 +00:01:56 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:24.005 +00:01:57 - trainer.py:1265 - adftd/test epoch: 12, loss: 1.7473, acc: 0.473, balanced_acc: 0.434, cohen_kappa: 0.170, f1: 0.441
+0:INFO    26-06-11 16:42:24.098 +00:01:57 - trainer.py:1181 - train epoch: 13, step: 1940, loss_ce: 9.78714e-01, acc: 0.812, grad_norm: 1.46780e+01, header_lr: 3.697659e-04
+0:INFO    26-06-11 16:42:24.275 +00:01:57 - trainer.py:1181 - train epoch: 13, step: 1950, loss_ce: 6.27940e-01, acc: 0.750, grad_norm: 5.53389e+01, header_lr: 3.692713e-04
+0:INFO    26-06-11 16:42:24.450 +00:01:57 - trainer.py:1181 - train epoch: 13, step: 1960, loss_ce: 5.12395e-01, acc: 0.750, grad_norm: 3.59087e+01, header_lr: 3.687731e-04
+0:INFO    26-06-11 16:42:24.628 +00:01:57 - trainer.py:1181 - train epoch: 13, step: 1970, loss_ce: 8.12492e-01, acc: 0.750, grad_norm: 4.72856e+01, header_lr: 3.682712e-04
+0:INFO    26-06-11 16:42:24.805 +00:01:57 - trainer.py:1181 - train epoch: 13, step: 1980, loss_ce: 5.32011e-01, acc: 0.812, grad_norm: 1.89631e+01, header_lr: 3.677656e-04
+0:INFO    26-06-11 16:42:24.983 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 1990, loss_ce: 5.18788e-01, acc: 0.812, grad_norm: 2.00093e+01, header_lr: 3.672565e-04
+0:INFO    26-06-11 16:42:25.160 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 2000, loss_ce: 5.39752e-01, acc: 0.781, grad_norm: 4.39369e+01, header_lr: 3.667436e-04
+0:INFO    26-06-11 16:42:25.339 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 2010, loss_ce: 5.00063e-01, acc: 0.812, grad_norm: 5.93355e+01, header_lr: 3.662272e-04
+0:INFO    26-06-11 16:42:25.518 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 2020, loss_ce: 1.60728e+00, acc: 0.750, grad_norm: 9.39769e+01, header_lr: 3.657072e-04
+0:INFO    26-06-11 16:42:25.701 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 2030, loss_ce: 4.31786e-01, acc: 0.875, grad_norm: 9.50694e+00, header_lr: 3.651836e-04
+0:INFO    26-06-11 16:42:25.885 +00:01:58 - trainer.py:1181 - train epoch: 13, step: 2040, loss_ce: 4.42054e-01, acc: 0.875, grad_norm: 3.92167e+01, header_lr: 3.646563e-04
+0:INFO    26-06-11 16:42:26.069 +00:01:59 - trainer.py:1181 - train epoch: 13, step: 2050, loss_ce: 3.72173e-01, acc: 0.812, grad_norm: 9.48866e+00, header_lr: 3.641256e-04
+0:INFO    26-06-11 16:42:26.251 +00:01:59 - trainer.py:1181 - train epoch: 13, step: 2060, loss_ce: 8.36303e-01, acc: 0.844, grad_norm: 5.26707e+01, header_lr: 3.635912e-04
+0:INFO    26-06-11 16:42:26.435 +00:01:59 - trainer.py:1181 - train epoch: 13, step: 2070, loss_ce: 6.94422e-01, acc: 0.781, grad_norm: 5.67561e+01, header_lr: 3.630533e-04
+0:INFO    26-06-11 16:42:26.612 +00:01:59 - trainer.py:1181 - train epoch: 13, step: 2080, loss_ce: 4.45592e-01, acc: 0.875, grad_norm: 1.45588e+01, header_lr: 3.625119e-04
+0:INFO    26-06-11 16:42:26.700 +00:01:59 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:27.075 +00:02:00 - trainer.py:1265 - adftd/eval epoch: 13, loss: 6.7167, acc: 0.419, balanced_acc: 0.392, cohen_kappa: 0.104, f1: 0.411
+0:INFO    26-06-11 16:42:27.075 +00:02:00 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:27.464 +00:02:00 - trainer.py:1265 - adftd/test epoch: 13, loss: 1.3365, acc: 0.537, balanced_acc: 0.516, cohen_kappa: 0.292, f1: 0.532
+0:INFO    26-06-11 16:42:27.574 +00:02:00 - trainer.py:1181 - train epoch: 14, step: 2090, loss_ce: 5.28977e-01, acc: 0.844, grad_norm: 4.72404e+01, header_lr: 3.619670e-04
+0:INFO    26-06-11 16:42:27.752 +00:02:00 - trainer.py:1181 - train epoch: 14, step: 2100, loss_ce: 3.92146e-01, acc: 0.875, grad_norm: 4.90163e+00, header_lr: 3.614185e-04
+0:INFO    26-06-11 16:42:27.929 +00:02:00 - trainer.py:1181 - train epoch: 14, step: 2110, loss_ce: 5.55533e-01, acc: 0.781, grad_norm: 2.20659e+01, header_lr: 3.608665e-04
+0:INFO    26-06-11 16:42:28.106 +00:02:01 - trainer.py:1181 - train epoch: 14, step: 2120, loss_ce: 3.21004e+01, acc: 0.812, grad_norm: 3.89371e+02, header_lr: 3.603111e-04
+0:INFO    26-06-11 16:42:28.281 +00:02:01 - trainer.py:1181 - train epoch: 14, step: 2130, loss_ce: 1.01322e+00, acc: 0.750, grad_norm: 1.61628e+02, header_lr: 3.597522e-04
+0:INFO    26-06-11 16:42:28.463 +00:02:01 - trainer.py:1181 - train epoch: 14, step: 2140, loss_ce: 5.67610e-01, acc: 0.781, grad_norm: 2.72677e+01, header_lr: 3.591898e-04
+0:INFO    26-06-11 16:42:28.646 +00:02:01 - trainer.py:1181 - train epoch: 14, step: 2150, loss_ce: 4.17840e-01, acc: 0.875, grad_norm: 3.64765e+01, header_lr: 3.586240e-04
+0:INFO    26-06-11 16:42:28.826 +00:02:01 - trainer.py:1181 - train epoch: 14, step: 2160, loss_ce: 4.21233e-01, acc: 0.875, grad_norm: 3.61881e+01, header_lr: 3.580547e-04
+0:INFO    26-06-11 16:42:29.005 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2170, loss_ce: 7.21272e-01, acc: 0.688, grad_norm: 3.21569e+01, header_lr: 3.574820e-04
+0:INFO    26-06-11 16:42:29.184 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2180, loss_ce: 6.05179e-01, acc: 0.812, grad_norm: 2.35836e+01, header_lr: 3.569059e-04
+0:INFO    26-06-11 16:42:29.366 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2190, loss_ce: 3.45994e-01, acc: 0.906, grad_norm: 1.38147e+01, header_lr: 3.563264e-04
+0:INFO    26-06-11 16:42:29.546 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2200, loss_ce: 4.12002e-01, acc: 0.875, grad_norm: 1.01426e+01, header_lr: 3.557435e-04
+0:INFO    26-06-11 16:42:29.728 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2210, loss_ce: 5.15797e-01, acc: 0.812, grad_norm: 4.25231e+00, header_lr: 3.551572e-04
+0:INFO    26-06-11 16:42:29.908 +00:02:02 - trainer.py:1181 - train epoch: 14, step: 2220, loss_ce: 7.76322e-01, acc: 0.750, grad_norm: 8.92480e+01, header_lr: 3.545675e-04
+0:INFO    26-06-11 16:42:30.090 +00:02:03 - trainer.py:1181 - train epoch: 14, step: 2230, loss_ce: 4.91520e-01, acc: 0.812, grad_norm: 3.59279e+01, header_lr: 3.539745e-04
+0:INFO    26-06-11 16:42:30.161 +00:02:03 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:30.540 +00:02:03 - trainer.py:1265 - adftd/eval epoch: 14, loss: 5.9052, acc: 0.479, balanced_acc: 0.444, cohen_kappa: 0.200, f1: 0.448
+0:INFO    26-06-11 16:42:30.541 +00:02:03 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:30.934 +00:02:03 - trainer.py:1265 - adftd/test epoch: 14, loss: 1.4712, acc: 0.504, balanced_acc: 0.477, cohen_kappa: 0.230, f1: 0.494
+0:INFO    26-06-11 16:42:31.063 +00:02:04 - trainer.py:1181 - train epoch: 15, step: 2240, loss_ce: 5.33207e-01, acc: 0.781, grad_norm: 2.62358e+01, header_lr: 3.533782e-04
+0:INFO    26-06-11 16:42:31.241 +00:02:04 - trainer.py:1181 - train epoch: 15, step: 2250, loss_ce: 3.04611e-01, acc: 0.906, grad_norm: 1.30901e+01, header_lr: 3.527786e-04
+0:INFO    26-06-11 16:42:31.427 +00:02:04 - trainer.py:1181 - train epoch: 15, step: 2260, loss_ce: 8.53685e-01, acc: 0.781, grad_norm: 1.13975e+02, header_lr: 3.521756e-04
+0:INFO    26-06-11 16:42:31.610 +00:02:04 - trainer.py:1181 - train epoch: 15, step: 2270, loss_ce: 4.69668e-01, acc: 0.812, grad_norm: 7.71966e+00, header_lr: 3.515694e-04
+0:INFO    26-06-11 16:42:31.793 +00:02:04 - trainer.py:1181 - train epoch: 15, step: 2280, loss_ce: 4.99421e-01, acc: 0.812, grad_norm: 2.70560e+01, header_lr: 3.509598e-04
+0:INFO    26-06-11 16:42:31.978 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2290, loss_ce: 3.22676e-01, acc: 0.844, grad_norm: 1.78001e+01, header_lr: 3.503470e-04
+0:INFO    26-06-11 16:42:32.168 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2300, loss_ce: 4.81190e-01, acc: 0.875, grad_norm: 3.29831e+01, header_lr: 3.497309e-04
+0:INFO    26-06-11 16:42:32.360 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2310, loss_ce: 9.23478e-01, acc: 0.812, grad_norm: 1.54315e+01, header_lr: 3.491116e-04
+0:INFO    26-06-11 16:42:32.545 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2320, loss_ce: 4.88121e-01, acc: 0.719, grad_norm: 5.82128e+00, header_lr: 3.484891e-04
+0:INFO    26-06-11 16:42:32.728 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2330, loss_ce: 3.60007e-01, acc: 0.906, grad_norm: 1.51752e+01, header_lr: 3.478633e-04
+0:INFO    26-06-11 16:42:32.910 +00:02:05 - trainer.py:1181 - train epoch: 15, step: 2340, loss_ce: 3.72027e-01, acc: 0.906, grad_norm: 5.71935e+00, header_lr: 3.472344e-04
+0:INFO    26-06-11 16:42:33.091 +00:02:06 - trainer.py:1181 - train epoch: 15, step: 2350, loss_ce: 4.67863e-01, acc: 0.812, grad_norm: 1.56547e+01, header_lr: 3.466022e-04
+0:INFO    26-06-11 16:42:33.280 +00:02:06 - trainer.py:1181 - train epoch: 15, step: 2360, loss_ce: 4.30927e-01, acc: 0.844, grad_norm: 6.08480e+00, header_lr: 3.459669e-04
+0:INFO    26-06-11 16:42:33.463 +00:02:06 - trainer.py:1181 - train epoch: 15, step: 2370, loss_ce: 5.86466e-01, acc: 0.750, grad_norm: 2.68254e+01, header_lr: 3.453284e-04
+0:INFO    26-06-11 16:42:33.644 +00:02:06 - trainer.py:1181 - train epoch: 15, step: 2380, loss_ce: 8.50048e-01, acc: 0.688, grad_norm: 1.07004e+01, header_lr: 3.446868e-04
+0:INFO    26-06-11 16:42:33.701 +00:02:06 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:34.073 +00:02:07 - trainer.py:1265 - adftd/eval epoch: 15, loss: 6.4515, acc: 0.530, balanced_acc: 0.476, cohen_kappa: 0.258, f1: 0.484
+0:INFO    26-06-11 16:42:34.073 +00:02:07 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:34.465 +00:02:07 - trainer.py:1265 - adftd/test epoch: 15, loss: 1.6655, acc: 0.518, balanced_acc: 0.491, cohen_kappa: 0.249, f1: 0.519
+0:INFO    26-06-11 16:42:34.613 +00:02:07 - trainer.py:1181 - train epoch: 16, step: 2390, loss_ce: 3.18589e-01, acc: 0.906, grad_norm: 6.32877e+00, header_lr: 3.440420e-04
+0:INFO    26-06-11 16:42:34.796 +00:02:07 - trainer.py:1181 - train epoch: 16, step: 2400, loss_ce: 5.35482e-01, acc: 0.750, grad_norm: 2.45776e+01, header_lr: 3.433942e-04
+0:INFO    26-06-11 16:42:34.983 +00:02:08 - trainer.py:1181 - train epoch: 16, step: 2410, loss_ce: 5.50793e-01, acc: 0.750, grad_norm: 7.85537e+01, header_lr: 3.427432e-04
+0:INFO    26-06-11 16:42:35.175 +00:02:08 - trainer.py:1181 - train epoch: 16, step: 2420, loss_ce: 3.66981e-01, acc: 0.875, grad_norm: 8.96362e+00, header_lr: 3.420891e-04
+0:INFO    26-06-11 16:42:35.369 +00:02:08 - trainer.py:1181 - train epoch: 16, step: 2430, loss_ce: 5.23515e-01, acc: 0.688, grad_norm: 2.70150e+01, header_lr: 3.414320e-04
+0:INFO    26-06-11 16:42:35.555 +00:02:08 - trainer.py:1181 - train epoch: 16, step: 2440, loss_ce: 2.26464e-01, acc: 0.969, grad_norm: 1.18422e+01, header_lr: 3.407718e-04
+0:INFO    26-06-11 16:42:35.749 +00:02:08 - trainer.py:1181 - train epoch: 16, step: 2450, loss_ce: 4.62375e-01, acc: 0.875, grad_norm: 4.21724e+01, header_lr: 3.401085e-04
+0:INFO    26-06-11 16:42:35.941 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2460, loss_ce: 9.71492e-01, acc: 0.875, grad_norm: 5.66704e+01, header_lr: 3.394422e-04
+0:INFO    26-06-11 16:42:36.134 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2470, loss_ce: 3.24988e-01, acc: 0.938, grad_norm: 5.52154e+00, header_lr: 3.387729e-04
+0:INFO    26-06-11 16:42:36.323 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2480, loss_ce: 3.99697e-01, acc: 0.812, grad_norm: 6.00278e+00, header_lr: 3.381006e-04
+0:INFO    26-06-11 16:42:36.509 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2490, loss_ce: 8.36619e-01, acc: 0.688, grad_norm: 4.79638e+01, header_lr: 3.374253e-04
+0:INFO    26-06-11 16:42:36.695 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2500, loss_ce: 2.76408e-01, acc: 0.938, grad_norm: 1.90151e+01, header_lr: 3.367470e-04
+0:INFO    26-06-11 16:42:36.879 +00:02:09 - trainer.py:1181 - train epoch: 16, step: 2510, loss_ce: 2.88805e+00, acc: 0.875, grad_norm: 1.65205e+02, header_lr: 3.360658e-04
+0:INFO    26-06-11 16:42:37.064 +00:02:10 - trainer.py:1181 - train epoch: 16, step: 2520, loss_ce: 3.83578e-01, acc: 0.875, grad_norm: 1.35352e+01, header_lr: 3.353817e-04
+0:INFO    26-06-11 16:42:37.253 +00:02:10 - trainer.py:1181 - train epoch: 16, step: 2530, loss_ce: 3.50378e-01, acc: 0.906, grad_norm: 1.51661e+01, header_lr: 3.346946e-04
+0:INFO    26-06-11 16:42:37.293 +00:02:10 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:37.674 +00:02:10 - trainer.py:1265 - adftd/eval epoch: 16, loss: 6.5858, acc: 0.509, balanced_acc: 0.461, cohen_kappa: 0.234, f1: 0.457
+0:INFO    26-06-11 16:42:37.674 +00:02:10 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:38.070 +00:02:11 - trainer.py:1265 - adftd/test epoch: 16, loss: 1.8341, acc: 0.513, balanced_acc: 0.476, cohen_kappa: 0.229, f1: 0.500
+0:INFO    26-06-11 16:42:38.243 +00:02:11 - trainer.py:1181 - train epoch: 17, step: 2540, loss_ce: 5.23229e-01, acc: 0.844, grad_norm: 2.66427e+01, header_lr: 3.340045e-04
+0:INFO    26-06-11 16:42:38.428 +00:02:11 - trainer.py:1181 - train epoch: 17, step: 2550, loss_ce: 4.49951e-01, acc: 0.906, grad_norm: 9.02555e+00, header_lr: 3.333116e-04
+0:INFO    26-06-11 16:42:38.608 +00:02:11 - trainer.py:1181 - train epoch: 17, step: 2560, loss_ce: 4.12955e-01, acc: 0.812, grad_norm: 1.89092e+01, header_lr: 3.326158e-04
+0:INFO    26-06-11 16:42:38.786 +00:02:11 - trainer.py:1181 - train epoch: 17, step: 2570, loss_ce: 5.43619e-01, acc: 0.750, grad_norm: 5.01527e+01, header_lr: 3.319172e-04
+0:INFO    26-06-11 16:42:38.966 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2580, loss_ce: 6.03922e-01, acc: 0.750, grad_norm: 4.21323e+01, header_lr: 3.312157e-04
+0:INFO    26-06-11 16:42:39.145 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2590, loss_ce: 4.52993e-01, acc: 0.812, grad_norm: 1.35733e+01, header_lr: 3.305113e-04
+0:INFO    26-06-11 16:42:39.324 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2600, loss_ce: 2.94290e-01, acc: 0.938, grad_norm: 1.45572e+01, header_lr: 3.298042e-04
+0:INFO    26-06-11 16:42:39.503 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2610, loss_ce: 3.10392e-01, acc: 0.906, grad_norm: 1.18143e+01, header_lr: 3.290942e-04
+0:INFO    26-06-11 16:42:39.682 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2620, loss_ce: 4.43832e-01, acc: 0.781, grad_norm: 7.57926e+00, header_lr: 3.283814e-04
+0:INFO    26-06-11 16:42:39.860 +00:02:12 - trainer.py:1181 - train epoch: 17, step: 2630, loss_ce: 3.50295e-01, acc: 1.000, grad_norm: 7.46263e+00, header_lr: 3.276659e-04
+0:INFO    26-06-11 16:42:40.039 +00:02:13 - trainer.py:1181 - train epoch: 17, step: 2640, loss_ce: 6.17646e-01, acc: 0.750, grad_norm: 1.33102e+01, header_lr: 3.269476e-04
+0:INFO    26-06-11 16:42:40.220 +00:02:13 - trainer.py:1181 - train epoch: 17, step: 2650, loss_ce: 5.56721e-01, acc: 0.688, grad_norm: 4.80964e+01, header_lr: 3.262266e-04
+0:INFO    26-06-11 16:42:40.401 +00:02:13 - trainer.py:1181 - train epoch: 17, step: 2660, loss_ce: 6.08226e-01, acc: 0.875, grad_norm: 2.28401e+01, header_lr: 3.255028e-04
+0:INFO    26-06-11 16:42:40.582 +00:02:13 - trainer.py:1181 - train epoch: 17, step: 2670, loss_ce: 3.33088e-01, acc: 0.875, grad_norm: 1.66142e+01, header_lr: 3.247763e-04
+0:INFO    26-06-11 16:42:40.760 +00:02:13 - trainer.py:1181 - train epoch: 17, step: 2680, loss_ce: 5.31406e-01, acc: 0.781, grad_norm: 1.23962e+01, header_lr: 3.240471e-04
+0:INFO    26-06-11 16:42:40.779 +00:02:13 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:41.154 +00:02:14 - trainer.py:1265 - adftd/eval epoch: 17, loss: 6.7987, acc: 0.472, balanced_acc: 0.427, cohen_kappa: 0.174, f1: 0.440
+0:INFO    26-06-11 16:42:41.155 +00:02:14 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:41.555 +00:02:14 - trainer.py:1265 - adftd/test epoch: 17, loss: 1.4454, acc: 0.498, balanced_acc: 0.471, cohen_kappa: 0.224, f1: 0.496
+0:INFO    26-06-11 16:42:41.738 +00:02:14 - trainer.py:1181 - train epoch: 18, step: 2690, loss_ce: 1.16078e+00, acc: 0.812, grad_norm: 3.36074e+02, header_lr: 3.233153e-04
+0:INFO    26-06-11 16:42:41.931 +00:02:14 - trainer.py:1181 - train epoch: 18, step: 2700, loss_ce: 3.98056e-01, acc: 0.844, grad_norm: 2.95264e+01, header_lr: 3.225808e-04
+0:INFO    26-06-11 16:42:42.122 +00:02:15 - trainer.py:1181 - train epoch: 18, step: 2710, loss_ce: 2.14787e+00, acc: 0.781, grad_norm: 2.11083e+02, header_lr: 3.218436e-04
+0:INFO    26-06-11 16:42:42.319 +00:02:15 - trainer.py:1181 - train epoch: 18, step: 2720, loss_ce: 5.39108e-01, acc: 0.781, grad_norm: 7.43128e+01, header_lr: 3.211038e-04
+0:INFO    26-06-11 16:42:42.515 +00:02:15 - trainer.py:1181 - train epoch: 18, step: 2730, loss_ce: 1.36560e+00, acc: 0.812, grad_norm: 1.60282e+02, header_lr: 3.203614e-04
+0:INFO    26-06-11 16:42:42.703 +00:02:15 - trainer.py:1181 - train epoch: 18, step: 2740, loss_ce: 5.78369e-01, acc: 0.750, grad_norm: 2.53610e+01, header_lr: 3.196164e-04
+0:INFO    26-06-11 16:42:42.892 +00:02:15 - trainer.py:1181 - train epoch: 18, step: 2750, loss_ce: 3.58028e-01, acc: 0.906, grad_norm: 3.36106e+01, header_lr: 3.188688e-04
+0:INFO    26-06-11 16:42:43.075 +00:02:16 - trainer.py:1181 - train epoch: 18, step: 2760, loss_ce: 4.54845e-01, acc: 0.750, grad_norm: 4.61716e+01, header_lr: 3.181186e-04
+0:INFO    26-06-11 16:42:43.258 +00:02:16 - trainer.py:1181 - train epoch: 18, step: 2770, loss_ce: 2.99372e-01, acc: 0.938, grad_norm: 8.08087e+00, header_lr: 3.173659e-04
+0:INFO    26-06-11 16:42:43.449 +00:02:16 - trainer.py:1181 - train epoch: 18, step: 2780, loss_ce: 5.92470e-01, acc: 0.750, grad_norm: 2.17436e+01, header_lr: 3.166107e-04
+0:INFO    26-06-11 16:42:43.636 +00:02:16 - trainer.py:1181 - train epoch: 18, step: 2790, loss_ce: 6.62660e-01, acc: 0.688, grad_norm: 2.79638e+01, header_lr: 3.158529e-04
+0:INFO    26-06-11 16:42:43.817 +00:02:16 - trainer.py:1181 - train epoch: 18, step: 2800, loss_ce: 7.18974e-01, acc: 0.719, grad_norm: 7.80011e+01, header_lr: 3.150927e-04
+0:INFO    26-06-11 16:42:44.005 +00:02:17 - trainer.py:1181 - train epoch: 18, step: 2810, loss_ce: 4.00952e-01, acc: 0.875, grad_norm: 2.45751e+01, header_lr: 3.143299e-04
+0:INFO    26-06-11 16:42:44.196 +00:02:17 - trainer.py:1181 - train epoch: 18, step: 2820, loss_ce: 3.62528e-01, acc: 0.906, grad_norm: 2.42787e+01, header_lr: 3.135647e-04
+0:INFO    26-06-11 16:42:44.390 +00:02:17 - trainer.py:1181 - train epoch: 18, step: 2830, loss_ce: 4.95209e-01, acc: 0.781, grad_norm: 7.13305e+00, header_lr: 3.127971e-04
+0:INFO    26-06-11 16:42:44.392 +00:02:17 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:44.801 +00:02:17 - trainer.py:1265 - adftd/eval epoch: 18, loss: 6.8483, acc: 0.471, balanced_acc: 0.433, cohen_kappa: 0.185, f1: 0.439
+0:INFO    26-06-11 16:42:44.802 +00:02:17 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:45.210 +00:02:18 - trainer.py:1265 - adftd/test epoch: 18, loss: 1.7313, acc: 0.505, balanced_acc: 0.484, cohen_kappa: 0.232, f1: 0.499
+0:INFO    26-06-11 16:42:45.423 +00:02:18 - trainer.py:1181 - train epoch: 19, step: 2840, loss_ce: 5.12028e-01, acc: 0.844, grad_norm: 5.45908e+01, header_lr: 3.120270e-04
+0:INFO    26-06-11 16:42:45.608 +00:02:18 - trainer.py:1181 - train epoch: 19, step: 2850, loss_ce: 4.10955e-01, acc: 0.875, grad_norm: 2.48521e+01, header_lr: 3.112545e-04
+0:INFO    26-06-11 16:42:45.794 +00:02:18 - trainer.py:1181 - train epoch: 19, step: 2860, loss_ce: 4.86443e-01, acc: 0.844, grad_norm: 5.84247e+01, header_lr: 3.104796e-04
+0:INFO    26-06-11 16:42:45.979 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2870, loss_ce: 4.50964e-01, acc: 0.812, grad_norm: 2.43432e+01, header_lr: 3.097023e-04
+0:INFO    26-06-11 16:42:46.164 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2880, loss_ce: 4.03812e-01, acc: 0.844, grad_norm: 1.32207e+01, header_lr: 3.089227e-04
+0:INFO    26-06-11 16:42:46.348 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2890, loss_ce: 3.73544e-01, acc: 0.844, grad_norm: 1.40838e+01, header_lr: 3.081407e-04
+0:INFO    26-06-11 16:42:46.531 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2900, loss_ce: 6.24984e-01, acc: 0.781, grad_norm: 1.98757e+01, header_lr: 3.073564e-04
+0:INFO    26-06-11 16:42:46.716 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2910, loss_ce: 5.07668e-01, acc: 0.812, grad_norm: 4.30012e+01, header_lr: 3.065697e-04
+0:INFO    26-06-11 16:42:46.900 +00:02:19 - trainer.py:1181 - train epoch: 19, step: 2920, loss_ce: 6.75194e-01, acc: 0.875, grad_norm: 5.36982e+01, header_lr: 3.057808e-04
+0:INFO    26-06-11 16:42:47.085 +00:02:20 - trainer.py:1181 - train epoch: 19, step: 2930, loss_ce: 3.86401e-01, acc: 0.844, grad_norm: 6.20910e+01, header_lr: 3.049896e-04
+0:INFO    26-06-11 16:42:47.269 +00:02:20 - trainer.py:1181 - train epoch: 19, step: 2940, loss_ce: 3.71841e-01, acc: 0.906, grad_norm: 1.35582e+01, header_lr: 3.041961e-04
+0:INFO    26-06-11 16:42:47.454 +00:02:20 - trainer.py:1181 - train epoch: 19, step: 2950, loss_ce: 7.10361e-01, acc: 0.781, grad_norm: 5.47997e+01, header_lr: 3.034004e-04
+0:INFO    26-06-11 16:42:47.638 +00:02:20 - trainer.py:1181 - train epoch: 19, step: 2960, loss_ce: 4.64377e-01, acc: 0.875, grad_norm: 2.07405e+01, header_lr: 3.026025e-04
+0:INFO    26-06-11 16:42:47.820 +00:02:20 - trainer.py:1181 - train epoch: 19, step: 2970, loss_ce: 4.45570e-01, acc: 0.844, grad_norm: 1.59022e+01, header_lr: 3.018023e-04
+0:INFO    26-06-11 16:42:47.982 +00:02:21 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:48.363 +00:02:21 - trainer.py:1265 - adftd/eval epoch: 19, loss: 7.0165, acc: 0.472, balanced_acc: 0.428, cohen_kappa: 0.177, f1: 0.429
+0:INFO    26-06-11 16:42:48.363 +00:02:21 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:48.777 +00:02:21 - trainer.py:1265 - adftd/test epoch: 19, loss: 1.7740, acc: 0.514, balanced_acc: 0.482, cohen_kappa: 0.236, f1: 0.502
+0:INFO    26-06-11 16:42:48.821 +00:02:21 - trainer.py:1181 - train epoch: 20, step: 2980, loss_ce: 3.67841e-01, acc: 0.938, grad_norm: 1.96613e+01, header_lr: 3.010000e-04
+0:INFO    26-06-11 16:42:49.038 +00:02:22 - trainer.py:1181 - train epoch: 20, step: 2990, loss_ce: 4.06472e-01, acc: 0.875, grad_norm: 2.05724e+01, header_lr: 3.001955e-04
+0:INFO    26-06-11 16:42:49.230 +00:02:22 - trainer.py:1181 - train epoch: 20, step: 3000, loss_ce: 4.49769e-01, acc: 0.812, grad_norm: 1.76224e+01, header_lr: 2.993888e-04
+0:INFO    26-06-11 16:42:49.421 +00:02:22 - trainer.py:1181 - train epoch: 20, step: 3010, loss_ce: 3.81159e-01, acc: 0.844, grad_norm: 3.34492e+00, header_lr: 2.985800e-04
+0:INFO    26-06-11 16:42:49.612 +00:02:22 - trainer.py:1181 - train epoch: 20, step: 3020, loss_ce: 3.36242e-01, acc: 0.906, grad_norm: 1.38239e+01, header_lr: 2.977691e-04
+0:INFO    26-06-11 16:42:49.803 +00:02:22 - trainer.py:1181 - train epoch: 20, step: 3030, loss_ce: 3.39330e-01, acc: 0.906, grad_norm: 2.35119e+01, header_lr: 2.969561e-04
+0:INFO    26-06-11 16:42:49.989 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3040, loss_ce: 5.29975e-01, acc: 0.875, grad_norm: 6.87080e+01, header_lr: 2.961409e-04
+0:INFO    26-06-11 16:42:50.180 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3050, loss_ce: 2.89461e-01, acc: 0.906, grad_norm: 5.23763e+00, header_lr: 2.953238e-04
+0:INFO    26-06-11 16:42:50.365 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3060, loss_ce: 8.96117e-01, acc: 0.719, grad_norm: 1.17334e+02, header_lr: 2.945045e-04
+0:INFO    26-06-11 16:42:50.548 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3070, loss_ce: 1.02450e+00, acc: 0.781, grad_norm: 8.27885e+01, header_lr: 2.936833e-04
+0:INFO    26-06-11 16:42:50.731 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3080, loss_ce: 5.20834e-01, acc: 0.781, grad_norm: 3.23543e+01, header_lr: 2.928600e-04
+0:INFO    26-06-11 16:42:50.915 +00:02:23 - trainer.py:1181 - train epoch: 20, step: 3090, loss_ce: 2.58522e-01, acc: 0.906, grad_norm: 1.52047e+01, header_lr: 2.920347e-04
+0:INFO    26-06-11 16:42:51.098 +00:02:24 - trainer.py:1181 - train epoch: 20, step: 3100, loss_ce: 3.22548e-01, acc: 0.875, grad_norm: 9.01409e+00, header_lr: 2.912075e-04
+0:INFO    26-06-11 16:42:51.286 +00:02:24 - trainer.py:1181 - train epoch: 20, step: 3110, loss_ce: 3.15452e-01, acc: 0.875, grad_norm: 1.25228e+01, header_lr: 2.903783e-04
+0:INFO    26-06-11 16:42:51.468 +00:02:24 - trainer.py:1181 - train epoch: 20, step: 3120, loss_ce: 4.21665e-01, acc: 0.844, grad_norm: 2.50052e+01, header_lr: 2.895472e-04
+0:INFO    26-06-11 16:42:51.617 +00:02:24 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:51.996 +00:02:25 - trainer.py:1265 - adftd/eval epoch: 20, loss: 6.9782, acc: 0.429, balanced_acc: 0.393, cohen_kappa: 0.117, f1: 0.404
+0:INFO    26-06-11 16:42:51.996 +00:02:25 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:52.380 +00:02:25 - trainer.py:1265 - adftd/test epoch: 20, loss: 1.5238, acc: 0.519, balanced_acc: 0.499, cohen_kappa: 0.255, f1: 0.512
+0:INFO    26-06-11 16:42:52.440 +00:02:25 - trainer.py:1181 - train epoch: 21, step: 3130, loss_ce: 2.92066e-01, acc: 0.906, grad_norm: 1.27156e+01, header_lr: 2.887141e-04
+0:INFO    26-06-11 16:42:52.629 +00:02:25 - trainer.py:1181 - train epoch: 21, step: 3140, loss_ce: 3.62175e-01, acc: 0.875, grad_norm: 1.07584e+01, header_lr: 2.878791e-04
+0:INFO    26-06-11 16:42:52.819 +00:02:25 - trainer.py:1181 - train epoch: 21, step: 3150, loss_ce: 5.59793e-01, acc: 0.719, grad_norm: 1.33845e+01, header_lr: 2.870423e-04
+0:INFO    26-06-11 16:42:53.009 +00:02:26 - trainer.py:1181 - train epoch: 21, step: 3160, loss_ce: 5.51919e-01, acc: 0.812, grad_norm: 2.34269e+01, header_lr: 2.862036e-04
+0:INFO    26-06-11 16:42:53.201 +00:02:26 - trainer.py:1181 - train epoch: 21, step: 3170, loss_ce: 7.61589e-01, acc: 0.688, grad_norm: 2.58409e+01, header_lr: 2.853630e-04
+0:INFO    26-06-11 16:42:53.390 +00:02:26 - trainer.py:1181 - train epoch: 21, step: 3180, loss_ce: 2.93654e-01, acc: 0.906, grad_norm: 2.51860e+01, header_lr: 2.845206e-04
+0:INFO    26-06-11 16:42:53.579 +00:02:26 - trainer.py:1181 - train epoch: 21, step: 3190, loss_ce: 3.21565e-01, acc: 0.906, grad_norm: 7.60667e+00, header_lr: 2.836764e-04
+0:INFO    26-06-11 16:42:53.768 +00:02:26 - trainer.py:1181 - train epoch: 21, step: 3200, loss_ce: 4.91160e-01, acc: 0.812, grad_norm: 1.43512e+01, header_lr: 2.828304e-04
+0:INFO    26-06-11 16:42:53.948 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3210, loss_ce: 4.54846e-01, acc: 0.812, grad_norm: 1.90045e+01, header_lr: 2.819826e-04
+0:INFO    26-06-11 16:42:54.130 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3220, loss_ce: 5.80660e-01, acc: 0.781, grad_norm: 7.49755e+00, header_lr: 2.811331e-04
+0:INFO    26-06-11 16:42:54.311 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3230, loss_ce: 4.55796e-01, acc: 0.844, grad_norm: 1.18836e+01, header_lr: 2.802818e-04
+0:INFO    26-06-11 16:42:54.493 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3240, loss_ce: 3.93351e-01, acc: 0.844, grad_norm: 1.28755e+01, header_lr: 2.794288e-04
+0:INFO    26-06-11 16:42:54.673 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3250, loss_ce: 4.40676e-01, acc: 0.750, grad_norm: 1.47954e+01, header_lr: 2.785741e-04
+0:INFO    26-06-11 16:42:54.854 +00:02:27 - trainer.py:1181 - train epoch: 21, step: 3260, loss_ce: 8.93069e-01, acc: 0.812, grad_norm: 3.95531e+01, header_lr: 2.777177e-04
+0:INFO    26-06-11 16:42:55.034 +00:02:28 - trainer.py:1181 - train epoch: 21, step: 3270, loss_ce: 4.63749e-01, acc: 0.719, grad_norm: 2.14972e+01, header_lr: 2.768597e-04
+0:INFO    26-06-11 16:42:55.157 +00:02:28 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:55.537 +00:02:28 - trainer.py:1265 - adftd/eval epoch: 21, loss: 7.0105, acc: 0.463, balanced_acc: 0.432, cohen_kappa: 0.176, f1: 0.436
+0:INFO    26-06-11 16:42:55.537 +00:02:28 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:55.934 +00:02:28 - trainer.py:1265 - adftd/test epoch: 21, loss: 1.4208, acc: 0.516, balanced_acc: 0.486, cohen_kappa: 0.247, f1: 0.500
+0:INFO    26-06-11 16:42:56.013 +00:02:29 - trainer.py:1181 - train epoch: 22, step: 3280, loss_ce: 3.10032e-01, acc: 0.906, grad_norm: 2.28771e+01, header_lr: 2.760000e-04
+0:INFO    26-06-11 16:42:56.201 +00:02:29 - trainer.py:1181 - train epoch: 22, step: 3290, loss_ce: 3.17310e-01, acc: 0.906, grad_norm: 1.63110e+01, header_lr: 2.751387e-04
+0:INFO    26-06-11 16:42:56.390 +00:02:29 - trainer.py:1181 - train epoch: 22, step: 3300, loss_ce: 4.70429e-01, acc: 0.719, grad_norm: 1.25263e+01, header_lr: 2.742758e-04
+0:INFO    26-06-11 16:42:56.577 +00:02:29 - trainer.py:1181 - train epoch: 22, step: 3310, loss_ce: 4.76175e-01, acc: 0.906, grad_norm: 1.16405e+01, header_lr: 2.734113e-04
+0:INFO    26-06-11 16:42:56.760 +00:02:29 - trainer.py:1181 - train epoch: 22, step: 3320, loss_ce: 2.76057e-01, acc: 0.938, grad_norm: 1.24722e+01, header_lr: 2.725453e-04
+0:INFO    26-06-11 16:42:56.941 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3330, loss_ce: 6.13507e-01, acc: 0.812, grad_norm: 3.06224e+01, header_lr: 2.716777e-04
+0:INFO    26-06-11 16:42:57.126 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3340, loss_ce: 8.55386e-01, acc: 0.781, grad_norm: 3.38081e+02, header_lr: 2.708085e-04
+0:INFO    26-06-11 16:42:57.307 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3350, loss_ce: 3.83721e-01, acc: 0.812, grad_norm: 5.91062e+00, header_lr: 2.699379e-04
+0:INFO    26-06-11 16:42:57.488 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3360, loss_ce: 2.70694e-01, acc: 0.875, grad_norm: 1.56864e+01, header_lr: 2.690657e-04
+0:INFO    26-06-11 16:42:57.667 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3370, loss_ce: 3.28031e-01, acc: 0.906, grad_norm: 1.13489e+01, header_lr: 2.681921e-04
+0:INFO    26-06-11 16:42:57.861 +00:02:30 - trainer.py:1181 - train epoch: 22, step: 3380, loss_ce: 5.75971e-01, acc: 0.938, grad_norm: 9.88091e+01, header_lr: 2.673171e-04
+0:INFO    26-06-11 16:42:58.040 +00:02:31 - trainer.py:1181 - train epoch: 22, step: 3390, loss_ce: 1.66703e+00, acc: 0.714, grad_norm: 2.56766e+02, header_lr: 2.664406e-04
+0:INFO    26-06-11 16:42:58.220 +00:02:31 - trainer.py:1181 - train epoch: 22, step: 3400, loss_ce: 5.56425e-01, acc: 0.750, grad_norm: 2.52431e+01, header_lr: 2.655627e-04
+0:INFO    26-06-11 16:42:58.401 +00:02:31 - trainer.py:1181 - train epoch: 22, step: 3410, loss_ce: 4.98075e-01, acc: 0.812, grad_norm: 1.26535e+01, header_lr: 2.646833e-04
+0:INFO    26-06-11 16:42:58.582 +00:02:31 - trainer.py:1181 - train epoch: 22, step: 3420, loss_ce: 6.46621e-01, acc: 0.844, grad_norm: 9.80787e+01, header_lr: 2.638027e-04
+0:INFO    26-06-11 16:42:58.691 +00:02:31 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:42:59.068 +00:02:32 - trainer.py:1265 - adftd/eval epoch: 22, loss: 6.9320, acc: 0.468, balanced_acc: 0.430, cohen_kappa: 0.178, f1: 0.434
+0:INFO    26-06-11 16:42:59.069 +00:02:32 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:42:59.511 +00:02:32 - trainer.py:1265 - adftd/test epoch: 22, loss: 1.8716, acc: 0.503, balanced_acc: 0.477, cohen_kappa: 0.227, f1: 0.494
+0:INFO    26-06-11 16:42:59.604 +00:02:32 - trainer.py:1181 - train epoch: 23, step: 3430, loss_ce: 4.40058e-01, acc: 0.781, grad_norm: 9.66720e+00, header_lr: 2.629206e-04
+0:INFO    26-06-11 16:42:59.783 +00:02:32 - trainer.py:1181 - train epoch: 23, step: 3440, loss_ce: 5.79871e-01, acc: 0.781, grad_norm: 5.26674e+01, header_lr: 2.620372e-04
+0:INFO    26-06-11 16:42:59.963 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3450, loss_ce: 3.76631e-01, acc: 0.938, grad_norm: 1.08343e+01, header_lr: 2.611525e-04
+0:INFO    26-06-11 16:43:00.143 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3460, loss_ce: 3.39823e-01, acc: 0.844, grad_norm: 1.08089e+01, header_lr: 2.602665e-04
+0:INFO    26-06-11 16:43:00.324 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3470, loss_ce: 2.82030e-01, acc: 0.969, grad_norm: 7.94504e+00, header_lr: 2.593793e-04
+0:INFO    26-06-11 16:43:00.504 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3480, loss_ce: 6.15960e-01, acc: 0.812, grad_norm: 3.37094e+01, header_lr: 2.584907e-04
+0:INFO    26-06-11 16:43:00.684 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3490, loss_ce: 6.25207e-01, acc: 0.750, grad_norm: 6.38789e+01, header_lr: 2.576009e-04
+0:INFO    26-06-11 16:43:00.869 +00:02:33 - trainer.py:1181 - train epoch: 23, step: 3500, loss_ce: 2.62499e-01, acc: 0.938, grad_norm: 1.29498e+01, header_lr: 2.567100e-04
+0:INFO    26-06-11 16:43:01.055 +00:02:34 - trainer.py:1181 - train epoch: 23, step: 3510, loss_ce: 3.99221e-01, acc: 0.812, grad_norm: 9.57502e+00, header_lr: 2.558178e-04
+0:INFO    26-06-11 16:43:01.235 +00:02:34 - trainer.py:1181 - train epoch: 23, step: 3520, loss_ce: 4.35864e-01, acc: 0.812, grad_norm: 5.77099e+01, header_lr: 2.549244e-04
+0:INFO    26-06-11 16:43:01.417 +00:02:34 - trainer.py:1181 - train epoch: 23, step: 3530, loss_ce: 3.60921e-01, acc: 0.906, grad_norm: 1.35639e+01, header_lr: 2.540298e-04
+0:INFO    26-06-11 16:43:01.599 +00:02:34 - trainer.py:1181 - train epoch: 23, step: 3540, loss_ce: 3.01860e+00, acc: 0.812, grad_norm: 6.55695e+01, header_lr: 2.531341e-04
+0:INFO    26-06-11 16:43:01.781 +00:02:34 - trainer.py:1181 - train epoch: 23, step: 3550, loss_ce: 9.84442e-01, acc: 0.844, grad_norm: 8.39664e+01, header_lr: 2.522373e-04
+0:INFO    26-06-11 16:43:01.962 +00:02:35 - trainer.py:1181 - train epoch: 23, step: 3560, loss_ce: 3.83521e-01, acc: 0.875, grad_norm: 1.90495e+01, header_lr: 2.513394e-04
+0:INFO    26-06-11 16:43:02.141 +00:02:35 - trainer.py:1181 - train epoch: 23, step: 3570, loss_ce: 5.41161e-01, acc: 0.875, grad_norm: 3.21010e+01, header_lr: 2.504404e-04
+0:INFO    26-06-11 16:43:02.230 +00:02:35 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:02.850 +00:02:35 - trainer.py:1265 - adftd/eval epoch: 23, loss: 7.0619, acc: 0.416, balanced_acc: 0.385, cohen_kappa: 0.105, f1: 0.381
+0:INFO    26-06-11 16:43:02.850 +00:02:35 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:03.482 +00:02:36 - trainer.py:1265 - adftd/test epoch: 23, loss: 1.5646, acc: 0.506, balanced_acc: 0.490, cohen_kappa: 0.240, f1: 0.495
+0:INFO    26-06-11 16:43:03.596 +00:02:36 - trainer.py:1181 - train epoch: 24, step: 3580, loss_ce: 7.87431e-01, acc: 0.844, grad_norm: 1.84284e+01, header_lr: 2.495404e-04
+0:INFO    26-06-11 16:43:03.778 +00:02:36 - trainer.py:1181 - train epoch: 24, step: 3590, loss_ce: 3.97425e-01, acc: 0.812, grad_norm: 3.15818e+01, header_lr: 2.486393e-04
+0:INFO    26-06-11 16:43:03.959 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3600, loss_ce: 2.43542e-01, acc: 0.938, grad_norm: 7.89102e+00, header_lr: 2.477372e-04
+0:INFO    26-06-11 16:43:04.142 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3610, loss_ce: 5.33637e-01, acc: 0.781, grad_norm: 1.96866e+01, header_lr: 2.468340e-04
+0:INFO    26-06-11 16:43:04.324 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3620, loss_ce: 3.42493e-01, acc: 0.844, grad_norm: 1.85492e+01, header_lr: 2.459299e-04
+0:INFO    26-06-11 16:43:04.505 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3630, loss_ce: 5.65746e-01, acc: 0.781, grad_norm: 1.72221e+01, header_lr: 2.450249e-04
+0:INFO    26-06-11 16:43:04.687 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3640, loss_ce: 3.42675e-01, acc: 0.906, grad_norm: 4.50116e+01, header_lr: 2.441188e-04
+0:INFO    26-06-11 16:43:04.869 +00:02:37 - trainer.py:1181 - train epoch: 24, step: 3650, loss_ce: 4.66911e-01, acc: 0.781, grad_norm: 6.99890e+01, header_lr: 2.432119e-04
+0:INFO    26-06-11 16:43:05.072 +00:02:38 - trainer.py:1181 - train epoch: 24, step: 3660, loss_ce: 3.55273e-01, acc: 0.938, grad_norm: 1.43496e+01, header_lr: 2.423040e-04
+0:INFO    26-06-11 16:43:05.254 +00:02:38 - trainer.py:1181 - train epoch: 24, step: 3670, loss_ce: 4.84897e-01, acc: 0.781, grad_norm: 8.09612e+00, header_lr: 2.413953e-04
+0:INFO    26-06-11 16:43:05.439 +00:02:38 - trainer.py:1181 - train epoch: 24, step: 3680, loss_ce: 2.80257e-01, acc: 0.969, grad_norm: 1.14187e+01, header_lr: 2.404857e-04
+0:INFO    26-06-11 16:43:05.621 +00:02:38 - trainer.py:1181 - train epoch: 24, step: 3690, loss_ce: 3.07841e-01, acc: 0.969, grad_norm: 1.03254e+01, header_lr: 2.395753e-04
+0:INFO    26-06-11 16:43:05.801 +00:02:38 - trainer.py:1181 - train epoch: 24, step: 3700, loss_ce: 3.69711e-01, acc: 0.812, grad_norm: 1.18145e+01, header_lr: 2.386640e-04
+0:INFO    26-06-11 16:43:05.980 +00:02:39 - trainer.py:1181 - train epoch: 24, step: 3710, loss_ce: 3.17320e-01, acc: 0.875, grad_norm: 1.81072e+01, header_lr: 2.377519e-04
+0:INFO    26-06-11 16:43:06.158 +00:02:39 - trainer.py:1181 - train epoch: 24, step: 3720, loss_ce: 4.34630e-01, acc: 0.781, grad_norm: 1.39625e+01, header_lr: 2.368391e-04
+0:INFO    26-06-11 16:43:06.228 +00:02:39 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:06.607 +00:02:39 - trainer.py:1265 - adftd/eval epoch: 24, loss: 7.4216, acc: 0.434, balanced_acc: 0.392, cohen_kappa: 0.116, f1: 0.407
+0:INFO    26-06-11 16:43:06.607 +00:02:39 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:07.000 +00:02:40 - trainer.py:1265 - adftd/test epoch: 24, loss: 1.7882, acc: 0.510, balanced_acc: 0.489, cohen_kappa: 0.240, f1: 0.508
+0:INFO    26-06-11 16:43:07.134 +00:02:40 - trainer.py:1181 - train epoch: 25, step: 3730, loss_ce: 4.17657e-01, acc: 0.844, grad_norm: 2.00224e+01, header_lr: 2.359254e-04
+0:INFO    26-06-11 16:43:07.314 +00:02:40 - trainer.py:1181 - train epoch: 25, step: 3740, loss_ce: 3.25557e-01, acc: 0.906, grad_norm: 6.43696e+01, header_lr: 2.350111e-04
+0:INFO    26-06-11 16:43:07.493 +00:02:40 - trainer.py:1181 - train epoch: 25, step: 3750, loss_ce: 3.50713e-01, acc: 0.844, grad_norm: 1.39950e+01, header_lr: 2.340960e-04
+0:INFO    26-06-11 16:43:07.673 +00:02:40 - trainer.py:1181 - train epoch: 25, step: 3760, loss_ce: 1.21183e+00, acc: 0.719, grad_norm: 3.91936e+01, header_lr: 2.331802e-04
+0:INFO    26-06-11 16:43:07.855 +00:02:40 - trainer.py:1181 - train epoch: 25, step: 3770, loss_ce: 3.95486e-01, acc: 0.781, grad_norm: 5.85250e+00, header_lr: 2.322637e-04
+0:INFO    26-06-11 16:43:08.034 +00:02:41 - trainer.py:1181 - train epoch: 25, step: 3780, loss_ce: 1.46350e+01, acc: 0.906, grad_norm: 2.65696e+02, header_lr: 2.313465e-04
+0:INFO    26-06-11 16:43:08.212 +00:02:41 - trainer.py:1181 - train epoch: 25, step: 3790, loss_ce: 6.53879e-01, acc: 0.714, grad_norm: 2.68917e+01, header_lr: 2.304288e-04
+0:INFO    26-06-11 16:43:08.391 +00:02:41 - trainer.py:1181 - train epoch: 25, step: 3800, loss_ce: 4.32861e-01, acc: 0.812, grad_norm: 1.95939e+01, header_lr: 2.295103e-04
+0:INFO    26-06-11 16:43:08.571 +00:02:41 - trainer.py:1181 - train epoch: 25, step: 3810, loss_ce: 4.44877e-01, acc: 0.875, grad_norm: 2.07333e+01, header_lr: 2.285913e-04
+0:INFO    26-06-11 16:43:08.752 +00:02:41 - trainer.py:1181 - train epoch: 25, step: 3820, loss_ce: 4.58930e-01, acc: 0.875, grad_norm: 2.02650e+01, header_lr: 2.276717e-04
+0:INFO    26-06-11 16:43:08.935 +00:02:42 - trainer.py:1181 - train epoch: 25, step: 3830, loss_ce: 4.14512e-01, acc: 0.844, grad_norm: 2.47766e+01, header_lr: 2.267516e-04
+0:INFO    26-06-11 16:43:09.117 +00:02:42 - trainer.py:1181 - train epoch: 25, step: 3840, loss_ce: 8.65480e-01, acc: 0.719, grad_norm: 2.80637e+01, header_lr: 2.258308e-04
+0:INFO    26-06-11 16:43:09.298 +00:02:42 - trainer.py:1181 - train epoch: 25, step: 3850, loss_ce: 4.42545e-01, acc: 0.750, grad_norm: 2.16911e+01, header_lr: 2.249096e-04
+0:INFO    26-06-11 16:43:09.478 +00:02:42 - trainer.py:1181 - train epoch: 25, step: 3860, loss_ce: 2.70734e-01, acc: 0.875, grad_norm: 6.70778e+00, header_lr: 2.239879e-04
+0:INFO    26-06-11 16:43:09.657 +00:02:42 - trainer.py:1181 - train epoch: 25, step: 3870, loss_ce: 4.42774e-01, acc: 0.812, grad_norm: 6.27483e+00, header_lr: 2.230657e-04
+0:INFO    26-06-11 16:43:09.711 +00:02:42 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:10.088 +00:02:43 - trainer.py:1265 - adftd/eval epoch: 25, loss: 7.2600, acc: 0.413, balanced_acc: 0.383, cohen_kappa: 0.098, f1: 0.392
+0:INFO    26-06-11 16:43:10.088 +00:02:43 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:10.490 +00:02:43 - trainer.py:1265 - adftd/test epoch: 25, loss: 1.5753, acc: 0.507, balanced_acc: 0.490, cohen_kappa: 0.242, f1: 0.497
+0:INFO    26-06-11 16:43:10.641 +00:02:43 - trainer.py:1181 - train epoch: 26, step: 3880, loss_ce: 4.45069e-01, acc: 0.844, grad_norm: 1.89511e+01, header_lr: 2.221430e-04
+0:INFO    26-06-11 16:43:10.824 +00:02:43 - trainer.py:1181 - train epoch: 26, step: 3890, loss_ce: 3.56941e-01, acc: 0.875, grad_norm: 2.43445e+01, header_lr: 2.212198e-04
+0:INFO    26-06-11 16:43:11.010 +00:02:44 - trainer.py:1181 - train epoch: 26, step: 3900, loss_ce: 4.76751e-01, acc: 0.750, grad_norm: 6.14021e+01, header_lr: 2.202963e-04
+0:INFO    26-06-11 16:43:11.198 +00:02:44 - trainer.py:1181 - train epoch: 26, step: 3910, loss_ce: 3.22242e-01, acc: 0.844, grad_norm: 7.76575e+00, header_lr: 2.193724e-04
+0:INFO    26-06-11 16:43:11.401 +00:02:44 - trainer.py:1181 - train epoch: 26, step: 3920, loss_ce: 4.74863e-01, acc: 0.844, grad_norm: 2.93396e+01, header_lr: 2.184480e-04
+0:INFO    26-06-11 16:43:11.591 +00:02:44 - trainer.py:1181 - train epoch: 26, step: 3930, loss_ce: 2.72924e+01, acc: 0.875, grad_norm: 3.00815e+02, header_lr: 2.175233e-04
+0:INFO    26-06-11 16:43:11.785 +00:02:44 - trainer.py:1181 - train epoch: 26, step: 3940, loss_ce: 8.07127e-01, acc: 0.844, grad_norm: 2.13787e+01, header_lr: 2.165983e-04
+0:INFO    26-06-11 16:43:11.979 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 3950, loss_ce: 3.12974e-01, acc: 0.875, grad_norm: 5.55524e+00, header_lr: 2.156730e-04
+0:INFO    26-06-11 16:43:12.171 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 3960, loss_ce: 6.75216e-01, acc: 0.812, grad_norm: 5.73782e+01, header_lr: 2.147473e-04
+0:INFO    26-06-11 16:43:12.362 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 3970, loss_ce: 4.69873e-01, acc: 0.812, grad_norm: 1.80652e+01, header_lr: 2.138214e-04
+0:INFO    26-06-11 16:43:12.543 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 3980, loss_ce: 8.26910e-01, acc: 0.714, grad_norm: 4.61689e+01, header_lr: 2.128952e-04
+0:INFO    26-06-11 16:43:12.726 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 3990, loss_ce: 4.85889e-01, acc: 0.781, grad_norm: 2.66677e+01, header_lr: 2.119688e-04
+0:INFO    26-06-11 16:43:12.909 +00:02:45 - trainer.py:1181 - train epoch: 26, step: 4000, loss_ce: 4.05178e-01, acc: 0.938, grad_norm: 1.40370e+01, header_lr: 2.110421e-04
+0:INFO    26-06-11 16:43:13.094 +00:02:46 - trainer.py:1181 - train epoch: 26, step: 4010, loss_ce: 4.46842e-01, acc: 0.781, grad_norm: 1.95390e+01, header_lr: 2.101153e-04
+0:INFO    26-06-11 16:43:13.281 +00:02:46 - trainer.py:1181 - train epoch: 26, step: 4020, loss_ce: 4.08897e-01, acc: 0.875, grad_norm: 1.20134e+01, header_lr: 2.091882e-04
+0:INFO    26-06-11 16:43:13.317 +00:02:46 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:13.705 +00:02:46 - trainer.py:1265 - adftd/eval epoch: 26, loss: 7.6213, acc: 0.402, balanced_acc: 0.365, cohen_kappa: 0.074, f1: 0.367
+0:INFO    26-06-11 16:43:13.706 +00:02:46 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:14.120 +00:02:47 - trainer.py:1265 - adftd/test epoch: 26, loss: 1.5496, acc: 0.509, balanced_acc: 0.479, cohen_kappa: 0.235, f1: 0.492
+0:INFO    26-06-11 16:43:14.286 +00:02:47 - trainer.py:1181 - train epoch: 27, step: 4030, loss_ce: 3.25824e-01, acc: 0.844, grad_norm: 1.64725e+01, header_lr: 2.082611e-04
+0:INFO    26-06-11 16:43:14.468 +00:02:47 - trainer.py:1181 - train epoch: 27, step: 4040, loss_ce: 4.54768e-01, acc: 0.812, grad_norm: 1.30471e+01, header_lr: 2.073337e-04
+0:INFO    26-06-11 16:43:14.650 +00:02:47 - trainer.py:1181 - train epoch: 27, step: 4050, loss_ce: 3.12129e-01, acc: 0.875, grad_norm: 2.25575e+01, header_lr: 2.064063e-04
+0:INFO    26-06-11 16:43:14.833 +00:02:47 - trainer.py:1181 - train epoch: 27, step: 4060, loss_ce: 4.89895e-01, acc: 0.906, grad_norm: 2.81667e+01, header_lr: 2.054788e-04
+0:INFO    26-06-11 16:43:15.015 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4070, loss_ce: 2.49345e-01, acc: 0.906, grad_norm: 1.53553e+01, header_lr: 2.045512e-04
+0:INFO    26-06-11 16:43:15.194 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4080, loss_ce: 2.79153e-01, acc: 0.938, grad_norm: 7.23092e+00, header_lr: 2.036235e-04
+0:INFO    26-06-11 16:43:15.377 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4090, loss_ce: 5.18065e-01, acc: 0.844, grad_norm: 2.50404e+01, header_lr: 2.026958e-04
+0:INFO    26-06-11 16:43:15.561 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4100, loss_ce: 2.85793e-01, acc: 0.906, grad_norm: 1.14170e+01, header_lr: 2.017681e-04
+0:INFO    26-06-11 16:43:15.743 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4110, loss_ce: 4.09694e-01, acc: 0.906, grad_norm: 1.10056e+02, header_lr: 2.008404e-04
+0:INFO    26-06-11 16:43:15.926 +00:02:48 - trainer.py:1181 - train epoch: 27, step: 4120, loss_ce: 2.94809e-01, acc: 0.875, grad_norm: 1.72276e+01, header_lr: 1.999127e-04
+0:INFO    26-06-11 16:43:16.107 +00:02:49 - trainer.py:1181 - train epoch: 27, step: 4130, loss_ce: 2.06457e-01, acc: 0.969, grad_norm: 1.34006e+01, header_lr: 1.989850e-04
+0:INFO    26-06-11 16:43:16.286 +00:02:49 - trainer.py:1181 - train epoch: 27, step: 4140, loss_ce: 3.29704e+00, acc: 0.875, grad_norm: 9.77834e+01, header_lr: 1.980575e-04
+0:INFO    26-06-11 16:43:16.465 +00:02:49 - trainer.py:1181 - train epoch: 27, step: 4150, loss_ce: 2.70427e-01, acc: 0.906, grad_norm: 1.97371e+01, header_lr: 1.971300e-04
+0:INFO    26-06-11 16:43:16.643 +00:02:49 - trainer.py:1181 - train epoch: 27, step: 4160, loss_ce: 6.75193e-01, acc: 0.719, grad_norm: 7.90357e+01, header_lr: 1.962026e-04
+0:INFO    26-06-11 16:43:16.819 +00:02:49 - trainer.py:1181 - train epoch: 27, step: 4170, loss_ce: 3.02222e-01, acc: 0.844, grad_norm: 9.42863e+00, header_lr: 1.952753e-04
+0:INFO    26-06-11 16:43:16.838 +00:02:49 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:17.216 +00:02:50 - trainer.py:1265 - adftd/eval epoch: 27, loss: 7.4013, acc: 0.452, balanced_acc: 0.415, cohen_kappa: 0.158, f1: 0.416
+0:INFO    26-06-11 16:43:17.217 +00:02:50 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:17.608 +00:02:50 - trainer.py:1265 - adftd/test epoch: 27, loss: 1.6208, acc: 0.501, balanced_acc: 0.481, cohen_kappa: 0.227, f1: 0.493
+0:INFO    26-06-11 16:43:17.790 +00:02:50 - trainer.py:1181 - train epoch: 28, step: 4180, loss_ce: 5.14734e-01, acc: 0.844, grad_norm: 1.72447e+01, header_lr: 1.943482e-04
+0:INFO    26-06-11 16:43:17.967 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4190, loss_ce: 3.40292e-01, acc: 0.844, grad_norm: 1.92095e+01, header_lr: 1.934213e-04
+0:INFO    26-06-11 16:43:18.155 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4200, loss_ce: 1.54371e-01, acc: 1.000, grad_norm: 1.21941e+01, header_lr: 1.924945e-04
+0:INFO    26-06-11 16:43:18.356 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4210, loss_ce: 5.08633e-01, acc: 0.781, grad_norm: 2.55460e+01, header_lr: 1.915680e-04
+0:INFO    26-06-11 16:43:18.561 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4220, loss_ce: 5.73345e-01, acc: 0.812, grad_norm: 1.64336e+01, header_lr: 1.906417e-04
+0:INFO    26-06-11 16:43:18.746 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4230, loss_ce: 3.29061e-01, acc: 0.812, grad_norm: 2.78253e+01, header_lr: 1.897156e-04
+0:INFO    26-06-11 16:43:18.925 +00:02:51 - trainer.py:1181 - train epoch: 28, step: 4240, loss_ce: 2.01833e-01, acc: 0.906, grad_norm: 8.11776e+00, header_lr: 1.887898e-04
+0:INFO    26-06-11 16:43:19.103 +00:02:52 - trainer.py:1181 - train epoch: 28, step: 4250, loss_ce: 2.81694e-01, acc: 0.938, grad_norm: 6.73266e+00, header_lr: 1.878643e-04
+0:INFO    26-06-11 16:43:19.282 +00:02:52 - trainer.py:1181 - train epoch: 28, step: 4260, loss_ce: 3.41320e-01, acc: 0.844, grad_norm: 1.22365e+01, header_lr: 1.869391e-04
+0:INFO    26-06-11 16:43:19.462 +00:02:52 - trainer.py:1181 - train epoch: 28, step: 4270, loss_ce: 3.32610e-01, acc: 0.906, grad_norm: 5.76417e+00, header_lr: 1.860143e-04
+0:INFO    26-06-11 16:43:19.641 +00:02:52 - trainer.py:1181 - train epoch: 28, step: 4280, loss_ce: 2.75689e+01, acc: 0.844, grad_norm: 2.76717e+02, header_lr: 1.850898e-04
+0:INFO    26-06-11 16:43:19.822 +00:02:52 - trainer.py:1181 - train epoch: 28, step: 4290, loss_ce: 4.24687e-01, acc: 0.812, grad_norm: 2.48546e+01, header_lr: 1.841656e-04
+0:INFO    26-06-11 16:43:20.007 +00:02:53 - trainer.py:1181 - train epoch: 28, step: 4300, loss_ce: 1.13381e+00, acc: 0.719, grad_norm: 1.17652e+02, header_lr: 1.832419e-04
+0:INFO    26-06-11 16:43:20.194 +00:02:53 - trainer.py:1181 - train epoch: 28, step: 4310, loss_ce: 4.25999e-01, acc: 0.812, grad_norm: 2.04564e+01, header_lr: 1.823185e-04
+0:INFO    26-06-11 16:43:20.378 +00:02:53 - trainer.py:1181 - train epoch: 28, step: 4320, loss_ce: 3.84668e-01, acc: 0.844, grad_norm: 1.47753e+01, header_lr: 1.813956e-04
+0:INFO    26-06-11 16:43:20.379 +00:02:53 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:20.759 +00:02:53 - trainer.py:1265 - adftd/eval epoch: 28, loss: 7.4248, acc: 0.394, balanced_acc: 0.363, cohen_kappa: 0.068, f1: 0.363
+0:INFO    26-06-11 16:43:20.759 +00:02:53 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:21.152 +00:02:54 - trainer.py:1265 - adftd/test epoch: 28, loss: 1.3986, acc: 0.542, balanced_acc: 0.513, cohen_kappa: 0.290, f1: 0.525
+0:INFO    26-06-11 16:43:21.353 +00:02:54 - trainer.py:1181 - train epoch: 29, step: 4330, loss_ce: 3.27245e-01, acc: 0.906, grad_norm: 1.64509e+01, header_lr: 1.804732e-04
+0:INFO    26-06-11 16:43:21.536 +00:02:54 - trainer.py:1181 - train epoch: 29, step: 4340, loss_ce: 3.47393e-01, acc: 0.906, grad_norm: 4.45157e+01, header_lr: 1.795512e-04
+0:INFO    26-06-11 16:43:21.720 +00:02:54 - trainer.py:1181 - train epoch: 29, step: 4350, loss_ce: 2.91294e-01, acc: 0.906, grad_norm: 1.68465e+01, header_lr: 1.786297e-04
+0:INFO    26-06-11 16:43:21.902 +00:02:54 - trainer.py:1181 - train epoch: 29, step: 4360, loss_ce: 3.32300e-01, acc: 0.906, grad_norm: 1.23472e+01, header_lr: 1.777087e-04
+0:INFO    26-06-11 16:43:22.082 +00:02:55 - trainer.py:1181 - train epoch: 29, step: 4370, loss_ce: 3.60041e-01, acc: 0.844, grad_norm: 9.40199e+00, header_lr: 1.767883e-04
+0:INFO    26-06-11 16:43:22.267 +00:02:55 - trainer.py:1181 - train epoch: 29, step: 4380, loss_ce: 4.88077e-01, acc: 0.781, grad_norm: 7.96927e+00, header_lr: 1.758684e-04
+0:INFO    26-06-11 16:43:22.450 +00:02:55 - trainer.py:1181 - train epoch: 29, step: 4390, loss_ce: 2.29658e-01, acc: 1.000, grad_norm: 6.26158e+00, header_lr: 1.749491e-04
+0:INFO    26-06-11 16:43:22.630 +00:02:55 - trainer.py:1181 - train epoch: 29, step: 4400, loss_ce: 4.82345e-01, acc: 0.750, grad_norm: 3.07909e+01, header_lr: 1.740304e-04
+0:INFO    26-06-11 16:43:22.813 +00:02:55 - trainer.py:1181 - train epoch: 29, step: 4410, loss_ce: 5.09853e-01, acc: 0.781, grad_norm: 6.85652e+00, header_lr: 1.731123e-04
+0:INFO    26-06-11 16:43:22.997 +00:02:56 - trainer.py:1181 - train epoch: 29, step: 4420, loss_ce: 2.46539e-01, acc: 0.906, grad_norm: 4.85090e+00, header_lr: 1.721948e-04
+0:INFO    26-06-11 16:43:23.183 +00:02:56 - trainer.py:1181 - train epoch: 29, step: 4430, loss_ce: 2.93274e-01, acc: 0.875, grad_norm: 1.92702e+01, header_lr: 1.712780e-04
+0:INFO    26-06-11 16:43:23.369 +00:02:56 - trainer.py:1181 - train epoch: 29, step: 4440, loss_ce: 6.77921e-01, acc: 0.781, grad_norm: 3.97885e+01, header_lr: 1.703618e-04
+0:INFO    26-06-11 16:43:23.552 +00:02:56 - trainer.py:1181 - train epoch: 29, step: 4450, loss_ce: 3.24610e+00, acc: 0.781, grad_norm: 9.53592e+01, header_lr: 1.694464e-04
+0:INFO    26-06-11 16:43:23.734 +00:02:56 - trainer.py:1181 - train epoch: 29, step: 4460, loss_ce: 3.41683e-01, acc: 0.906, grad_norm: 5.30878e+00, header_lr: 1.685317e-04
+0:INFO    26-06-11 16:43:23.896 +00:02:56 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:24.277 +00:02:57 - trainer.py:1265 - adftd/eval epoch: 29, loss: 7.3154, acc: 0.420, balanced_acc: 0.391, cohen_kappa: 0.112, f1: 0.398
+0:INFO    26-06-11 16:43:24.278 +00:02:57 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:24.677 +00:02:57 - trainer.py:1265 - adftd/test epoch: 29, loss: 1.4959, acc: 0.521, balanced_acc: 0.500, cohen_kappa: 0.261, f1: 0.509
+0:INFO    26-06-11 16:43:24.717 +00:02:57 - trainer.py:1181 - train epoch: 30, step: 4470, loss_ce: 3.96830e-01, acc: 0.875, grad_norm: 1.13107e+01, header_lr: 1.676177e-04
+0:INFO    26-06-11 16:43:24.899 +00:02:57 - trainer.py:1181 - train epoch: 30, step: 4480, loss_ce: 5.97983e-01, acc: 0.750, grad_norm: 1.54587e+01, header_lr: 1.667044e-04
+0:INFO    26-06-11 16:43:25.081 +00:02:58 - trainer.py:1181 - train epoch: 30, step: 4490, loss_ce: 6.36749e-01, acc: 0.812, grad_norm: 4.77546e+02, header_lr: 1.657919e-04
+0:INFO    26-06-11 16:43:25.263 +00:02:58 - trainer.py:1181 - train epoch: 30, step: 4500, loss_ce: 1.46035e+00, acc: 0.750, grad_norm: 8.44314e+01, header_lr: 1.648803e-04
+0:INFO    26-06-11 16:43:25.444 +00:02:58 - trainer.py:1181 - train epoch: 30, step: 4510, loss_ce: 5.01904e-01, acc: 0.875, grad_norm: 5.34363e+01, header_lr: 1.639694e-04
+0:INFO    26-06-11 16:43:25.625 +00:02:58 - trainer.py:1181 - train epoch: 30, step: 4520, loss_ce: 4.15204e-01, acc: 0.875, grad_norm: 8.26467e+01, header_lr: 1.630594e-04
+0:INFO    26-06-11 16:43:25.808 +00:02:58 - trainer.py:1181 - train epoch: 30, step: 4530, loss_ce: 2.39480e-01, acc: 0.938, grad_norm: 7.06344e+00, header_lr: 1.621502e-04
+0:INFO    26-06-11 16:43:25.991 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4540, loss_ce: 2.98680e-01, acc: 0.906, grad_norm: 6.73043e+00, header_lr: 1.612419e-04
+0:INFO    26-06-11 16:43:26.174 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4550, loss_ce: 6.08289e-01, acc: 0.875, grad_norm: 1.32199e+01, header_lr: 1.603345e-04
+0:INFO    26-06-11 16:43:26.354 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4560, loss_ce: 1.09065e+00, acc: 0.812, grad_norm: 5.02304e+01, header_lr: 1.594280e-04
+0:INFO    26-06-11 16:43:26.537 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4570, loss_ce: 4.18827e-01, acc: 0.906, grad_norm: 7.86569e+00, header_lr: 1.585225e-04
+0:INFO    26-06-11 16:43:26.719 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4580, loss_ce: 2.90744e-01, acc: 0.938, grad_norm: 1.08596e+01, header_lr: 1.576179e-04
+0:INFO    26-06-11 16:43:26.903 +00:02:59 - trainer.py:1181 - train epoch: 30, step: 4590, loss_ce: 5.44901e-01, acc: 0.781, grad_norm: 9.57053e+00, header_lr: 1.567143e-04
+0:INFO    26-06-11 16:43:27.088 +00:03:00 - trainer.py:1181 - train epoch: 30, step: 4600, loss_ce: 2.53614e-01, acc: 0.906, grad_norm: 2.43829e+01, header_lr: 1.558116e-04
+0:INFO    26-06-11 16:43:27.272 +00:03:00 - trainer.py:1181 - train epoch: 30, step: 4610, loss_ce: 2.76929e-01, acc: 0.906, grad_norm: 1.81926e+01, header_lr: 1.549100e-04
+0:INFO    26-06-11 16:43:27.415 +00:03:00 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:27.793 +00:03:00 - trainer.py:1265 - adftd/eval epoch: 30, loss: 7.6378, acc: 0.432, balanced_acc: 0.396, cohen_kappa: 0.124, f1: 0.399
+0:INFO    26-06-11 16:43:27.793 +00:03:00 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:28.191 +00:03:01 - trainer.py:1265 - adftd/test epoch: 30, loss: 1.6366, acc: 0.503, balanced_acc: 0.478, cohen_kappa: 0.228, f1: 0.492
+0:INFO    26-06-11 16:43:28.249 +00:03:01 - trainer.py:1181 - train epoch: 31, step: 4620, loss_ce: 2.82770e+00, acc: 0.844, grad_norm: 4.56085e+02, header_lr: 1.540095e-04
+0:INFO    26-06-11 16:43:28.431 +00:03:01 - trainer.py:1181 - train epoch: 31, step: 4630, loss_ce: 2.38968e-01, acc: 0.938, grad_norm: 4.31011e+00, header_lr: 1.531099e-04
+0:INFO    26-06-11 16:43:28.613 +00:03:01 - trainer.py:1181 - train epoch: 31, step: 4640, loss_ce: 3.27052e-01, acc: 0.875, grad_norm: 3.74542e+01, header_lr: 1.522115e-04
+0:INFO    26-06-11 16:43:28.795 +00:03:01 - trainer.py:1181 - train epoch: 31, step: 4650, loss_ce: 4.25406e-01, acc: 0.812, grad_norm: 2.69095e+01, header_lr: 1.513141e-04
+0:INFO    26-06-11 16:43:28.975 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4660, loss_ce: 3.28799e-01, acc: 0.906, grad_norm: 1.78736e+01, header_lr: 1.504179e-04
+0:INFO    26-06-11 16:43:29.155 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4670, loss_ce: 3.06654e-01, acc: 0.875, grad_norm: 1.15460e+01, header_lr: 1.495228e-04
+0:INFO    26-06-11 16:43:29.336 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4680, loss_ce: 4.99711e-01, acc: 0.750, grad_norm: 1.63249e+01, header_lr: 1.486288e-04
+0:INFO    26-06-11 16:43:29.517 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4690, loss_ce: 8.95850e-01, acc: 0.719, grad_norm: 1.77034e+02, header_lr: 1.477360e-04
+0:INFO    26-06-11 16:43:29.699 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4700, loss_ce: 4.81575e-01, acc: 0.875, grad_norm: 2.97057e+01, header_lr: 1.468444e-04
+0:INFO    26-06-11 16:43:29.881 +00:03:02 - trainer.py:1181 - train epoch: 31, step: 4710, loss_ce: 3.73858e-01, acc: 0.875, grad_norm: 1.02977e+01, header_lr: 1.459540e-04
+0:INFO    26-06-11 16:43:30.065 +00:03:03 - trainer.py:1181 - train epoch: 31, step: 4720, loss_ce: 8.95560e-01, acc: 0.781, grad_norm: 6.87489e+01, header_lr: 1.450649e-04
+0:INFO    26-06-11 16:43:30.249 +00:03:03 - trainer.py:1181 - train epoch: 31, step: 4730, loss_ce: 2.49200e-01, acc: 0.969, grad_norm: 1.35862e+01, header_lr: 1.441769e-04
+0:INFO    26-06-11 16:43:30.431 +00:03:03 - trainer.py:1181 - train epoch: 31, step: 4740, loss_ce: 5.10564e-01, acc: 0.812, grad_norm: 4.84011e+01, header_lr: 1.432903e-04
+0:INFO    26-06-11 16:43:30.612 +00:03:03 - trainer.py:1181 - train epoch: 31, step: 4750, loss_ce: 1.80155e+00, acc: 0.844, grad_norm: 2.78901e+02, header_lr: 1.424050e-04
+0:INFO    26-06-11 16:43:30.793 +00:03:03 - trainer.py:1181 - train epoch: 31, step: 4760, loss_ce: 2.44650e-01, acc: 0.938, grad_norm: 7.01928e+00, header_lr: 1.415209e-04
+0:INFO    26-06-11 16:43:30.916 +00:03:03 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:31.300 +00:03:04 - trainer.py:1265 - adftd/eval epoch: 31, loss: 7.8069, acc: 0.385, balanced_acc: 0.359, cohen_kappa: 0.062, f1: 0.342
+0:INFO    26-06-11 16:43:31.301 +00:03:04 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:31.705 +00:03:04 - trainer.py:1265 - adftd/test epoch: 31, loss: 1.5450, acc: 0.515, balanced_acc: 0.489, cohen_kappa: 0.247, f1: 0.495
+0:INFO    26-06-11 16:43:31.781 +00:03:04 - trainer.py:1181 - train epoch: 32, step: 4770, loss_ce: 3.53083e-01, acc: 0.812, grad_norm: 1.48723e+01, header_lr: 1.406382e-04
+0:INFO    26-06-11 16:43:31.964 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4780, loss_ce: 5.49419e-01, acc: 0.781, grad_norm: 1.34090e+01, header_lr: 1.397568e-04
+0:INFO    26-06-11 16:43:32.145 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4790, loss_ce: 5.65594e-01, acc: 0.844, grad_norm: 3.48979e+01, header_lr: 1.388768e-04
+0:INFO    26-06-11 16:43:32.327 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4800, loss_ce: 2.67042e-01, acc: 0.969, grad_norm: 9.76408e+00, header_lr: 1.379982e-04
+0:INFO    26-06-11 16:43:32.508 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4810, loss_ce: 6.62404e-01, acc: 0.688, grad_norm: 1.33296e+01, header_lr: 1.371210e-04
+0:INFO    26-06-11 16:43:32.689 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4820, loss_ce: 3.88785e-01, acc: 0.875, grad_norm: 8.55318e+00, header_lr: 1.362452e-04
+0:INFO    26-06-11 16:43:32.872 +00:03:05 - trainer.py:1181 - train epoch: 32, step: 4830, loss_ce: 4.49766e-01, acc: 0.875, grad_norm: 7.89367e+00, header_lr: 1.353709e-04
+0:INFO    26-06-11 16:43:33.052 +00:03:06 - trainer.py:1181 - train epoch: 32, step: 4840, loss_ce: 3.80743e-01, acc: 0.812, grad_norm: 1.69690e+01, header_lr: 1.344980e-04
+0:INFO    26-06-11 16:43:33.233 +00:03:06 - trainer.py:1181 - train epoch: 32, step: 4850, loss_ce: 3.38037e-01, acc: 0.875, grad_norm: 7.45021e+00, header_lr: 1.336266e-04
+0:INFO    26-06-11 16:43:33.416 +00:03:06 - trainer.py:1181 - train epoch: 32, step: 4860, loss_ce: 7.27585e-01, acc: 0.719, grad_norm: 1.43608e+01, header_lr: 1.327567e-04
+0:INFO    26-06-11 16:43:33.598 +00:03:06 - trainer.py:1181 - train epoch: 32, step: 4870, loss_ce: 4.12834e-01, acc: 0.812, grad_norm: 1.59834e+01, header_lr: 1.318883e-04
+0:INFO    26-06-11 16:43:33.782 +00:03:06 - trainer.py:1181 - train epoch: 32, step: 4880, loss_ce: 2.35478e-01, acc: 0.906, grad_norm: 6.87280e+00, header_lr: 1.310215e-04
+0:INFO    26-06-11 16:43:33.964 +00:03:07 - trainer.py:1181 - train epoch: 32, step: 4890, loss_ce: 6.62660e-01, acc: 0.906, grad_norm: 3.88372e+01, header_lr: 1.301562e-04
+0:INFO    26-06-11 16:43:34.146 +00:03:07 - trainer.py:1181 - train epoch: 32, step: 4900, loss_ce: 2.59952e+01, acc: 0.906, grad_norm: 2.69948e+02, header_lr: 1.292925e-04
+0:INFO    26-06-11 16:43:34.326 +00:03:07 - trainer.py:1181 - train epoch: 32, step: 4910, loss_ce: 7.34518e-01, acc: 0.844, grad_norm: 6.52354e+01, header_lr: 1.284304e-04
+0:INFO    26-06-11 16:43:34.433 +00:03:07 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:34.815 +00:03:07 - trainer.py:1265 - adftd/eval epoch: 32, loss: 7.7161, acc: 0.416, balanced_acc: 0.392, cohen_kappa: 0.114, f1: 0.386
+0:INFO    26-06-11 16:43:34.815 +00:03:07 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:35.210 +00:03:08 - trainer.py:1265 - adftd/test epoch: 32, loss: 1.4549, acc: 0.530, balanced_acc: 0.511, cohen_kappa: 0.279, f1: 0.516
+0:INFO    26-06-11 16:43:35.306 +00:03:08 - trainer.py:1181 - train epoch: 33, step: 4920, loss_ce: 1.65160e-01, acc: 0.969, grad_norm: 6.12532e+00, header_lr: 1.275699e-04
+0:INFO    26-06-11 16:43:35.488 +00:03:08 - trainer.py:1181 - train epoch: 33, step: 4930, loss_ce: 5.13929e-01, acc: 0.812, grad_norm: 1.26985e+01, header_lr: 1.267111e-04
+0:INFO    26-06-11 16:43:35.671 +00:03:08 - trainer.py:1181 - train epoch: 33, step: 4940, loss_ce: 2.72785e-01, acc: 0.938, grad_norm: 9.09381e+00, header_lr: 1.258539e-04
+0:INFO    26-06-11 16:43:35.853 +00:03:08 - trainer.py:1181 - train epoch: 33, step: 4950, loss_ce: 2.58768e-01, acc: 0.906, grad_norm: 3.50464e+01, header_lr: 1.249983e-04
+0:INFO    26-06-11 16:43:36.038 +00:03:09 - trainer.py:1181 - train epoch: 33, step: 4960, loss_ce: 2.62444e-01, acc: 0.938, grad_norm: 5.28478e+00, header_lr: 1.241445e-04
+0:INFO    26-06-11 16:43:36.221 +00:03:09 - trainer.py:1181 - train epoch: 33, step: 4970, loss_ce: 3.18866e-01, acc: 0.938, grad_norm: 1.03299e+01, header_lr: 1.232924e-04
+0:INFO    26-06-11 16:43:36.403 +00:03:09 - trainer.py:1181 - train epoch: 33, step: 4980, loss_ce: 2.58850e-01, acc: 0.875, grad_norm: 1.38093e+01, header_lr: 1.224419e-04
+0:INFO    26-06-11 16:43:36.584 +00:03:09 - trainer.py:1181 - train epoch: 33, step: 4990, loss_ce: 5.93929e-01, acc: 0.750, grad_norm: 1.69749e+01, header_lr: 1.215933e-04
+0:INFO    26-06-11 16:43:36.764 +00:03:09 - trainer.py:1181 - train epoch: 33, step: 5000, loss_ce: 5.12818e-01, acc: 0.875, grad_norm: 2.57804e+01, header_lr: 1.207464e-04
+0:INFO    26-06-11 16:43:36.944 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5010, loss_ce: 2.82626e-01, acc: 0.875, grad_norm: 1.24558e+01, header_lr: 1.199013e-04
+0:INFO    26-06-11 16:43:37.124 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5020, loss_ce: 4.90253e-01, acc: 0.781, grad_norm: 7.70938e+00, header_lr: 1.190580e-04
+0:INFO    26-06-11 16:43:37.304 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5030, loss_ce: 3.67855e-01, acc: 0.844, grad_norm: 2.03343e+01, header_lr: 1.182165e-04
+0:INFO    26-06-11 16:43:37.483 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5040, loss_ce: 1.94474e-01, acc: 0.969, grad_norm: 4.82337e+00, header_lr: 1.173769e-04
+0:INFO    26-06-11 16:43:37.663 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5050, loss_ce: 3.52629e-01, acc: 0.906, grad_norm: 1.33361e+01, header_lr: 1.165391e-04
+0:INFO    26-06-11 16:43:37.840 +00:03:10 - trainer.py:1181 - train epoch: 33, step: 5060, loss_ce: 4.67726e-01, acc: 0.875, grad_norm: 1.13978e+01, header_lr: 1.157032e-04
+0:INFO    26-06-11 16:43:37.929 +00:03:10 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:38.308 +00:03:11 - trainer.py:1265 - adftd/eval epoch: 33, loss: 7.8036, acc: 0.414, balanced_acc: 0.385, cohen_kappa: 0.104, f1: 0.392
+0:INFO    26-06-11 16:43:38.308 +00:03:11 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:38.701 +00:03:11 - trainer.py:1265 - adftd/test epoch: 33, loss: 1.5454, acc: 0.500, balanced_acc: 0.486, cohen_kappa: 0.235, f1: 0.494
+0:INFO    26-06-11 16:43:38.815 +00:03:11 - trainer.py:1181 - train epoch: 34, step: 5070, loss_ce: 3.55016e-01, acc: 0.875, grad_norm: 6.64994e+00, header_lr: 1.148691e-04
+0:INFO    26-06-11 16:43:38.996 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5080, loss_ce: 4.33368e-01, acc: 0.750, grad_norm: 1.43873e+01, header_lr: 1.140370e-04
+0:INFO    26-06-11 16:43:39.175 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5090, loss_ce: 2.48663e-01, acc: 0.906, grad_norm: 1.31101e+01, header_lr: 1.132069e-04
+0:INFO    26-06-11 16:43:39.355 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5100, loss_ce: 4.40804e-01, acc: 0.875, grad_norm: 5.24729e+01, header_lr: 1.123786e-04
+0:INFO    26-06-11 16:43:39.535 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5110, loss_ce: 2.49906e-01, acc: 0.938, grad_norm: 7.70472e+00, header_lr: 1.115524e-04
+0:INFO    26-06-11 16:43:39.714 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5120, loss_ce: 1.25274e-01, acc: 1.000, grad_norm: 6.40324e+00, header_lr: 1.107281e-04
+0:INFO    26-06-11 16:43:39.895 +00:03:12 - trainer.py:1181 - train epoch: 34, step: 5130, loss_ce: 1.53958e+00, acc: 0.875, grad_norm: 7.56770e+01, header_lr: 1.099058e-04
+0:INFO    26-06-11 16:43:40.077 +00:03:13 - trainer.py:1181 - train epoch: 34, step: 5140, loss_ce: 4.33385e-01, acc: 0.844, grad_norm: 1.80614e+01, header_lr: 1.090856e-04
+0:INFO    26-06-11 16:43:40.255 +00:03:13 - trainer.py:1181 - train epoch: 34, step: 5150, loss_ce: 5.70077e-01, acc: 0.812, grad_norm: 9.32684e+00, header_lr: 1.082674e-04
+0:INFO    26-06-11 16:43:40.435 +00:03:13 - trainer.py:1181 - train epoch: 34, step: 5160, loss_ce: 3.27687e-01, acc: 0.844, grad_norm: 1.59179e+01, header_lr: 1.074512e-04
+0:INFO    26-06-11 16:43:40.612 +00:03:13 - trainer.py:1181 - train epoch: 34, step: 5170, loss_ce: 3.39678e-01, acc: 0.906, grad_norm: 3.88464e+01, header_lr: 1.066372e-04
+0:INFO    26-06-11 16:43:40.791 +00:03:13 - trainer.py:1181 - train epoch: 34, step: 5180, loss_ce: 3.97981e-01, acc: 0.875, grad_norm: 3.03029e+01, header_lr: 1.058252e-04
+0:INFO    26-06-11 16:43:40.972 +00:03:14 - trainer.py:1181 - train epoch: 34, step: 5190, loss_ce: 4.01321e-01, acc: 0.906, grad_norm: 1.65253e+01, header_lr: 1.050153e-04
+0:INFO    26-06-11 16:43:41.151 +00:03:14 - trainer.py:1181 - train epoch: 34, step: 5200, loss_ce: 3.46958e-01, acc: 0.938, grad_norm: 7.30677e+01, header_lr: 1.042076e-04
+0:INFO    26-06-11 16:43:41.333 +00:03:14 - trainer.py:1181 - train epoch: 34, step: 5210, loss_ce: 2.10912e-01, acc: 0.938, grad_norm: 1.69476e+01, header_lr: 1.034020e-04
+0:INFO    26-06-11 16:43:41.404 +00:03:14 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:41.781 +00:03:14 - trainer.py:1265 - adftd/eval epoch: 34, loss: 7.9221, acc: 0.435, balanced_acc: 0.397, cohen_kappa: 0.126, f1: 0.408
+0:INFO    26-06-11 16:43:41.782 +00:03:14 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:42.183 +00:03:15 - trainer.py:1265 - adftd/test epoch: 34, loss: 1.5857, acc: 0.515, balanced_acc: 0.490, cohen_kappa: 0.246, f1: 0.508
+0:INFO    26-06-11 16:43:42.317 +00:03:15 - trainer.py:1181 - train epoch: 35, step: 5220, loss_ce: 4.13582e-01, acc: 0.875, grad_norm: 2.02928e+01, header_lr: 1.025986e-04
+0:INFO    26-06-11 16:43:42.504 +00:03:15 - trainer.py:1181 - train epoch: 35, step: 5230, loss_ce: 5.76621e-01, acc: 0.844, grad_norm: 6.41587e+01, header_lr: 1.017973e-04
+0:INFO    26-06-11 16:43:42.691 +00:03:15 - trainer.py:1181 - train epoch: 35, step: 5240, loss_ce: 3.78993e-01, acc: 0.875, grad_norm: 2.15618e+01, header_lr: 1.009983e-04
+0:INFO    26-06-11 16:43:42.883 +00:03:15 - trainer.py:1181 - train epoch: 35, step: 5250, loss_ce: 1.67022e-01, acc: 0.969, grad_norm: 6.25790e+00, header_lr: 1.002014e-04
+0:INFO    26-06-11 16:43:43.085 +00:03:16 - trainer.py:1181 - train epoch: 35, step: 5260, loss_ce: 2.62735e-01, acc: 0.875, grad_norm: 1.86220e+01, header_lr: 9.940685e-05
+0:INFO    26-06-11 16:43:43.273 +00:03:16 - trainer.py:1181 - train epoch: 35, step: 5270, loss_ce: 5.34539e-01, acc: 0.844, grad_norm: 1.34024e+01, header_lr: 9.861451e-05
+0:INFO    26-06-11 16:43:43.459 +00:03:16 - trainer.py:1181 - train epoch: 35, step: 5280, loss_ce: 3.98078e-01, acc: 0.812, grad_norm: 7.62040e+00, header_lr: 9.782444e-05
+0:INFO    26-06-11 16:43:43.648 +00:03:16 - trainer.py:1181 - train epoch: 35, step: 5290, loss_ce: 2.94803e-01, acc: 0.906, grad_norm: 5.46998e+00, header_lr: 9.703665e-05
+0:INFO    26-06-11 16:43:43.834 +00:03:16 - trainer.py:1181 - train epoch: 35, step: 5300, loss_ce: 5.45431e-01, acc: 0.812, grad_norm: 2.32070e+01, header_lr: 9.625117e-05
+0:INFO    26-06-11 16:43:44.023 +00:03:17 - trainer.py:1181 - train epoch: 35, step: 5310, loss_ce: 3.85953e-01, acc: 0.875, grad_norm: 1.79559e+01, header_lr: 9.546801e-05
+0:INFO    26-06-11 16:43:44.210 +00:03:17 - trainer.py:1181 - train epoch: 35, step: 5320, loss_ce: 4.04066e-01, acc: 0.844, grad_norm: 2.38719e+01, header_lr: 9.468719e-05
+0:INFO    26-06-11 16:43:44.397 +00:03:17 - trainer.py:1181 - train epoch: 35, step: 5330, loss_ce: 1.06535e+00, acc: 0.656, grad_norm: 2.76167e+01, header_lr: 9.390873e-05
+0:INFO    26-06-11 16:43:44.584 +00:03:17 - trainer.py:1181 - train epoch: 35, step: 5340, loss_ce: 6.73879e-01, acc: 0.781, grad_norm: 1.50284e+01, header_lr: 9.313264e-05
+0:INFO    26-06-11 16:43:44.776 +00:03:17 - trainer.py:1181 - train epoch: 35, step: 5350, loss_ce: 4.18172e-01, acc: 0.875, grad_norm: 8.60463e+00, header_lr: 9.235894e-05
+0:INFO    26-06-11 16:43:44.957 +00:03:18 - trainer.py:1181 - train epoch: 35, step: 5360, loss_ce: 5.23926e-01, acc: 0.938, grad_norm: 1.59137e+02, header_lr: 9.158764e-05
+0:INFO    26-06-11 16:43:45.011 +00:03:18 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:45.390 +00:03:18 - trainer.py:1265 - adftd/eval epoch: 35, loss: 7.8195, acc: 0.404, balanced_acc: 0.377, cohen_kappa: 0.090, f1: 0.376
+0:INFO    26-06-11 16:43:45.391 +00:03:18 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:45.790 +00:03:18 - trainer.py:1265 - adftd/test epoch: 35, loss: 1.4844, acc: 0.514, balanced_acc: 0.491, cohen_kappa: 0.250, f1: 0.501
+0:INFO    26-06-11 16:43:45.946 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5370, loss_ce: 1.23076e+00, acc: 0.875, grad_norm: 2.76310e+02, header_lr: 9.081878e-05
+0:INFO    26-06-11 16:43:46.132 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5380, loss_ce: 4.40532e-01, acc: 0.875, grad_norm: 6.72746e+01, header_lr: 9.005235e-05
+0:INFO    26-06-11 16:43:46.322 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5390, loss_ce: 4.08196e-01, acc: 0.812, grad_norm: 6.11006e+00, header_lr: 8.928837e-05
+0:INFO    26-06-11 16:43:46.504 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5400, loss_ce: 2.37648e-01, acc: 0.938, grad_norm: 2.09218e+01, header_lr: 8.852688e-05
+0:INFO    26-06-11 16:43:46.692 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5410, loss_ce: 2.11352e-01, acc: 0.938, grad_norm: 4.60343e+00, header_lr: 8.776787e-05
+0:INFO    26-06-11 16:43:46.879 +00:03:19 - trainer.py:1181 - train epoch: 36, step: 5420, loss_ce: 4.23818e-01, acc: 0.875, grad_norm: 1.86636e+01, header_lr: 8.701137e-05
+0:INFO    26-06-11 16:43:47.059 +00:03:20 - trainer.py:1181 - train epoch: 36, step: 5430, loss_ce: 2.47246e-01, acc: 0.906, grad_norm: 2.04657e+01, header_lr: 8.625740e-05
+0:INFO    26-06-11 16:43:47.238 +00:03:20 - trainer.py:1181 - train epoch: 36, step: 5440, loss_ce: 4.23096e-01, acc: 0.812, grad_norm: 2.11783e+01, header_lr: 8.550597e-05
+0:INFO    26-06-11 16:43:47.419 +00:03:20 - trainer.py:1181 - train epoch: 36, step: 5450, loss_ce: 6.07103e-01, acc: 0.812, grad_norm: 2.29660e+01, header_lr: 8.475709e-05
+0:INFO    26-06-11 16:43:47.598 +00:03:20 - trainer.py:1181 - train epoch: 36, step: 5460, loss_ce: 3.70661e-01, acc: 0.875, grad_norm: 4.95331e+00, header_lr: 8.401079e-05
+0:INFO    26-06-11 16:43:47.777 +00:03:20 - trainer.py:1181 - train epoch: 36, step: 5470, loss_ce: 3.33438e-01, acc: 0.875, grad_norm: 9.13959e+00, header_lr: 8.326708e-05
+0:INFO    26-06-11 16:43:47.958 +00:03:21 - trainer.py:1181 - train epoch: 36, step: 5480, loss_ce: 5.56721e-01, acc: 0.719, grad_norm: 8.73946e+00, header_lr: 8.252598e-05
+0:INFO    26-06-11 16:43:48.138 +00:03:21 - trainer.py:1181 - train epoch: 36, step: 5490, loss_ce: 2.84851e-01, acc: 0.906, grad_norm: 1.62156e+01, header_lr: 8.178749e-05
+0:INFO    26-06-11 16:43:48.317 +00:03:21 - trainer.py:1181 - train epoch: 36, step: 5500, loss_ce: 4.69626e-01, acc: 0.812, grad_norm: 3.79129e+01, header_lr: 8.105165e-05
+0:INFO    26-06-11 16:43:48.495 +00:03:21 - trainer.py:1181 - train epoch: 36, step: 5510, loss_ce: 4.82315e-01, acc: 0.844, grad_norm: 6.53833e+00, header_lr: 8.031846e-05
+0:INFO    26-06-11 16:43:48.531 +00:03:21 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:48.909 +00:03:21 - trainer.py:1265 - adftd/eval epoch: 36, loss: 7.8699, acc: 0.441, balanced_acc: 0.405, cohen_kappa: 0.141, f1: 0.405
+0:INFO    26-06-11 16:43:48.909 +00:03:21 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:49.307 +00:03:22 - trainer.py:1265 - adftd/test epoch: 36, loss: 1.6516, acc: 0.508, balanced_acc: 0.484, cohen_kappa: 0.233, f1: 0.497
+0:INFO    26-06-11 16:43:49.472 +00:03:22 - trainer.py:1181 - train epoch: 37, step: 5520, loss_ce: 2.77903e-01, acc: 0.906, grad_norm: 1.07321e+01, header_lr: 7.958795e-05
+0:INFO    26-06-11 16:43:49.651 +00:03:22 - trainer.py:1181 - train epoch: 37, step: 5530, loss_ce: 4.44067e-01, acc: 0.844, grad_norm: 1.03865e+01, header_lr: 7.886012e-05
+0:INFO    26-06-11 16:43:49.832 +00:03:22 - trainer.py:1181 - train epoch: 37, step: 5540, loss_ce: 3.03214e-01, acc: 0.906, grad_norm: 4.51184e+00, header_lr: 7.813499e-05
+0:INFO    26-06-11 16:43:50.014 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5550, loss_ce: 3.12726e-01, acc: 0.844, grad_norm: 1.31406e+01, header_lr: 7.741259e-05
+0:INFO    26-06-11 16:43:50.197 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5560, loss_ce: 2.83338e-01, acc: 0.969, grad_norm: 1.10552e+01, header_lr: 7.669292e-05
+0:INFO    26-06-11 16:43:50.378 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5570, loss_ce: 5.63002e-01, acc: 0.781, grad_norm: 1.54424e+01, header_lr: 7.597600e-05
+0:INFO    26-06-11 16:43:50.560 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5580, loss_ce: 4.53104e-01, acc: 0.781, grad_norm: 1.43716e+01, header_lr: 7.526184e-05
+0:INFO    26-06-11 16:43:50.744 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5590, loss_ce: 6.89203e-01, acc: 0.875, grad_norm: 1.49398e+02, header_lr: 7.455047e-05
+0:INFO    26-06-11 16:43:50.927 +00:03:23 - trainer.py:1181 - train epoch: 37, step: 5600, loss_ce: 3.18175e-01, acc: 0.906, grad_norm: 5.71011e+00, header_lr: 7.384190e-05
+0:INFO    26-06-11 16:43:51.108 +00:03:24 - trainer.py:1181 - train epoch: 37, step: 5610, loss_ce: 3.97665e-01, acc: 0.781, grad_norm: 2.14403e+01, header_lr: 7.313614e-05
+0:INFO    26-06-11 16:43:51.289 +00:03:24 - trainer.py:1181 - train epoch: 37, step: 5620, loss_ce: 1.58327e+01, acc: 0.875, grad_norm: 2.78906e+02, header_lr: 7.243321e-05
+0:INFO    26-06-11 16:43:51.477 +00:03:24 - trainer.py:1181 - train epoch: 37, step: 5630, loss_ce: 2.25378e-01, acc: 0.969, grad_norm: 9.90471e+00, header_lr: 7.173312e-05
+0:INFO    26-06-11 16:43:51.657 +00:03:24 - trainer.py:1181 - train epoch: 37, step: 5640, loss_ce: 3.23298e-01, acc: 0.875, grad_norm: 3.49565e+01, header_lr: 7.103590e-05
+0:INFO    26-06-11 16:43:51.837 +00:03:24 - trainer.py:1181 - train epoch: 37, step: 5650, loss_ce: 9.72998e-01, acc: 0.750, grad_norm: 9.52215e+01, header_lr: 7.034154e-05
+0:INFO    26-06-11 16:43:52.014 +00:03:25 - trainer.py:1181 - train epoch: 37, step: 5660, loss_ce: 6.80112e-01, acc: 0.875, grad_norm: 2.74931e+01, header_lr: 6.965008e-05
+0:INFO    26-06-11 16:43:52.032 +00:03:25 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:52.407 +00:03:25 - trainer.py:1265 - adftd/eval epoch: 37, loss: 7.8767, acc: 0.417, balanced_acc: 0.384, cohen_kappa: 0.105, f1: 0.388
+0:INFO    26-06-11 16:43:52.407 +00:03:25 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:52.805 +00:03:25 - trainer.py:1265 - adftd/test epoch: 37, loss: 1.5498, acc: 0.512, balanced_acc: 0.493, cohen_kappa: 0.246, f1: 0.504
+0:INFO    26-06-11 16:43:52.989 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5670, loss_ce: 1.92736e-01, acc: 0.969, grad_norm: 8.78878e+00, header_lr: 6.896153e-05
+0:INFO    26-06-11 16:43:53.173 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5680, loss_ce: 7.54668e-01, acc: 0.688, grad_norm: 3.18723e+01, header_lr: 6.827589e-05
+0:INFO    26-06-11 16:43:53.366 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5690, loss_ce: 2.75054e-01, acc: 0.906, grad_norm: 1.76844e+01, header_lr: 6.759319e-05
+0:INFO    26-06-11 16:43:53.547 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5700, loss_ce: 3.05251e-01, acc: 0.938, grad_norm: 1.15465e+01, header_lr: 6.691345e-05
+0:INFO    26-06-11 16:43:53.727 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5710, loss_ce: 3.30282e-01, acc: 0.844, grad_norm: 1.21636e+01, header_lr: 6.623666e-05
+0:INFO    26-06-11 16:43:53.909 +00:03:26 - trainer.py:1181 - train epoch: 38, step: 5720, loss_ce: 3.23566e-01, acc: 0.875, grad_norm: 8.95274e+00, header_lr: 6.556286e-05
+0:INFO    26-06-11 16:43:54.091 +00:03:27 - trainer.py:1181 - train epoch: 38, step: 5730, loss_ce: 7.09036e-01, acc: 0.906, grad_norm: 3.65870e+02, header_lr: 6.489205e-05
+0:INFO    26-06-11 16:43:54.273 +00:03:27 - trainer.py:1181 - train epoch: 38, step: 5740, loss_ce: 3.39878e-01, acc: 0.938, grad_norm: 2.80548e+01, header_lr: 6.422426e-05
+0:INFO    26-06-11 16:43:54.454 +00:03:27 - trainer.py:1181 - train epoch: 38, step: 5750, loss_ce: 3.65735e-01, acc: 0.875, grad_norm: 1.33553e+01, header_lr: 6.355948e-05
+0:INFO    26-06-11 16:43:54.633 +00:03:27 - trainer.py:1181 - train epoch: 38, step: 5760, loss_ce: 5.18285e-01, acc: 0.812, grad_norm: 3.81655e+01, header_lr: 6.289775e-05
+0:INFO    26-06-11 16:43:54.812 +00:03:27 - trainer.py:1181 - train epoch: 38, step: 5770, loss_ce: 4.05388e-01, acc: 0.875, grad_norm: 2.52465e+01, header_lr: 6.223907e-05
+0:INFO    26-06-11 16:43:54.991 +00:03:28 - trainer.py:1181 - train epoch: 38, step: 5780, loss_ce: 6.44162e-01, acc: 0.906, grad_norm: 1.51058e+02, header_lr: 6.158346e-05
+0:INFO    26-06-11 16:43:55.171 +00:03:28 - trainer.py:1181 - train epoch: 38, step: 5790, loss_ce: 4.70847e-01, acc: 0.844, grad_norm: 4.01952e+01, header_lr: 6.093093e-05
+0:INFO    26-06-11 16:43:55.352 +00:03:28 - trainer.py:1181 - train epoch: 38, step: 5800, loss_ce: 2.95781e-01, acc: 0.844, grad_norm: 2.22657e+01, header_lr: 6.028150e-05
+0:INFO    26-06-11 16:43:55.531 +00:03:28 - trainer.py:1181 - train epoch: 38, step: 5810, loss_ce: 4.60440e-01, acc: 0.844, grad_norm: 2.69196e+02, header_lr: 5.963518e-05
+0:INFO    26-06-11 16:43:55.532 +00:03:28 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:55.913 +00:03:28 - trainer.py:1265 - adftd/eval epoch: 38, loss: 7.8707, acc: 0.429, balanced_acc: 0.394, cohen_kappa: 0.122, f1: 0.401
+0:INFO    26-06-11 16:43:55.914 +00:03:28 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:56.319 +00:03:29 - trainer.py:1265 - adftd/test epoch: 38, loss: 1.6100, acc: 0.512, balanced_acc: 0.493, cohen_kappa: 0.246, f1: 0.504
+0:INFO    26-06-11 16:43:56.523 +00:03:29 - trainer.py:1181 - train epoch: 39, step: 5820, loss_ce: 4.84004e-01, acc: 0.875, grad_norm: 2.25226e+01, header_lr: 5.899198e-05
+0:INFO    26-06-11 16:43:56.704 +00:03:29 - trainer.py:1181 - train epoch: 39, step: 5830, loss_ce: 2.57667e-01, acc: 0.906, grad_norm: 6.19508e+00, header_lr: 5.835193e-05
+0:INFO    26-06-11 16:43:56.886 +00:03:29 - trainer.py:1181 - train epoch: 39, step: 5840, loss_ce: 4.50461e-01, acc: 0.781, grad_norm: 2.66023e+01, header_lr: 5.771503e-05
+0:INFO    26-06-11 16:43:57.068 +00:03:30 - trainer.py:1181 - train epoch: 39, step: 5850, loss_ce: 6.77426e-01, acc: 0.750, grad_norm: 2.52898e+01, header_lr: 5.708129e-05
+0:INFO    26-06-11 16:43:57.247 +00:03:30 - trainer.py:1181 - train epoch: 39, step: 5860, loss_ce: 3.51656e-01, acc: 0.875, grad_norm: 1.29171e+01, header_lr: 5.645074e-05
+0:INFO    26-06-11 16:43:57.426 +00:03:30 - trainer.py:1181 - train epoch: 39, step: 5870, loss_ce: 3.13882e-01, acc: 0.938, grad_norm: 1.10134e+01, header_lr: 5.582338e-05
+0:INFO    26-06-11 16:43:57.604 +00:03:30 - trainer.py:1181 - train epoch: 39, step: 5880, loss_ce: 3.23789e-01, acc: 0.875, grad_norm: 2.78010e+01, header_lr: 5.519923e-05
+0:INFO    26-06-11 16:43:57.785 +00:03:30 - trainer.py:1181 - train epoch: 39, step: 5890, loss_ce: 3.02973e-01, acc: 0.906, grad_norm: 3.33590e+00, header_lr: 5.457831e-05
+0:INFO    26-06-11 16:43:57.966 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5900, loss_ce: 3.28096e-01, acc: 0.875, grad_norm: 1.36567e+01, header_lr: 5.396062e-05
+0:INFO    26-06-11 16:43:58.148 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5910, loss_ce: 9.11815e-01, acc: 0.812, grad_norm: 7.78139e+01, header_lr: 5.334618e-05
+0:INFO    26-06-11 16:43:58.329 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5920, loss_ce: 4.68822e-01, acc: 0.812, grad_norm: 2.79395e+01, header_lr: 5.273500e-05
+0:INFO    26-06-11 16:43:58.510 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5930, loss_ce: 2.51958e-01, acc: 0.844, grad_norm: 3.07656e+00, header_lr: 5.212710e-05
+0:INFO    26-06-11 16:43:58.691 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5940, loss_ce: 4.45034e-01, acc: 0.906, grad_norm: 1.11273e+01, header_lr: 5.152249e-05
+0:INFO    26-06-11 16:43:58.872 +00:03:31 - trainer.py:1181 - train epoch: 39, step: 5950, loss_ce: 3.25462e-01, acc: 0.875, grad_norm: 1.03282e+01, header_lr: 5.092119e-05
+0:INFO    26-06-11 16:43:59.035 +00:03:32 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:43:59.416 +00:03:32 - trainer.py:1265 - adftd/eval epoch: 39, loss: 7.9605, acc: 0.419, balanced_acc: 0.384, cohen_kappa: 0.105, f1: 0.391
+0:INFO    26-06-11 16:43:59.416 +00:03:32 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:43:59.813 +00:03:32 - trainer.py:1265 - adftd/test epoch: 39, loss: 1.5975, acc: 0.518, balanced_acc: 0.498, cohen_kappa: 0.253, f1: 0.509
+0:INFO    26-06-11 16:43:59.853 +00:03:32 - trainer.py:1181 - train epoch: 40, step: 5960, loss_ce: 3.64301e-01, acc: 0.844, grad_norm: 2.11804e+01, header_lr: 5.032320e-05
+0:INFO    26-06-11 16:44:00.030 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 5970, loss_ce: 4.10701e-01, acc: 0.812, grad_norm: 1.53852e+01, header_lr: 4.972854e-05
+0:INFO    26-06-11 16:44:00.213 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 5980, loss_ce: 9.01821e-01, acc: 0.844, grad_norm: 5.69951e+01, header_lr: 4.913723e-05
+0:INFO    26-06-11 16:44:00.394 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 5990, loss_ce: 3.96643e-01, acc: 0.844, grad_norm: 1.25245e+01, header_lr: 4.854927e-05
+0:INFO    26-06-11 16:44:00.573 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 6000, loss_ce: 2.32049e-01, acc: 0.875, grad_norm: 1.74952e+01, header_lr: 4.796467e-05
+0:INFO    26-06-11 16:44:00.753 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 6010, loss_ce: 3.51155e+00, acc: 0.781, grad_norm: 6.83899e+01, header_lr: 4.738346e-05
+0:INFO    26-06-11 16:44:00.934 +00:03:33 - trainer.py:1181 - train epoch: 40, step: 6020, loss_ce: 2.99645e-01, acc: 0.938, grad_norm: 1.10813e+01, header_lr: 4.680565e-05
+0:INFO    26-06-11 16:44:01.116 +00:03:34 - trainer.py:1181 - train epoch: 40, step: 6030, loss_ce: 2.96003e-01, acc: 0.906, grad_norm: 1.35314e+01, header_lr: 4.623124e-05
+0:INFO    26-06-11 16:44:01.298 +00:03:34 - trainer.py:1181 - train epoch: 40, step: 6040, loss_ce: 3.69768e-01, acc: 0.812, grad_norm: 1.16519e+01, header_lr: 4.566025e-05
+0:INFO    26-06-11 16:44:01.481 +00:03:34 - trainer.py:1181 - train epoch: 40, step: 6050, loss_ce: 5.50340e-01, acc: 0.719, grad_norm: 2.24930e+01, header_lr: 4.509269e-05
+0:INFO    26-06-11 16:44:01.664 +00:03:34 - trainer.py:1181 - train epoch: 40, step: 6060, loss_ce: 3.19525e-01, acc: 0.906, grad_norm: 4.53157e+00, header_lr: 4.452858e-05
+0:INFO    26-06-11 16:44:01.848 +00:03:34 - trainer.py:1181 - train epoch: 40, step: 6070, loss_ce: 4.68032e-01, acc: 0.812, grad_norm: 2.40753e+01, header_lr: 4.396793e-05
+0:INFO    26-06-11 16:44:02.030 +00:03:35 - trainer.py:1181 - train epoch: 40, step: 6080, loss_ce: 4.53240e-01, acc: 0.875, grad_norm: 1.59481e+01, header_lr: 4.341074e-05
+0:INFO    26-06-11 16:44:02.214 +00:03:35 - trainer.py:1181 - train epoch: 40, step: 6090, loss_ce: 3.72524e-01, acc: 0.875, grad_norm: 1.57273e+01, header_lr: 4.285704e-05
+0:INFO    26-06-11 16:44:02.397 +00:03:35 - trainer.py:1181 - train epoch: 40, step: 6100, loss_ce: 4.52000e-01, acc: 0.875, grad_norm: 1.47984e+01, header_lr: 4.230683e-05
+0:INFO    26-06-11 16:44:02.540 +00:03:35 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:02.922 +00:03:35 - trainer.py:1265 - adftd/eval epoch: 40, loss: 7.9122, acc: 0.424, balanced_acc: 0.393, cohen_kappa: 0.118, f1: 0.402
+0:INFO    26-06-11 16:44:02.922 +00:03:35 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:03.320 +00:03:36 - trainer.py:1265 - adftd/test epoch: 40, loss: 1.5540, acc: 0.516, balanced_acc: 0.497, cohen_kappa: 0.253, f1: 0.507
+0:INFO    26-06-11 16:44:03.375 +00:03:36 - trainer.py:1181 - train epoch: 41, step: 6110, loss_ce: 4.63321e-01, acc: 0.844, grad_norm: 1.07936e+01, header_lr: 4.176012e-05
+0:INFO    26-06-11 16:44:03.556 +00:03:36 - trainer.py:1181 - train epoch: 41, step: 6120, loss_ce: 3.86821e-01, acc: 0.906, grad_norm: 8.85400e+00, header_lr: 4.121694e-05
+0:INFO    26-06-11 16:44:03.740 +00:03:36 - trainer.py:1181 - train epoch: 41, step: 6130, loss_ce: 2.85116e-01, acc: 0.906, grad_norm: 7.40061e+00, header_lr: 4.067728e-05
+0:INFO    26-06-11 16:44:03.922 +00:03:36 - trainer.py:1181 - train epoch: 41, step: 6140, loss_ce: 9.28464e-01, acc: 0.844, grad_norm: 9.02994e+01, header_lr: 4.014116e-05
+0:INFO    26-06-11 16:44:04.104 +00:03:37 - trainer.py:1181 - train epoch: 41, step: 6150, loss_ce: 5.09015e-01, acc: 0.781, grad_norm: 6.17604e+01, header_lr: 3.960860e-05
+0:INFO    26-06-11 16:44:04.287 +00:03:37 - trainer.py:1181 - train epoch: 41, step: 6160, loss_ce: 3.73623e-01, acc: 0.938, grad_norm: 1.83329e+01, header_lr: 3.907960e-05
+0:INFO    26-06-11 16:44:04.467 +00:03:37 - trainer.py:1181 - train epoch: 41, step: 6170, loss_ce: 3.41850e-01, acc: 0.812, grad_norm: 1.44181e+01, header_lr: 3.855418e-05
+0:INFO    26-06-11 16:44:04.650 +00:03:37 - trainer.py:1181 - train epoch: 41, step: 6180, loss_ce: 4.38311e-01, acc: 0.812, grad_norm: 1.07448e+01, header_lr: 3.803235e-05
+0:INFO    26-06-11 16:44:04.833 +00:03:37 - trainer.py:1181 - train epoch: 41, step: 6190, loss_ce: 2.63608e-01, acc: 0.906, grad_norm: 2.96931e+01, header_lr: 3.751412e-05
+0:INFO    26-06-11 16:44:05.023 +00:03:38 - trainer.py:1181 - train epoch: 41, step: 6200, loss_ce: 6.40418e-01, acc: 0.781, grad_norm: 4.84888e+01, header_lr: 3.699950e-05
+0:INFO    26-06-11 16:44:05.209 +00:03:38 - trainer.py:1181 - train epoch: 41, step: 6210, loss_ce: 3.21406e+00, acc: 0.844, grad_norm: 9.58189e+01, header_lr: 3.648850e-05
+0:INFO    26-06-11 16:44:05.391 +00:03:38 - trainer.py:1181 - train epoch: 41, step: 6220, loss_ce: 3.75391e-01, acc: 0.844, grad_norm: 1.68187e+01, header_lr: 3.598113e-05
+0:INFO    26-06-11 16:44:05.572 +00:03:38 - trainer.py:1181 - train epoch: 41, step: 6230, loss_ce: 2.58950e-01, acc: 0.906, grad_norm: 2.49561e+00, header_lr: 3.547741e-05
+0:INFO    26-06-11 16:44:05.753 +00:03:38 - trainer.py:1181 - train epoch: 41, step: 6240, loss_ce: 2.69442e-01, acc: 0.906, grad_norm: 4.91730e+00, header_lr: 3.497735e-05
+0:INFO    26-06-11 16:44:05.935 +00:03:39 - trainer.py:1181 - train epoch: 41, step: 6250, loss_ce: 1.55182e+01, acc: 0.938, grad_norm: 2.75184e+02, header_lr: 3.448095e-05
+0:INFO    26-06-11 16:44:06.059 +00:03:39 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:06.440 +00:03:39 - trainer.py:1265 - adftd/eval epoch: 41, loss: 8.0060, acc: 0.413, balanced_acc: 0.379, cohen_kappa: 0.098, f1: 0.381
+0:INFO    26-06-11 16:44:06.441 +00:03:39 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:06.838 +00:03:39 - trainer.py:1265 - adftd/test epoch: 41, loss: 1.6784, acc: 0.506, balanced_acc: 0.484, cohen_kappa: 0.233, f1: 0.496
+0:INFO    26-06-11 16:44:06.913 +00:03:39 - trainer.py:1181 - train epoch: 42, step: 6260, loss_ce: 3.60912e-01, acc: 0.906, grad_norm: 1.14992e+01, header_lr: 3.398823e-05
+0:INFO    26-06-11 16:44:07.093 +00:03:40 - trainer.py:1181 - train epoch: 42, step: 6270, loss_ce: 2.62165e-01, acc: 0.906, grad_norm: 1.91288e+01, header_lr: 3.349920e-05
+0:INFO    26-06-11 16:44:07.275 +00:03:40 - trainer.py:1181 - train epoch: 42, step: 6280, loss_ce: 3.82038e-01, acc: 0.844, grad_norm: 1.09384e+01, header_lr: 3.301386e-05
+0:INFO    26-06-11 16:44:07.457 +00:03:40 - trainer.py:1181 - train epoch: 42, step: 6290, loss_ce: 3.33018e-01, acc: 0.906, grad_norm: 9.25423e+00, header_lr: 3.253224e-05
+0:INFO    26-06-11 16:44:07.638 +00:03:40 - trainer.py:1181 - train epoch: 42, step: 6300, loss_ce: 1.07651e+00, acc: 0.812, grad_norm: 2.67511e+02, header_lr: 3.205434e-05
+0:INFO    26-06-11 16:44:07.821 +00:03:40 - trainer.py:1181 - train epoch: 42, step: 6310, loss_ce: 3.91433e-01, acc: 0.844, grad_norm: 4.83775e+01, header_lr: 3.158016e-05
+0:INFO    26-06-11 16:44:08.003 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6320, loss_ce: 3.41437e-01, acc: 0.844, grad_norm: 2.66663e+01, header_lr: 3.110973e-05
+0:INFO    26-06-11 16:44:08.186 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6330, loss_ce: 2.99517e-01, acc: 0.875, grad_norm: 1.23202e+01, header_lr: 3.064305e-05
+0:INFO    26-06-11 16:44:08.370 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6340, loss_ce: 5.12494e-01, acc: 0.844, grad_norm: 7.02717e+01, header_lr: 3.018014e-05
+0:INFO    26-06-11 16:44:08.554 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6350, loss_ce: 3.42626e+00, acc: 0.719, grad_norm: 8.95663e+01, header_lr: 2.972099e-05
+0:INFO    26-06-11 16:44:08.736 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6360, loss_ce: 3.96203e-01, acc: 0.875, grad_norm: 7.15157e+00, header_lr: 2.926563e-05
+0:INFO    26-06-11 16:44:08.919 +00:03:41 - trainer.py:1181 - train epoch: 42, step: 6370, loss_ce: 4.23535e-01, acc: 0.812, grad_norm: 9.50373e+00, header_lr: 2.881406e-05
+0:INFO    26-06-11 16:44:09.103 +00:03:42 - trainer.py:1181 - train epoch: 42, step: 6380, loss_ce: 1.79278e-01, acc: 0.969, grad_norm: 9.08408e+00, header_lr: 2.836629e-05
+0:INFO    26-06-11 16:44:09.289 +00:03:42 - trainer.py:1181 - train epoch: 42, step: 6390, loss_ce: 2.40957e-01, acc: 0.938, grad_norm: 1.64096e+01, header_lr: 2.792233e-05
+0:INFO    26-06-11 16:44:09.474 +00:03:42 - trainer.py:1181 - train epoch: 42, step: 6400, loss_ce: 3.83657e-01, acc: 0.844, grad_norm: 1.03337e+01, header_lr: 2.748219e-05
+0:INFO    26-06-11 16:44:09.585 +00:03:42 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:09.976 +00:03:43 - trainer.py:1265 - adftd/eval epoch: 42, loss: 7.9985, acc: 0.419, balanced_acc: 0.383, cohen_kappa: 0.103, f1: 0.395
+0:INFO    26-06-11 16:44:09.976 +00:03:43 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:10.377 +00:03:43 - trainer.py:1265 - adftd/test epoch: 42, loss: 1.5959, acc: 0.517, balanced_acc: 0.498, cohen_kappa: 0.253, f1: 0.511
+0:INFO    26-06-11 16:44:10.471 +00:03:43 - trainer.py:1181 - train epoch: 43, step: 6410, loss_ce: 3.95589e-01, acc: 0.781, grad_norm: 1.32429e+01, header_lr: 2.704589e-05
+0:INFO    26-06-11 16:44:10.656 +00:03:43 - trainer.py:1181 - train epoch: 43, step: 6420, loss_ce: 3.93321e+00, acc: 0.812, grad_norm: 1.43049e+02, header_lr: 2.661342e-05
+0:INFO    26-06-11 16:44:10.837 +00:03:43 - trainer.py:1181 - train epoch: 43, step: 6430, loss_ce: 1.52494e+01, acc: 0.812, grad_norm: 2.73572e+02, header_lr: 2.618481e-05
+0:INFO    26-06-11 16:44:11.020 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6440, loss_ce: 3.74184e-01, acc: 0.844, grad_norm: 9.27433e+00, header_lr: 2.576006e-05
+0:INFO    26-06-11 16:44:11.202 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6450, loss_ce: 1.95799e-01, acc: 0.906, grad_norm: 3.02982e+00, header_lr: 2.533917e-05
+0:INFO    26-06-11 16:44:11.384 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6460, loss_ce: 2.36372e-01, acc: 0.906, grad_norm: 2.29993e+01, header_lr: 2.492217e-05
+0:INFO    26-06-11 16:44:11.563 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6470, loss_ce: 4.59000e-01, acc: 0.875, grad_norm: 1.55688e+01, header_lr: 2.450905e-05
+0:INFO    26-06-11 16:44:11.742 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6480, loss_ce: 4.85736e-01, acc: 0.844, grad_norm: 1.05322e+01, header_lr: 2.409983e-05
+0:INFO    26-06-11 16:44:11.921 +00:03:44 - trainer.py:1181 - train epoch: 43, step: 6490, loss_ce: 2.85445e-01, acc: 0.875, grad_norm: 5.59939e+00, header_lr: 2.369451e-05
+0:INFO    26-06-11 16:44:12.098 +00:03:45 - trainer.py:1181 - train epoch: 43, step: 6500, loss_ce: 2.09642e-01, acc: 0.938, grad_norm: 1.24265e+01, header_lr: 2.329311e-05
+0:INFO    26-06-11 16:44:12.274 +00:03:45 - trainer.py:1181 - train epoch: 43, step: 6510, loss_ce: 2.35541e-01, acc: 0.938, grad_norm: 1.23323e+01, header_lr: 2.289563e-05
+0:INFO    26-06-11 16:44:12.452 +00:03:45 - trainer.py:1181 - train epoch: 43, step: 6520, loss_ce: 7.72266e-01, acc: 0.844, grad_norm: 2.93978e+01, header_lr: 2.250208e-05
+0:INFO    26-06-11 16:44:12.629 +00:03:45 - trainer.py:1181 - train epoch: 43, step: 6530, loss_ce: 3.13921e-01, acc: 0.875, grad_norm: 1.09615e+01, header_lr: 2.211247e-05
+0:INFO    26-06-11 16:44:12.807 +00:03:45 - trainer.py:1181 - train epoch: 43, step: 6540, loss_ce: 4.82444e-01, acc: 0.844, grad_norm: 9.31000e+01, header_lr: 2.172682e-05
+0:INFO    26-06-11 16:44:12.983 +00:03:46 - trainer.py:1181 - train epoch: 43, step: 6550, loss_ce: 3.00284e-01, acc: 0.844, grad_norm: 1.36691e+01, header_lr: 2.134512e-05
+0:INFO    26-06-11 16:44:13.069 +00:03:46 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:13.443 +00:03:46 - trainer.py:1265 - adftd/eval epoch: 43, loss: 8.0143, acc: 0.412, balanced_acc: 0.378, cohen_kappa: 0.095, f1: 0.381
+0:INFO    26-06-11 16:44:13.443 +00:03:46 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:13.827 +00:03:46 - trainer.py:1265 - adftd/test epoch: 43, loss: 1.5803, acc: 0.517, balanced_acc: 0.494, cohen_kappa: 0.250, f1: 0.507
+0:INFO    26-06-11 16:44:13.940 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6560, loss_ce: 2.44769e-01, acc: 0.906, grad_norm: 1.02240e+01, header_lr: 2.096738e-05
+0:INFO    26-06-11 16:44:14.118 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6570, loss_ce: 3.29510e-01, acc: 0.812, grad_norm: 2.68892e+01, header_lr: 2.059362e-05
+0:INFO    26-06-11 16:44:14.299 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6580, loss_ce: 5.26590e-01, acc: 0.781, grad_norm: 9.71898e+00, header_lr: 2.022385e-05
+0:INFO    26-06-11 16:44:14.478 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6590, loss_ce: 4.68892e-01, acc: 0.812, grad_norm: 1.22585e+01, header_lr: 1.985806e-05
+0:INFO    26-06-11 16:44:14.654 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6600, loss_ce: 3.50592e-01, acc: 0.844, grad_norm: 4.88840e+00, header_lr: 1.949627e-05
+0:INFO    26-06-11 16:44:14.832 +00:03:47 - trainer.py:1181 - train epoch: 44, step: 6610, loss_ce: 2.40818e-01, acc: 0.906, grad_norm: 5.16189e+00, header_lr: 1.913849e-05
+0:INFO    26-06-11 16:44:15.011 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6620, loss_ce: 2.96136e-01, acc: 0.875, grad_norm: 2.36206e+01, header_lr: 1.878472e-05
+0:INFO    26-06-11 16:44:15.190 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6630, loss_ce: 6.01136e-01, acc: 0.812, grad_norm: 1.70371e+01, header_lr: 1.843498e-05
+0:INFO    26-06-11 16:44:15.367 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6640, loss_ce: 7.86931e-01, acc: 0.906, grad_norm: 3.64447e+02, header_lr: 1.808926e-05
+0:INFO    26-06-11 16:44:15.544 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6650, loss_ce: 2.40983e+01, acc: 0.750, grad_norm: 2.41789e+02, header_lr: 1.774759e-05
+0:INFO    26-06-11 16:44:15.720 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6660, loss_ce: 5.36765e-01, acc: 0.875, grad_norm: 2.65290e+02, header_lr: 1.740995e-05
+0:INFO    26-06-11 16:44:15.897 +00:03:48 - trainer.py:1181 - train epoch: 44, step: 6670, loss_ce: 4.64065e-01, acc: 0.844, grad_norm: 1.72692e+01, header_lr: 1.707637e-05
+0:INFO    26-06-11 16:44:16.076 +00:03:49 - trainer.py:1181 - train epoch: 44, step: 6680, loss_ce: 3.90324e-01, acc: 0.844, grad_norm: 7.08110e+00, header_lr: 1.674685e-05
+0:INFO    26-06-11 16:44:16.255 +00:03:49 - trainer.py:1181 - train epoch: 44, step: 6690, loss_ce: 2.58206e-01, acc: 0.875, grad_norm: 1.52608e+01, header_lr: 1.642140e-05
+0:INFO    26-06-11 16:44:16.432 +00:03:49 - trainer.py:1181 - train epoch: 44, step: 6700, loss_ce: 3.70191e-01, acc: 0.906, grad_norm: 2.15618e+01, header_lr: 1.610002e-05
+0:INFO    26-06-11 16:44:16.502 +00:03:49 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:16.874 +00:03:49 - trainer.py:1265 - adftd/eval epoch: 44, loss: 7.9634, acc: 0.417, balanced_acc: 0.383, cohen_kappa: 0.104, f1: 0.390
+0:INFO    26-06-11 16:44:16.874 +00:03:49 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:17.267 +00:03:50 - trainer.py:1265 - adftd/test epoch: 44, loss: 1.6067, acc: 0.513, balanced_acc: 0.495, cohen_kappa: 0.248, f1: 0.505
+0:INFO    26-06-11 16:44:17.394 +00:03:50 - trainer.py:1181 - train epoch: 45, step: 6710, loss_ce: 3.76986e-01, acc: 0.750, grad_norm: 8.71166e+00, header_lr: 1.578272e-05
+0:INFO    26-06-11 16:44:17.572 +00:03:50 - trainer.py:1181 - train epoch: 45, step: 6720, loss_ce: 3.43577e-01, acc: 0.906, grad_norm: 9.11492e+00, header_lr: 1.546951e-05
+0:INFO    26-06-11 16:44:17.750 +00:03:50 - trainer.py:1181 - train epoch: 45, step: 6730, loss_ce: 2.90956e-01, acc: 0.875, grad_norm: 9.07543e+00, header_lr: 1.516040e-05
+0:INFO    26-06-11 16:44:17.928 +00:03:50 - trainer.py:1181 - train epoch: 45, step: 6740, loss_ce: 3.15713e-01, acc: 0.781, grad_norm: 1.26317e+01, header_lr: 1.485538e-05
+0:INFO    26-06-11 16:44:18.107 +00:03:51 - trainer.py:1181 - train epoch: 45, step: 6750, loss_ce: 2.00909e-01, acc: 0.969, grad_norm: 8.13602e+00, header_lr: 1.455448e-05
+0:INFO    26-06-11 16:44:18.286 +00:03:51 - trainer.py:1181 - train epoch: 45, step: 6760, loss_ce: 2.19092e-01, acc: 0.906, grad_norm: 1.93087e+01, header_lr: 1.425769e-05
+0:INFO    26-06-11 16:44:18.465 +00:03:51 - trainer.py:1181 - train epoch: 45, step: 6770, loss_ce: 2.60165e-01, acc: 0.875, grad_norm: 7.73842e+00, header_lr: 1.396502e-05
+0:INFO    26-06-11 16:44:18.647 +00:03:51 - trainer.py:1181 - train epoch: 45, step: 6780, loss_ce: 5.43619e-01, acc: 0.875, grad_norm: 1.29941e+01, header_lr: 1.367648e-05
+0:INFO    26-06-11 16:44:18.826 +00:03:51 - trainer.py:1181 - train epoch: 45, step: 6790, loss_ce: 4.35319e-01, acc: 0.875, grad_norm: 1.18271e+01, header_lr: 1.339208e-05
+0:INFO    26-06-11 16:44:19.005 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6800, loss_ce: 2.50666e-01, acc: 0.938, grad_norm: 1.34130e+01, header_lr: 1.311181e-05
+0:INFO    26-06-11 16:44:19.184 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6810, loss_ce: 3.58325e-01, acc: 0.875, grad_norm: 1.60265e+01, header_lr: 1.283569e-05
+0:INFO    26-06-11 16:44:19.363 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6820, loss_ce: 2.53673e-01, acc: 0.969, grad_norm: 8.58164e+00, header_lr: 1.256373e-05
+0:INFO    26-06-11 16:44:19.548 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6830, loss_ce: 3.58568e-01, acc: 0.812, grad_norm: 3.22180e+01, header_lr: 1.229592e-05
+0:INFO    26-06-11 16:44:19.732 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6840, loss_ce: 4.17865e-01, acc: 0.906, grad_norm: 8.47995e+00, header_lr: 1.203228e-05
+0:INFO    26-06-11 16:44:19.913 +00:03:52 - trainer.py:1181 - train epoch: 45, step: 6850, loss_ce: 5.02920e-01, acc: 0.875, grad_norm: 2.17133e+01, header_lr: 1.177280e-05
+0:INFO    26-06-11 16:44:19.968 +00:03:53 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:20.354 +00:03:53 - trainer.py:1265 - adftd/eval epoch: 45, loss: 8.0487, acc: 0.416, balanced_acc: 0.381, cohen_kappa: 0.101, f1: 0.386
+0:INFO    26-06-11 16:44:20.354 +00:03:53 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:20.752 +00:03:53 - trainer.py:1265 - adftd/test epoch: 45, loss: 1.5977, acc: 0.513, balanced_acc: 0.489, cohen_kappa: 0.243, f1: 0.502
+0:INFO    26-06-11 16:44:20.900 +00:03:53 - trainer.py:1181 - train epoch: 46, step: 6860, loss_ce: 1.54711e+01, acc: 0.812, grad_norm: 3.29327e+02, header_lr: 1.151751e-05
+0:INFO    26-06-11 16:44:21.077 +00:03:54 - trainer.py:1181 - train epoch: 46, step: 6870, loss_ce: 1.79289e-01, acc: 0.969, grad_norm: 3.96063e+01, header_lr: 1.126639e-05
+0:INFO    26-06-11 16:44:21.258 +00:03:54 - trainer.py:1181 - train epoch: 46, step: 6880, loss_ce: 7.74380e-01, acc: 0.781, grad_norm: 7.18658e+01, header_lr: 1.101947e-05
+0:INFO    26-06-11 16:44:21.439 +00:03:54 - trainer.py:1181 - train epoch: 46, step: 6890, loss_ce: 4.27216e-01, acc: 0.844, grad_norm: 1.26217e+01, header_lr: 1.077673e-05
+0:INFO    26-06-11 16:44:21.619 +00:03:54 - trainer.py:1181 - train epoch: 46, step: 6900, loss_ce: 2.83168e-01, acc: 0.906, grad_norm: 1.18981e+01, header_lr: 1.053820e-05
+0:INFO    26-06-11 16:44:21.799 +00:03:54 - trainer.py:1181 - train epoch: 46, step: 6910, loss_ce: 3.72627e-01, acc: 0.812, grad_norm: 1.85978e+01, header_lr: 1.030386e-05
+0:INFO    26-06-11 16:44:21.980 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6920, loss_ce: 3.46838e-01, acc: 0.906, grad_norm: 7.44063e+00, header_lr: 1.007374e-05
+0:INFO    26-06-11 16:44:22.159 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6930, loss_ce: 3.85571e-01, acc: 0.812, grad_norm: 1.59327e+01, header_lr: 9.847828e-06
+0:INFO    26-06-11 16:44:22.341 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6940, loss_ce: 4.19479e-01, acc: 0.844, grad_norm: 2.72523e+01, header_lr: 9.626136e-06
+0:INFO    26-06-11 16:44:22.518 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6950, loss_ce: 3.42064e-01, acc: 0.938, grad_norm: 9.71247e+00, header_lr: 9.408666e-06
+0:INFO    26-06-11 16:44:22.697 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6960, loss_ce: 3.26369e+00, acc: 0.875, grad_norm: 5.49019e+02, header_lr: 9.195425e-06
+0:INFO    26-06-11 16:44:22.877 +00:03:55 - trainer.py:1181 - train epoch: 46, step: 6970, loss_ce: 4.44294e-01, acc: 0.875, grad_norm: 3.42572e+01, header_lr: 8.986416e-06
+0:INFO    26-06-11 16:44:23.057 +00:03:56 - trainer.py:1181 - train epoch: 46, step: 6980, loss_ce: 8.20167e-01, acc: 0.812, grad_norm: 2.89739e+01, header_lr: 8.781645e-06
+0:INFO    26-06-11 16:44:23.241 +00:03:56 - trainer.py:1181 - train epoch: 46, step: 6990, loss_ce: 2.19481e-01, acc: 0.969, grad_norm: 1.20919e+01, header_lr: 8.581115e-06
+0:INFO    26-06-11 16:44:23.417 +00:03:56 - trainer.py:1181 - train epoch: 46, step: 7000, loss_ce: 3.13437e-01, acc: 0.844, grad_norm: 2.17409e+01, header_lr: 8.384831e-06
+0:INFO    26-06-11 16:44:23.453 +00:03:56 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:23.828 +00:03:56 - trainer.py:1265 - adftd/eval epoch: 46, loss: 8.0398, acc: 0.409, balanced_acc: 0.376, cohen_kappa: 0.092, f1: 0.379
+0:INFO    26-06-11 16:44:23.829 +00:03:56 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:24.219 +00:03:57 - trainer.py:1265 - adftd/test epoch: 46, loss: 1.5565, acc: 0.518, balanced_acc: 0.494, cohen_kappa: 0.252, f1: 0.506
+0:INFO    26-06-11 16:44:24.382 +00:03:57 - trainer.py:1181 - train epoch: 47, step: 7010, loss_ce: 3.30312e+00, acc: 0.875, grad_norm: 5.51027e+02, header_lr: 8.192798e-06
+0:INFO    26-06-11 16:44:24.557 +00:03:57 - trainer.py:1181 - train epoch: 47, step: 7020, loss_ce: 2.61523e-01, acc: 0.938, grad_norm: 5.16858e+00, header_lr: 8.005020e-06
+0:INFO    26-06-11 16:44:24.735 +00:03:57 - trainer.py:1181 - train epoch: 47, step: 7030, loss_ce: 6.96321e-01, acc: 0.844, grad_norm: 3.52257e+02, header_lr: 7.821501e-06
+0:INFO    26-06-11 16:44:24.913 +00:03:57 - trainer.py:1181 - train epoch: 47, step: 7040, loss_ce: 2.96387e-01, acc: 0.844, grad_norm: 1.57590e+01, header_lr: 7.642244e-06
+0:INFO    26-06-11 16:44:25.092 +00:03:58 - trainer.py:1181 - train epoch: 47, step: 7050, loss_ce: 3.34716e-01, acc: 0.844, grad_norm: 1.38165e+01, header_lr: 7.467255e-06
+0:INFO    26-06-11 16:44:25.271 +00:03:58 - trainer.py:1181 - train epoch: 47, step: 7060, loss_ce: 4.80625e-01, acc: 0.844, grad_norm: 2.86343e+01, header_lr: 7.296536e-06
+0:INFO    26-06-11 16:44:25.450 +00:03:58 - trainer.py:1181 - train epoch: 47, step: 7070, loss_ce: 2.46218e-01, acc: 0.938, grad_norm: 2.79779e+01, header_lr: 7.130091e-06
+0:INFO    26-06-11 16:44:25.627 +00:03:58 - trainer.py:1181 - train epoch: 47, step: 7080, loss_ce: 3.39702e-01, acc: 0.875, grad_norm: 1.29198e+01, header_lr: 6.967925e-06
+0:INFO    26-06-11 16:44:25.806 +00:03:58 - trainer.py:1181 - train epoch: 47, step: 7090, loss_ce: 2.19911e-01, acc: 1.000, grad_norm: 1.06869e+01, header_lr: 6.810040e-06
+0:INFO    26-06-11 16:44:25.983 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7100, loss_ce: 2.75544e-01, acc: 0.969, grad_norm: 1.95600e+01, header_lr: 6.656440e-06
+0:INFO    26-06-11 16:44:26.162 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7110, loss_ce: 2.65500e-01, acc: 0.906, grad_norm: 7.65986e+00, header_lr: 6.507128e-06
+0:INFO    26-06-11 16:44:26.342 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7120, loss_ce: 3.46642e-01, acc: 0.812, grad_norm: 3.11996e+01, header_lr: 6.362109e-06
+0:INFO    26-06-11 16:44:26.522 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7130, loss_ce: 4.66202e-01, acc: 0.844, grad_norm: 2.49576e+01, header_lr: 6.221384e-06
+0:INFO    26-06-11 16:44:26.701 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7140, loss_ce: 5.61964e-01, acc: 0.938, grad_norm: 2.64876e+02, header_lr: 6.084957e-06
+0:INFO    26-06-11 16:44:26.877 +00:03:59 - trainer.py:1181 - train epoch: 47, step: 7150, loss_ce: 4.28692e-01, acc: 0.844, grad_norm: 1.33590e+01, header_lr: 5.952831e-06
+0:INFO    26-06-11 16:44:26.895 +00:03:59 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:27.268 +00:04:00 - trainer.py:1265 - adftd/eval epoch: 47, loss: 8.0481, acc: 0.413, balanced_acc: 0.379, cohen_kappa: 0.097, f1: 0.382
+0:INFO    26-06-11 16:44:27.269 +00:04:00 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:27.655 +00:04:00 - trainer.py:1265 - adftd/test epoch: 47, loss: 1.5810, acc: 0.513, balanced_acc: 0.490, cohen_kappa: 0.245, f1: 0.503
+0:INFO    26-06-11 16:44:27.836 +00:04:00 - trainer.py:1181 - train epoch: 48, step: 7160, loss_ce: 6.16416e-01, acc: 0.857, grad_norm: 2.15329e+01, header_lr: 5.825009e-06
+0:INFO    26-06-11 16:44:28.017 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7170, loss_ce: 5.22828e-01, acc: 0.750, grad_norm: 3.99264e+01, header_lr: 5.701494e-06
+0:INFO    26-06-11 16:44:28.196 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7180, loss_ce: 2.08143e-01, acc: 0.906, grad_norm: 7.06136e+00, header_lr: 5.582288e-06
+0:INFO    26-06-11 16:44:28.376 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7190, loss_ce: 3.15537e-01, acc: 0.844, grad_norm: 4.41658e+00, header_lr: 5.467395e-06
+0:INFO    26-06-11 16:44:28.555 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7200, loss_ce: 2.69018e-01, acc: 0.906, grad_norm: 8.24127e+00, header_lr: 5.356815e-06
+0:INFO    26-06-11 16:44:28.736 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7210, loss_ce: 3.25838e-01, acc: 0.875, grad_norm: 3.03112e+01, header_lr: 5.250553e-06
+0:INFO    26-06-11 16:44:28.916 +00:04:01 - trainer.py:1181 - train epoch: 48, step: 7220, loss_ce: 4.99151e-01, acc: 0.844, grad_norm: 4.37808e+01, header_lr: 5.148610e-06
+0:INFO    26-06-11 16:44:29.095 +00:04:02 - trainer.py:1181 - train epoch: 48, step: 7230, loss_ce: 2.54730e-01, acc: 0.875, grad_norm: 1.70033e+01, header_lr: 5.050989e-06
+0:INFO    26-06-11 16:44:29.274 +00:04:02 - trainer.py:1181 - train epoch: 48, step: 7240, loss_ce: 1.52575e-01, acc: 0.969, grad_norm: 4.69611e+01, header_lr: 4.957691e-06
+0:INFO    26-06-11 16:44:29.453 +00:04:02 - trainer.py:1181 - train epoch: 48, step: 7250, loss_ce: 4.52284e-01, acc: 0.844, grad_norm: 1.90449e+01, header_lr: 4.868719e-06
+0:INFO    26-06-11 16:44:29.632 +00:04:02 - trainer.py:1181 - train epoch: 48, step: 7260, loss_ce: 3.29539e+00, acc: 0.844, grad_norm: 7.36659e+01, header_lr: 4.784075e-06
+0:INFO    26-06-11 16:44:29.812 +00:04:02 - trainer.py:1181 - train epoch: 48, step: 7270, loss_ce: 3.96172e-01, acc: 0.875, grad_norm: 1.30274e+01, header_lr: 4.703761e-06
+0:INFO    26-06-11 16:44:29.991 +00:04:03 - trainer.py:1181 - train epoch: 48, step: 7280, loss_ce: 2.27359e-01, acc: 0.938, grad_norm: 1.22354e+01, header_lr: 4.627777e-06
+0:INFO    26-06-11 16:44:30.172 +00:04:03 - trainer.py:1181 - train epoch: 48, step: 7290, loss_ce: 2.13689e-01, acc: 0.938, grad_norm: 4.80643e+00, header_lr: 4.556127e-06
+0:INFO    26-06-11 16:44:30.350 +00:04:03 - trainer.py:1181 - train epoch: 48, step: 7300, loss_ce: 2.46871e-01, acc: 0.906, grad_norm: 1.86240e+01, header_lr: 4.488811e-06
+0:INFO    26-06-11 16:44:30.351 +00:04:03 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:30.730 +00:04:03 - trainer.py:1265 - adftd/eval epoch: 48, loss: 8.0537, acc: 0.414, balanced_acc: 0.380, cohen_kappa: 0.099, f1: 0.385
+0:INFO    26-06-11 16:44:30.730 +00:04:03 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:31.126 +00:04:04 - trainer.py:1265 - adftd/test epoch: 48, loss: 1.5805, acc: 0.517, balanced_acc: 0.495, cohen_kappa: 0.251, f1: 0.507
+0:INFO    26-06-11 16:44:31.328 +00:04:04 - trainer.py:1181 - train epoch: 49, step: 7310, loss_ce: 1.03187e+00, acc: 0.812, grad_norm: 9.51965e+01, header_lr: 4.425831e-06
+0:INFO    26-06-11 16:44:31.507 +00:04:04 - trainer.py:1181 - train epoch: 49, step: 7320, loss_ce: 2.86057e-01, acc: 0.906, grad_norm: 1.71307e+01, header_lr: 4.367189e-06
+0:INFO    26-06-11 16:44:31.688 +00:04:04 - trainer.py:1181 - train epoch: 49, step: 7330, loss_ce: 3.37639e-01, acc: 0.906, grad_norm: 2.77234e+01, header_lr: 4.312886e-06
+0:INFO    26-06-11 16:44:31.870 +00:04:04 - trainer.py:1181 - train epoch: 49, step: 7340, loss_ce: 2.59387e-01, acc: 0.906, grad_norm: 3.66417e+01, header_lr: 4.262922e-06
+0:INFO    26-06-11 16:44:32.050 +00:04:05 - trainer.py:1181 - train epoch: 49, step: 7350, loss_ce: 1.88627e-01, acc: 0.906, grad_norm: 1.07959e+01, header_lr: 4.217299e-06
+0:INFO    26-06-11 16:44:32.232 +00:04:05 - trainer.py:1181 - train epoch: 49, step: 7360, loss_ce: 3.95999e-01, acc: 0.875, grad_norm: 2.57058e+01, header_lr: 4.176018e-06
+0:INFO    26-06-11 16:44:32.413 +00:04:05 - trainer.py:1181 - train epoch: 49, step: 7370, loss_ce: 2.42697e-01, acc: 0.969, grad_norm: 9.40346e+00, header_lr: 4.139081e-06
+0:INFO    26-06-11 16:44:32.593 +00:04:05 - trainer.py:1181 - train epoch: 49, step: 7380, loss_ce: 3.11646e-01, acc: 0.906, grad_norm: 9.36091e+00, header_lr: 4.106486e-06
+0:INFO    26-06-11 16:44:32.774 +00:04:05 - trainer.py:1181 - train epoch: 49, step: 7390, loss_ce: 2.75902e-01, acc: 0.906, grad_norm: 3.35204e+01, header_lr: 4.078237e-06
+0:INFO    26-06-11 16:44:32.953 +00:04:06 - trainer.py:1181 - train epoch: 49, step: 7400, loss_ce: 5.37091e-01, acc: 0.812, grad_norm: 2.30446e+01, header_lr: 4.054332e-06
+0:INFO    26-06-11 16:44:33.132 +00:04:06 - trainer.py:1181 - train epoch: 49, step: 7410, loss_ce: 4.66512e-01, acc: 0.844, grad_norm: 1.61592e+01, header_lr: 4.034773e-06
+0:INFO    26-06-11 16:44:33.311 +00:04:06 - trainer.py:1181 - train epoch: 49, step: 7420, loss_ce: 2.95306e-01, acc: 0.906, grad_norm: 1.94324e+01, header_lr: 4.019560e-06
+0:INFO    26-06-11 16:44:33.490 +00:04:06 - trainer.py:1181 - train epoch: 49, step: 7430, loss_ce: 4.97788e-01, acc: 0.906, grad_norm: 2.72400e+01, header_lr: 4.008693e-06
+0:INFO    26-06-11 16:44:33.669 +00:04:06 - trainer.py:1181 - train epoch: 49, step: 7440, loss_ce: 3.29493e-01, acc: 0.875, grad_norm: 1.96527e+01, header_lr: 4.002173e-06
+0:INFO    26-06-11 16:44:33.829 +00:04:06 - trainer.py:1197 - Starting eval evaluation...
+0:INFO    26-06-11 16:44:34.203 +00:04:07 - trainer.py:1265 - adftd/eval epoch: 49, loss: 8.0396, acc: 0.416, balanced_acc: 0.382, cohen_kappa: 0.102, f1: 0.386
+0:INFO    26-06-11 16:44:34.203 +00:04:07 - trainer.py:1197 - Starting test evaluation...
+0:INFO    26-06-11 16:44:34.595 +00:04:07 - trainer.py:1265 - adftd/test epoch: 49, loss: 1.5858, acc: 0.515, balanced_acc: 0.493, cohen_kappa: 0.248, f1: 0.505
+0:INFO    26-06-11 16:44:34.626 +00:04:07 - trainer.py:1334 - Checkpoint saved: unified: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/biot/torchrun_260611164028/unified/biot_unified_epoch_49.pt
+0:INFO    26-06-11 16:44:34.650 +00:04:07 - trainer.py:1334 - Checkpoint saved: unified: /data/groups/bci/jonhuml/workspace/EEG-FM-Bench/assets/run/eval_datasets_attention_linear/adtfd/ckpt/baseline/biot/torchrun_260611164028/unified/biot_unified_last.pt
+0:INFO    26-06-11 16:44:34.651 +00:04:07 - trainer.py:351 - Wandb logging finished
+0:INFO    26-06-11 16:44:35.153 +00:04:08 - trainer.py:1442 - Training completed successfully!

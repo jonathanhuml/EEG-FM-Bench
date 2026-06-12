@@ -1,0 +1,33 @@
+dataset_folder: seed
+fm_bench_dataset: seed
+encoder_features: frozen
+readout: learned attention pooling + linear classifier
+classifier_hidden_dims: []
+
+[psd]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[zuna]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[bendr]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[biot]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[labram]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[cbramod]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
+
+[reve]
+status: failed
+error: Preprocessing did not complete for seed at 200 Hz. Inspect the preproc log above; preproc.py logs exceptions without returning a non-zero exit status.
