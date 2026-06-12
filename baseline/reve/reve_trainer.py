@@ -65,8 +65,11 @@ class ReveTrainer(AbstractTrainer):
 
         pos_bank_path = self.cfg.model.pos_bank_pretrained_path
         pos_bank_dict = self.load_safetensor(pos_bank_path, 'cpu')
+        if pos_bank_dict is None:
+            raise FileNotFoundError(
+                "REVE requires model.pos_bank_pretrained_path"
+            )
 
-        
         channel_restricted = True
 
         self.dataloader_factory = ReveDataLoaderFactory(
@@ -170,9 +173,35 @@ class ReveTrainer(AbstractTrainer):
         # Load encoder checkpoint
         ckpt = self.load_safetensor(checkpoint_path, self.device)
         if ckpt is not None:
-            missing, unexpected = self.encoder.load_state_dict(ckpt, strict=False)
+            current_state = self.encoder.state_dict()
+            compatible_state = {}
+            for name, value in ckpt.items():
+                candidates = [name]
+                normalized = name
+                for prefix in ("module.", "model.", "encoder.", "backbone."):
+                    if normalized.startswith(prefix):
+                        normalized = normalized[len(prefix):]
+                        candidates.append(normalized)
+                for candidate in candidates:
+                    if (
+                        candidate in current_state
+                        and current_state[candidate].shape == value.shape
+                    ):
+                        compatible_state[candidate] = value
+                        break
+
+            missing, unexpected = self.encoder.load_state_dict(
+                compatible_state,
+                strict=False,
+            )
             missing_keys += missing
             unexpected_keys += unexpected
+            skipped = len(ckpt) - len(compatible_state)
+            if skipped:
+                logger.warning(
+                    "Skipped %d incompatible/non-encoder REVE checkpoint keys",
+                    skipped,
+                )
 
         if missing_keys:
             logger.warning(f"Missing keys when loading checkpoint: {missing_keys}")
@@ -571,6 +600,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 

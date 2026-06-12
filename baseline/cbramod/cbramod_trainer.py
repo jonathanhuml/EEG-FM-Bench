@@ -37,7 +37,12 @@ class CBraModUnifiedModel(nn.Module):
         batch_size, n_channels, n_timepoints = x.shape
         n_patches = n_timepoints // self.patch_size
 
-        data = x.view(batch_size, n_channels, n_patches, self.patch_size)
+        data = x[..., :n_patches * self.patch_size].reshape(
+            batch_size,
+            n_channels,
+            n_patches,
+            self.patch_size,
+        )
         
         # encoder output: [batch_size, n_channels, n_patches, out_dim]
         features = self.encoder(data)
@@ -148,13 +153,53 @@ class CBraModTrainer(AbstractTrainer):
 
         logger.info(f"Loading pretrained weights from: {checkpoint_path}")
 
-        pretrain_ckpt = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
-        missing_keys, unexpected_keys = self.encoder.load_state_dict(pretrain_ckpt, strict=False)
+        pretrain_ckpt = torch.load(
+            checkpoint_path,
+            map_location="cpu",
+            weights_only=False,
+        )
+        if isinstance(pretrain_ckpt, dict):
+            for key in ("model", "state_dict"):
+                if key in pretrain_ckpt and isinstance(pretrain_ckpt[key], dict):
+                    pretrain_ckpt = pretrain_ckpt[key]
+                    break
+        if not isinstance(pretrain_ckpt, dict):
+            raise TypeError(
+                f"Unsupported CBraMod checkpoint payload: {type(pretrain_ckpt)!r}"
+            )
+
+        current_state = self.encoder.state_dict()
+        compatible_state = {}
+        for name, value in pretrain_ckpt.items():
+            candidates = [name]
+            normalized = name
+            for prefix in ("module.", "encoder.", "backbone."):
+                if normalized.startswith(prefix):
+                    normalized = normalized[len(prefix):]
+                    candidates.append(normalized)
+            for candidate in candidates:
+                if (
+                    candidate in current_state
+                    and current_state[candidate].shape == value.shape
+                ):
+                    compatible_state[candidate] = value
+                    break
+
+        missing_keys, unexpected_keys = self.encoder.load_state_dict(
+            compatible_state,
+            strict=False,
+        )
 
         if missing_keys:
             logger.warning(f"Missing keys in pretrained weights: {missing_keys}")
         if unexpected_keys:
             logger.warning(f"Unexpected keys in pretrained weights: {unexpected_keys}")
+        skipped = len(pretrain_ckpt) - len(compatible_state)
+        if skipped:
+            logger.warning(
+                "Skipped %d incompatible/non-encoder CBraMod checkpoint keys",
+                skipped,
+            )
 
         logger.info("Pretrained weights loaded successfully")
 
@@ -182,4 +227,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -290,6 +290,152 @@ class Mimul11Builder(EEGDatasetBuilder):
             raw = mne.io.read_raw_brainvision(file_path, preload=preload, verbose=verbose)
             return raw
 
+@dataclass
+class Mimul11ConvertedConfig(Mimul11Config):
+    """Config for the EEG_ConvertedData .mat version of Mimul-11.
+
+    Key differences from the .vhdr variant:
+      - file_ext='mat', flat directory (scan_sub_dir='EEG_ConvertedData')
+      - Native sampling rate 2500 Hz (downsampled to cfg.fs=256 Hz during preproc)
+      - filter_low=0.5 Hz (ZUNA pretraining requirement)
+      - is_notched=False — apply 50 Hz notch (not pre-applied in .mat files)
+      - suffix_path='Mimul-11' (parent directory name under EEGFM_DATABASE_RAW_ROOT)
+    """
+    dataset_name: Optional[str] = 'mimul_11_conv'
+    file_ext: str = 'mat'
+    scan_sub_dir: str = 'EEG_ConvertedData'
+    suffix_path: str = 'Mimul-11'
+    filter_low: float = 0.5
+    is_notched: bool = False
+
+
+class Mimul11ConvertedBuilder(Mimul11Builder):
+    """Builder for the EEG_ConvertedData .mat version of Mimul-11.
+
+    Extends Mimul11Builder; overrides only the file-discovery, filename-parsing,
+    metadata-extraction, and raw-data-reading methods to handle the .mat format.
+    All event/annotation logic (trigger mappings, epoch windows, split strategy)
+    is inherited unchanged.
+    """
+    BUILDER_CONFIG_CLASS = Mimul11ConvertedConfig
+    BUILDER_CONFIGS = [
+        Mimul11ConvertedConfig(name='pretrain'),
+        Mimul11ConvertedConfig(name='finetune', is_finetune=True),
+        Mimul11ConvertedConfig(name='finetune-reach', is_finetune=True,
+                               category=['forward', 'backward', 'left', 'right', 'up', 'down']),
+        Mimul11ConvertedConfig(name='finetune-grasp', is_finetune=True,
+                               category=['cylindrical', 'spherical', 'lumbrical']),
+        Mimul11ConvertedConfig(name='finetune-twist', is_finetune=True,
+                               category=['left', 'right']),
+    ]
+
+    def __init__(self, config_name='pretrain', **kwargs):
+        super().__init__(config_name, **kwargs)
+
+    def _walk_raw_data_files(self):
+        """Find all *_MI.mat files for the configured task(s) in the flat directory."""
+        logger.info('Walking converted (.mat) EEG data files...')
+        scan_path = os.path.join(self.config.raw_path, self.config.scan_sub_dir)
+
+        if self.config.name == 'finetune-reach':
+            prefix = ['reaching']
+        elif self.config.name == 'finetune-grasp':
+            prefix = ['multigrasp']
+        elif self.config.name == 'finetune-twist':
+            prefix = ['twist']
+        else:
+            prefix = ['reaching', 'multigrasp', 'twist']
+
+        raw_data_files = []
+        for fname in os.listdir(scan_path):
+            if not fname.endswith('_MI.mat'):
+                continue
+            if not any(p in fname for p in prefix):
+                continue
+            raw_data_files.append(os.path.normpath(os.path.join(scan_path, fname)))
+        return raw_data_files
+
+    def _resolve_file_name(self, file_path: str) -> dict[str, Any]:
+        """Parse EEG_session{N}_sub{M}_{task}_MI filename."""
+        filename = self._extract_file_name(file_path)
+        # e.g. 'EEG_session1_sub1_reaching_MI'
+        parts = filename.split('_')
+        session = int(parts[1][7:])   # 'session1' → 1
+        subject = int(parts[2][3:])   # 'sub1' → 1
+        group_raw = parts[3]           # 'reaching' | 'multigrasp' | 'twist'
+
+        if group_raw == 'reaching':
+            group = 'reach'
+        elif group_raw == 'multigrasp':
+            group = 'grasp'
+        else:
+            group = group_raw
+
+        return {'subject': subject, 'session': session, 'group': group}
+
+    def _resolve_exp_meta_info(self, file_path: str) -> dict[str, Any]:
+        """Extract metadata without loading the heavy channel arrays (uses nfo only)."""
+        import scipy.io
+        info = self._resolve_file_name(file_path)
+        age = self.sub_meta['age'][info['subject'] - 1]
+        sex = self.sub_meta['sex'][info['subject'] - 1]
+
+        d = scipy.io.loadmat(file_path, simplify_cells=True, variable_names=['nfo'])
+        nfo = d['nfo']
+        time = int(nfo['T']) / float(nfo['fs'])
+
+        info.update({'montage': '10_20', 'time': time, 'sex': sex, 'age': age})
+        return info
+
+    def _read_raw_data(self, file_path: str, preload: bool = False, verbose: bool = False) -> BaseRaw:
+        """Load .mat file, assemble MNE RawArray, and attach stimulus annotations.
+
+        Channels are stored as int16 in ch1..ch60.  The per-channel resolution
+        scalar (µV/count) converts them to microvolts; dividing by 1e6 gives
+        MNE's expected unit (volts).
+
+        Annotations are built from the mrk struct using BrainVision-compatible
+        description strings ('Stimulus/S 11', 'Stimulus/S101', etc.) so that the
+        inherited _find_annotation trigger-mapping logic works without modification.
+        """
+        import scipy.io
+        d = scipy.io.loadmat(file_path, simplify_cells=True)
+
+        mnt = d['mnt']
+        nfo = d['nfo']
+        mrk = d['mrk']
+        resolution = np.array(nfo['resolution'], dtype=np.float32)  # (60,)
+        clab = list(mnt['clab'])
+        sfreq = float(nfo['fs'])
+        n_ch = len(clab)
+
+        # Stack channels: int16 × resolution (µV/count) → Volts
+        data = np.stack(
+            [d[f'ch{i + 1}'].astype(np.float32) for i in range(n_ch)],
+            axis=0,
+        )  # (60, N)
+        data = data * resolution[:, None] * 1e-6
+
+        info = mne.create_info(ch_names=clab, sfreq=sfreq, ch_types=['eeg'] * n_ch)
+        raw = mne.io.RawArray(data, info, verbose=False)
+
+        # Build BrainVision-style annotations from mrk struct
+        mrk_pos = np.array(mrk['pos']).flatten()
+        mrk_toe = np.array(mrk['toe']).flatten().astype(int)
+        onsets = mrk_pos / sfreq
+        durations = np.zeros(len(onsets))
+        descriptions = [
+            f'Stimulus/S {t:2d}' if t < 100 else f'Stimulus/S{t}'
+            for t in mrk_toe
+        ]
+        raw.set_annotations(mne.Annotations(
+            onset=onsets,
+            duration=durations,
+            description=descriptions,
+        ))
+        return raw
+
+
 if __name__ == "__main__":
     builder = Mimul11Builder("finetune-reach")
     # builder.clean_disk_cache()

@@ -1,0 +1,21 @@
+# DREAMER emotion EEG — preprocessing at 256 Hz
+#
+# Preprocessing is handled entirely within DreamerBuilder.preproc() and mirrors
+# dreamer/preprocess.py exactly:
+#   1. Baseline subtraction (per channel, per trial)
+#   2. Resample 128 → 256 Hz (polyphase, scipy.signal.resample_poly)
+#   3. High-pass 0.5 Hz, 4th-order Butterworth (scipy.signal.filtfilt)
+#   4. Notch 50 Hz, IIR Q=30 (scipy.signal.filtfilt)
+#   5. Z-score per channel over full trial
+#   6. Non-overlapping 5 s windows (1280 samples)
+#
+# Usage:
+#   python preproc.py conf_file=assets/conf/preproc/dreamer_preproc_256.yaml
+
+fs: 256
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 1    # single .mat file; no benefit from parallelism here
+pretrain_datasets: []
+finetune_datasets:
+  dreamer: 'finetune_valence'
+  # dreamer: 'finetune_arousal'   # uncomment to preprocess arousal labels instead

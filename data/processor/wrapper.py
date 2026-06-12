@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from datasets import Dataset, concatenate_datasets, Value
 
 from data.dataset.adftd import AdftdBuilder
+from data.dataset.dreamer import DreamerBuilder
 from data.dataset.bcic.bcic_1a import BCIC1ABuilder
 from data.dataset.bcic.bcic_2020_3 import BCIC2020ImagineBuilder
 from data.dataset.bcic.bcic_2a import BCIC2ABuilder
@@ -19,7 +20,7 @@ from data.dataset.hbn import HBNBuilder
 from data.dataset.hmc import HMCBuilder
 from data.dataset.inner_speech import InnerSpeechBuilder
 from data.dataset.inria_bci import InriaBciBuilder
-from data.dataset.mimul_11 import Mimul11Builder
+from data.dataset.mimul_11 import Mimul11Builder, Mimul11ConvertedBuilder
 from data.dataset.motor_mv_img import MotorMoveImagineBuilder
 from data.dataset.openmiir import OpenMiirBuilder
 from data.dataset.seeds.seed import SeedBuilder
@@ -79,10 +80,12 @@ DATASET_SELECTOR: dict[str, Type[EEGDatasetBuilder]] = {
     'workload': WorkloadBuilder,
     'hbn': HBNBuilder,
     'adftd': AdftdBuilder,
+    'dreamer': DreamerBuilder,
     'brain_lat': BrainLatBuilder,
     'things_eeg': ThingsEEGBuilder,
     'things_eeg_2': ThingsEEG2Builder,
     'mimul_11': Mimul11Builder,
+    'mimul_11_conv': Mimul11ConvertedBuilder,
     'inner_speech': InnerSpeechBuilder,
     'chisco': ChiscoBuilder,
     'open_miir': OpenMiirBuilder,

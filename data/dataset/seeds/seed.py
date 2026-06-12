@@ -9,6 +9,7 @@ import datasets
 import mne
 import numpy as np
 import pandas as pd
+from mne.io import BaseRaw
 from numpy import ndarray
 from pandas import DataFrame
 
@@ -164,6 +165,35 @@ class SeedBuilder(EEGDatasetBuilder):
     def standardize_chs_names(self, montage: str):
         return self.config.montage[montage]
 
+    def _walk_raw_data_files(self):
+        scan_path = os.path.join(self.config.raw_path, self.config.scan_sub_dir)
+        set_files = sorted(
+            glob.glob(os.path.join(scan_path, "**", "*.set"), recursive=True)
+        )
+        if set_files:
+            return set_files
+        return sorted(
+            glob.glob(os.path.join(scan_path, "**", "*.cnt"), recursive=True)
+        )
+
+    def _read_raw_data(
+        self,
+        file_path: str,
+        preload: bool = False,
+        verbose: bool = False,
+    ) -> BaseRaw:
+        if file_path.lower().endswith(".cnt"):
+            return mne.io.read_raw_cnt(
+                file_path,
+                preload=preload,
+                verbose=verbose,
+            )
+        return mne.io.read_raw_eeglab(
+            file_path,
+            preload=preload,
+            verbose=verbose,
+        )
+
     def _check_data_montage_channel(self, df: DataFrame, n_proc: Optional[int] = None):
         return df
 
@@ -202,5 +232,3 @@ if __name__ == "__main__":
     builder.download_and_prepare(num_proc=8)
     dataset = builder.as_dataset()
     print(dataset)
-
-

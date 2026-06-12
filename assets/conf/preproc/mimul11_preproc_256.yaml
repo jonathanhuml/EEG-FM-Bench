@@ -1,0 +1,12 @@
+# Mimul-11 (EEG_ConvertedData .mat) preprocessing at 256 Hz
+# Used by PSD, ZUNA, and BENDR (all operate at 256 Hz)
+#
+# Raw files expected at: ${EEGFM_DATABASE_RAW_ROOT}/Mimul-11/EEG_ConvertedData/
+# Native sampling rate: 2500 Hz → resampled to 256 Hz
+# Filter: 0.5 Hz highpass + 50 Hz notch (applied by builder)
+fs: 256
+num_preproc_arrow_writers: 4
+num_preproc_mid_workers: 4
+pretrain_datasets: []
+finetune_datasets:
+  mimul_11_conv: 'finetune'

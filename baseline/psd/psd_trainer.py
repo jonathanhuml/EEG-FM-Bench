@@ -61,6 +61,7 @@ class WelchPSDEncoder(nn.Module):
         noverlap: Optional[int],
         fmin: Optional[float],
         fmax: Optional[float],
+        log_offset: Optional[float] = None,
     ):
         super().__init__()
         self.fs = fs
@@ -68,6 +69,7 @@ class WelchPSDEncoder(nn.Module):
         self.noverlap = noverlap if noverlap is not None else nperseg // 2
         self.fmin = fmin
         self.fmax = fmax
+        self.log_offset = log_offset  # None → log1p; float → log(psd + offset)
 
         # Pre-compute the frequency axis and band mask from Welch params.
         # welch returns freqs of length nperseg // 2 + 1.
@@ -108,7 +110,10 @@ class WelchPSDEncoder(nn.Module):
 
         # Apply band mask and log-compress.
         psd = psd[..., self.band_mask]    # [B, C, n_freq_bins]
-        psd = torch.log1p(psd)
+        if self.log_offset is not None:
+            psd = torch.log(psd + self.log_offset)
+        else:
+            psd = torch.log1p(psd)
 
         return psd.unsqueeze(1)            # [B, 1, C, n_freq_bins]
 
@@ -116,17 +121,26 @@ class WelchPSDEncoder(nn.Module):
 # ── Unified model ──────────────────────────────────────────────────────────────
 
 class PSDUnifiedModel(nn.Module):
-    """Welch PSD encoder + multi-head classification head."""
+    """Welch PSD encoder + optional feature norm + multi-head classification head."""
 
-    def __init__(self, encoder: WelchPSDEncoder, classifier: MultiHeadClassifier):
+    def __init__(
+        self,
+        encoder: WelchPSDEncoder,
+        classifier: MultiHeadClassifier,
+        feature_norm: Optional[nn.Module] = None,
+    ):
         super().__init__()
         self.encoder = encoder
         self.classifier = classifier
+        self.feature_norm = feature_norm  # optional per-feature BatchNorm
 
     def forward(self, batch):
         x = batch["data"]           # [B, C, T]
         montage = batch["montage"][0]
         features = self.encoder(x)  # [B, 1, C, n_freq_bins]
+        if self.feature_norm is not None:
+            shape = features.shape
+            features = self.feature_norm(features.reshape(shape[0], -1)).reshape(shape)
         return self.classifier(features, montage)
 
 
@@ -172,6 +186,7 @@ class PSDTrainer(AbstractTrainer):
             noverlap=model_cfg.noverlap,
             fmin=model_cfg.fmin,
             fmax=model_cfg.fmax,
+            log_offset=model_cfg.log_offset,
         )
         n_freq_bins = self.encoder.n_freq_bins
         embed_dim = n_freq_bins
@@ -195,10 +210,20 @@ class PSDTrainer(AbstractTrainer):
         )
         logger.info(
             f"PSD: nperseg={model_cfg.nperseg}, band=[{model_cfg.fmin},{model_cfg.fmax}]Hz, "
-            f"n_freq_bins={n_freq_bins}, heads={list(head_configs.keys())}"
+            f"n_freq_bins={n_freq_bins}, log_offset={model_cfg.log_offset}, "
+            f"heads={list(head_configs.keys())}"
         )
 
-        model = PSDUnifiedModel(encoder=self.encoder, classifier=self.classifier)
+        # Optional per-feature BatchNorm (mimics StandardScaler from compare_models.py)
+        feature_norm: Optional[nn.Module] = None
+        if model_cfg.use_feature_norm:
+            # Use first montage shape to determine flat feature size
+            first_shape = next(iter(ds_shape_info.values()))  # (T=1, C, D=n_freq_bins)
+            n_flat = first_shape[0] * first_shape[1] * first_shape[2]
+            feature_norm = nn.BatchNorm1d(n_flat, track_running_stats=True, affine=False)
+            logger.info(f"PSD: feature_norm enabled — BatchNorm1d({n_flat})")
+
+        model = PSDUnifiedModel(encoder=self.encoder, classifier=self.classifier, feature_norm=feature_norm)
         model = self.apply_lora(model)
         model = model.to(self.device)
         model = torch.nn.parallel.DistributedDataParallel(

@@ -1,22 +1,9 @@
-"""
-ZUNA Trainer using Abstract Base Class.
+"""Frozen ZUNA encoder integration using the original AY2latent modules.
 
-ZUNA is a 380M-parameter masked diffusion autoencoder for EEG.
-The encoder is always used frozen. Input EEG is tokenised into
-raw 32-sample windows per channel; all channels are packed into
-a single sequence with 4-D RoPE positional encoding (x, y, z, t).
-
-Compatible datasets (5 s @ 256 Hz = 1280 samples):
-  - TUEV   (tuev/01_tcp_ar,   21 ch)
-  - Mimul-11 (mimul_11/10_20, 60 ch)
-  - Things-EEG-2 (things_eeg_2/10_20, 63 ch)
-
-Shape pipeline per forward pass:
-  raw EEG          [B, n_ch, 1280]
-  tokenise         [B, n_ch, 40, 32]   (40 windows of 32 samples)
-  pack             [1, B*n_ch*40, 32]
-  EncoderTransformer → [1, B*n_ch*40, latent_dim=32]
-  reshape+permute  [B, T=40, C=n_ch, D=32]   → MultiHeadClassifier
+The adapter follows neuroai's ZUNA port: average reference, per-channel
+time-axis z-score, native-frame channel coordinates, coarse-time-major token
+packing, and restoration to FM-Bench's ``[B, T, C, D]`` feature convention.
+Segment length is derived from each input batch and can vary across datasets.
 
 Embedding cache path
 --------------------
@@ -29,7 +16,9 @@ When cfg.training.cache_features=True the trainer:
 import json
 import logging
 import os
+import sys
 import warnings
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import datasets as hf_datasets
@@ -49,10 +38,116 @@ from data.processor.wrapper import get_dataset_montage
 
 logger = logging.getLogger('baseline')
 
-# ── Constants matching DREAMER / Zuna training setup ──────────────────────────
 
-_ZUNA_XYZ_EXTREMES = torch.tensor([[-0.12, -0.12, -0.12], [0.12, 0.12, 0.12]])
-_ZUNA_NUM_BINS = 50
+# Copied from AY2latent/lingua/apps/AY2latent_bci/eeg_data.py.
+# We keep these two small helpers local because that source file currently has
+# an unrelated syntax error near the bottom that prevents importing it at all.
+def chop_and_reshape_signals(
+    eeg_signal,
+    chan_pos=None,
+    chan_pos_discrete=None,
+    tf=128,
+    use_coarse_time="B",
+):
+    """Reshape [channels, time] EEG into ZUNA's token sequence layout."""
+    num_chans, num_tpts = eeg_signal.shape
+
+    if use_coarse_time == "C":
+        tc = 1
+    else:
+        assert num_tpts % tf == 0, f"{num_tpts=} is not divisible by tf={tf}. {num_chans=}"
+        tc = num_tpts // tf
+
+    if use_coarse_time == "A":
+        seqlen = num_chans * tc
+        eeg_reshaped = eeg_signal.reshape(num_chans, tc, tf).transpose(0, 1).reshape(seqlen, tf)
+        chan_pos_reshaped = chan_pos.repeat((tc, 1)) if chan_pos is not None else None
+        chan_pos_discrete_reshaped = chan_pos_discrete.repeat((tc, 1)) if chan_pos_discrete is not None else None
+        chan_id_reshaped = torch.arange(num_chans).unsqueeze(-1).repeat((tc, 1))
+        tc_reshaped = torch.arange(tc).repeat((num_chans, 1)).T.reshape(seqlen, 1)
+
+    elif use_coarse_time == "B" or use_coarse_time == "D":
+        seqlen = num_chans * tc
+        eeg_reshaped = eeg_signal.reshape(num_chans, tc, tf).reshape(seqlen, tf)
+        chan_pos_reshaped = chan_pos.repeat_interleave(repeats=tc, dim=0) if chan_pos is not None else None
+        chan_pos_discrete_reshaped = chan_pos_discrete.repeat_interleave(repeats=tc, dim=0) if chan_pos_discrete is not None else None
+        chan_id_reshaped = torch.arange(num_chans).unsqueeze(-1).repeat_interleave(repeats=tc, dim=0)
+        tc_reshaped = torch.arange(tc).repeat((num_chans, 1)).reshape(seqlen, 1)
+
+    elif use_coarse_time == "C":
+        seqlen = num_chans
+        eeg_reshaped = eeg_signal[:, :tf]
+        chan_pos_reshaped = chan_pos
+        chan_pos_discrete_reshaped = chan_pos_discrete
+        tc_reshaped = torch.zeros(num_chans, 1)
+        chan_id_reshaped = torch.arange(num_chans).unsqueeze(-1)
+
+    else:
+        raise NotImplementedError(
+            f"use_coarse_time={use_coarse_time!r} must be one of A, B, C, or D"
+        )
+
+    if use_coarse_time == "D":
+        indices = list(range(0, tc * num_chans, tc))
+        eeg_by_channel = []
+        pos_by_channel = []
+        pos_discrete_by_channel = []
+        tc_by_channel = []
+        chan_id_by_channel = []
+        seq_lens = []
+        for i in indices:
+            st, nd = i, i + tc
+            eeg_by_channel.append(eeg_reshaped[st:nd, :])
+            pos_by_channel.append(chan_pos_reshaped[st:nd, :])
+            pos_discrete_by_channel.append(chan_pos_discrete_reshaped[st:nd, :])
+            tc_by_channel.append(tc_reshaped[st:nd, :])
+            chan_id_by_channel.append(chan_id_reshaped[st:nd, :])
+            seq_lens.append(tc)
+        eeg_reshaped = eeg_by_channel
+        chan_pos_reshaped = pos_by_channel
+        chan_pos_discrete_reshaped = pos_discrete_by_channel
+        tc_reshaped = tc_by_channel
+        chan_id_reshaped = chan_id_by_channel
+        seqlen = seq_lens
+
+    return (
+        eeg_reshaped,
+        chan_pos_reshaped,
+        chan_pos_discrete_reshaped,
+        chan_id_reshaped,
+        tc_reshaped,
+        seqlen,
+        num_chans,
+    )
+
+
+def discretize_chan_pos(chan_pos, xyz_extremes, num_bins):
+    """Discretize continuous channel positions into integer xyz bins."""
+    xyz_min = xyz_extremes[0]
+    xyz_max = xyz_extremes[1]
+
+    within_min = (chan_pos >= xyz_min).all()
+    within_max = (chan_pos <= xyz_max).all()
+
+    if not (within_min and within_max):
+        out_of_bounds_min = chan_pos < xyz_min
+        out_of_bounds_max = chan_pos > xyz_max
+        warnings.warn(
+            f"Channel positions out of bounds detected!\n"
+            f"  Positions below min: {out_of_bounds_min.sum().item()} elements\n"
+            f"  Positions above max: {out_of_bounds_max.sum().item()} elements\n"
+            f"  xyz_min: {xyz_min.tolist()}\n"
+            f"  xyz_max: {xyz_max.tolist()}\n"
+            f"  chan_pos range: [{chan_pos.min(dim=0).values.tolist()}, "
+            f"{chan_pos.max(dim=0).values.tolist()}]"
+        )
+
+    chan_pos_normalized = (chan_pos - xyz_min) / (xyz_max - xyz_min)
+    chan_pos_discrete = (chan_pos_normalized * num_bins).long()
+    return torch.clamp(chan_pos_discrete, 0, num_bins - 1)
+
+
+# ── Channel position helpers ──────────────────────────────────────────────────
 
 # Mastoid electrodes used in TUH TCP-AR montage → nearest standard positions
 _CH_NAME_ALIASES: Dict[str, str] = {
@@ -64,16 +159,27 @@ _CH_NAME_ALIASES: Dict[str, str] = {
     'FZ':  'Fz',
     'CZ':  'Cz',
     'PZ':  'Pz',
+    # Additional midline channels uppercased by standardize_chs_names (e.g. THINGS-EEG2)
+    'AFZ': 'AFz',
+    'FCZ': 'FCz',
+    'CPZ': 'CPz',
+    'POZ': 'POz',
+    'OZ':  'Oz',
+    # Inion channel in Mimul-11 (60-ch montage)
+    'IZ':  'Iz',
 }
 
 
 # ── Channel position helpers ───────────────────────────────────────────────────
 
-def _get_mne_positions(ch_names: List[str]) -> torch.Tensor:
+def _get_mne_positions(
+    ch_names: List[str],
+    invalid_channel_position: float,
+) -> torch.Tensor:
     """
     Return (n_ch, 3) float32 xyz positions (metres) for a list of channel names.
-    Looks up MNE standard_1020, then standard_1005, then falls back to (0,0,0)
-    with a warning.
+    Looks up MNE standard_1020, then standard_1005. Unknown channels use the
+    same sentinel as neuroai and are excluded before ZUNA tokenization.
     """
     import mne
     with warnings.catch_warnings():
@@ -89,31 +195,31 @@ def _get_mne_positions(ch_names: List[str]) -> torch.Tensor:
         elif name in pos_1005:
             positions.append(pos_1005[name])
         else:
-            logger.warning(f"ZUNA: channel '{ch}' (alias '{name}') not in MNE montage — using (0,0,0)")
-            positions.append(np.zeros(3, dtype=np.float32))
+            logger.warning(
+                "ZUNA: channel '%s' (alias '%s') not in MNE montage; excluding it",
+                ch,
+                name,
+            )
+            positions.append(
+                np.full(3, invalid_channel_position, dtype=np.float32)
+            )
 
     return torch.tensor(np.stack(positions), dtype=torch.float32)
 
 
 def _build_chan_pos_dict(
     ds_info: dict,
-) -> Dict[str, Tuple[torch.Tensor, torch.Tensor]]:
-    """
-    For each montage in ds_info build (chan_pos, chan_pos_disc) tensors.
-
-    Returns
-    -------
-    {montage_key: (chan_pos [n_ch,3], chan_pos_disc [n_ch,3])}
-    """
-    from zuna.inference.AY2l.lingua.apps.AY2latent_bci.eeg_data import discretize_chan_pos
-
-    result: Dict[str, Tuple[torch.Tensor, torch.Tensor]] = {}
+    invalid_channel_position: float,
+) -> Dict[str, torch.Tensor]:
+    """Build MNE-head coordinate tensors for every FM-Bench montage."""
+    result: Dict[str, torch.Tensor] = {}
     for ds_name, info in ds_info.items():
         montages = get_dataset_montage(ds_name, info['config'])
         for montage_key, ch_names in montages.items():
-            chan_pos = _get_mne_positions(ch_names)
-            chan_pos_disc = discretize_chan_pos(chan_pos, _ZUNA_XYZ_EXTREMES, _ZUNA_NUM_BINS)
-            result[montage_key] = (chan_pos, chan_pos_disc)
+            result[montage_key] = _get_mne_positions(
+                ch_names,
+                invalid_channel_position,
+            )
             logger.info(f"ZUNA: built positions for {montage_key} ({len(ch_names)} ch)")
 
     return result
@@ -129,99 +235,257 @@ class ZunaDataLoaderFactory(AbstractDataLoaderFactory):
 # ── Unified model ──────────────────────────────────────────────────────────────
 
 class ZunaUnifiedModel(nn.Module):
-    """
-    Wraps the frozen ZUNA EncoderTransformer + MultiHeadClassifier.
-
-    chan_pos_dict maps montage_key → (chan_pos [n_ch,3], chan_pos_disc [n_ch,3]).
-    These tensors are moved to the correct device on the first forward call.
-    """
+    """Wrap the AY2latent encoder and FM-Bench classifier."""
 
     def __init__(
         self,
         encoder: nn.Module,
         classifier: MultiHeadClassifier,
-        chan_pos_dict: Dict[str, Tuple[torch.Tensor, torch.Tensor]],
+        chan_pos_dict: Dict[str, torch.Tensor],
         n_fine: int = 32,
+        data_norm: float = 10.0,
+        data_clip: Optional[float] = 1.0,
+        do_avg_ref: bool = True,
+        num_bins: int = 100,
+        channel_position_montage: str = "standard_1005",
+        invalid_channel_position: float = -0.1,
+        attn_impl: str = "flex_attention",
+        skip_input_norm: bool = False,
+        feature_norm: Optional[nn.Module] = None,
     ):
         super().__init__()
         self.encoder = encoder
         self.classifier = classifier
         self.chan_pos_dict = chan_pos_dict
         self.n_fine = n_fine
+        self.data_norm = data_norm
+        self.data_clip = data_clip
+        self.do_avg_ref = do_avg_ref
+        self.num_bins = num_bins
+        self.invalid_channel_position = invalid_channel_position
+        self.attn_impl = attn_impl
+        self.skip_input_norm = skip_input_norm
+        self.feature_norm = feature_norm
+        native_to_head = self._native_to_head_transform(channel_position_montage)
+        self.register_buffer(
+            "native_to_head_rotation",
+            native_to_head[:3, :3],
+        )
+        self.register_buffer(
+            "native_to_head_translation",
+            native_to_head[:3, 3],
+        )
+        self.register_buffer(
+            "xyz_extremes",
+            torch.tensor(
+                [[-0.12, -0.12, -0.12], [0.12, 0.12, 0.12]],
+                dtype=torch.float32,
+            ),
+        )
+
+    @staticmethod
+    def _native_to_head_transform(montage_name: str) -> torch.Tensor:
+        if montage_name in {"standard_1005", "standard_1020"}:
+            return torch.tensor(
+                [
+                    [0.999993681908, 0.003551873844, 0.000202048104, -0.001762724953],
+                    [-0.003557568649, 0.998389124870, 0.056625857949, 0.031094350428],
+                    [-0.000000594737, -0.056626219302, 0.998395442963, 0.039597249076],
+                    [0.0, 0.0, 0.0, 1.0],
+                ],
+                dtype=torch.float64,
+            )
+
+        import mne
+
+        montage = mne.channels.make_standard_montage(montage_name)
+        transform = mne.channels.compute_native_head_t(montage)["trans"]
+        return torch.as_tensor(transform, dtype=torch.float64)
+
+    def _valid_channel_mask(self, channel_positions: torch.Tensor) -> torch.Tensor:
+        sentinel = torch.isclose(
+            channel_positions,
+            torch.as_tensor(
+                self.invalid_channel_position,
+                dtype=channel_positions.dtype,
+                device=channel_positions.device,
+            ),
+            rtol=0.0,
+            atol=1e-6,
+        ).all(dim=-1)
+        valid = torch.isfinite(channel_positions).all(dim=-1) & ~sentinel
+        if (~valid).all(dim=1).any():
+            raise ValueError("ZUNA received a sample with no valid channel positions")
+        return valid
+
+    def _to_zuna_native_frame(
+        self,
+        channel_positions: torch.Tensor,
+        valid_channel_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        native_positions = channel_positions.clone()
+        points = channel_positions[valid_channel_mask].to(torch.float64)
+        rotation = self.native_to_head_rotation.to(points.device)
+        translation = self.native_to_head_translation.to(points.device)
+        native_points = torch.linalg.solve(rotation, (points - translation).T).T
+        native_positions[valid_channel_mask] = native_points.to(
+            native_positions.dtype
+        )
+        return native_positions
+
+    def _preprocess_eeg(
+        self,
+        x: torch.Tensor,
+        valid_channel_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if self.skip_input_norm:
+            return x.float()
+
+        x = x.float()
+        mask = valid_channel_mask.unsqueeze(-1).to(x.dtype)
+        if self.do_avg_ref:
+            valid_count = mask.sum(dim=1, keepdim=True)
+            channel_mean = (x * mask).sum(dim=1, keepdim=True) / valid_count
+            x = (x - channel_mean) * mask
+
+        x = (x - x.mean(dim=-1, keepdim=True)) / (
+            x.std(dim=-1, keepdim=True, unbiased=False) + 1e-6
+        )
+        x = x / self.data_norm
+        if self.data_clip is not None:
+            x = x.clamp(-self.data_clip, self.data_clip)
+        return x * mask
+
+    def _sequence_repacking(
+        self,
+        x: torch.Tensor,
+        channel_positions: torch.Tensor,
+        valid_channel_mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        encoder_inputs: List[torch.Tensor] = []
+        seq_lens: List[torch.Tensor] = []
+        tok_indices: List[torch.Tensor] = []
+
+        for eeg, pos, valid in zip(
+            x,
+            channel_positions,
+            valid_channel_mask,
+            strict=True,
+        ):
+            eeg = eeg[valid]
+            pos = pos[valid]
+            pos_discrete = discretize_chan_pos(
+                pos.float(),
+                self.xyz_extremes.to(pos.device),
+                self.num_bins,
+            )
+            (
+                encoder_input,
+                _chan_pos,
+                pos_discrete,
+                _chan_id,
+                t_coarse,
+                seq_len,
+                _num_chans,
+            ) = chop_and_reshape_signals(
+                eeg_signal=eeg,
+                chan_pos=pos,
+                chan_pos_discrete=pos_discrete,
+                tf=self.n_fine,
+                use_coarse_time="A",
+            )
+            encoder_inputs.append(encoder_input.to(eeg.device))
+            seq_lens.append(
+                torch.tensor([seq_len], dtype=torch.long, device=eeg.device)
+            )
+            tok_indices.append(
+                torch.cat(
+                    (
+                        pos_discrete.to(eeg.device).unsqueeze(0),
+                        t_coarse.to(eeg.device).long().unsqueeze(0),
+                    ),
+                    dim=2,
+                )
+            )
+
+        return (
+            torch.cat(encoder_inputs, dim=0),
+            torch.cat(seq_lens, dim=0),
+            torch.cat(tok_indices, dim=1),
+        )
+
+    def _restore_dense_outputs(
+        self,
+        latent: torch.Tensor,
+        seq_lens: torch.Tensor,
+        valid_channel_mask: torch.Tensor,
+        n_times: int,
+    ) -> torch.Tensor:
+        coarse_time = n_times // self.n_fine
+        sparse_outputs = latent.squeeze(0).split(
+            seq_lens.detach().cpu().tolist(),
+            dim=0,
+        )
+        dense_outputs = []
+        for sparse, valid in zip(
+            sparse_outputs,
+            valid_channel_mask,
+            strict=True,
+        ):
+            dense = sparse.new_zeros(
+                valid.shape[0],
+                coarse_time,
+                sparse.shape[-1],
+            )
+            dense[valid] = sparse.reshape(
+                coarse_time,
+                int(valid.sum()),
+                sparse.shape[-1],
+            ).transpose(0, 1)
+            dense_outputs.append(dense)
+        return torch.stack(dense_outputs)
 
     def encode(self, batch: dict) -> torch.Tensor:
         """Run the frozen encoder only; return [B, T, C, D] features."""
-        from zuna.inference.AY2l.lingua.apps.AY2latent_bci.eeg_data import chop_and_reshape_signals
-
-        x: torch.Tensor = batch['data'].float()   # [B, n_ch, n_t]
+        x: torch.Tensor = batch['data'].float()
         montage: str = batch['montage'][0]
-        B, n_ch, n_t = x.shape
-
-        # Normalise to match Zuna training distribution.
-        mean = x.mean(dim=(1, 2), keepdim=True)               # [B, 1, 1]
-        std  = x.std(dim=(1, 2), keepdim=True).clamp(min=1e-8)
-        x    = ((x - mean) / std / 10.0).clamp(-1.0, 1.0)
-        n_coarse = n_t // self.n_fine             # 40 for 1280-sample epochs
-
-        chan_pos, chan_pos_disc = self.chan_pos_dict[montage]
-        chan_pos      = chan_pos.to(x.device)
-        chan_pos_disc = chan_pos_disc.to(x.device)
-
-        # ── Tokenise each sample in the batch ─────────────────────────────────
-        tokens_list:  List[torch.Tensor] = []
-        tok_idx_list: List[torch.Tensor] = []
-        seq_lens_list: List[int] = []
-
-        for i in range(B):
-            eeg_r, _, cpd_r, _, tc_r, seq_len = chop_and_reshape_signals(
-                eeg_signal        = x[i],           # [n_ch, n_t]
-                chan_pos          = chan_pos,
-                chan_pos_discrete = chan_pos_disc,
-                chan_dropout      = [],
-                tf                = self.n_fine,    # 32
-                use_coarse_time   = "B",
-            )
-            # chop_and_reshape_signals may return CPU tensors regardless of input device
-            dev = x.device
-            tokens_list.append(eeg_r.to(dev))
-            tok_idx_list.append(torch.cat([cpd_r.to(dev), tc_r.to(dev)], dim=1))  # [seq_len, 4]
-            seq_lens_list.append(int(seq_len))
-
-        # ── Pack into single sequence ──────────────────────────────────────────
-        packed_tokens  = torch.stack(tokens_list).reshape(1, -1, self.n_fine).to(x.device)
-        packed_tok_idx = torch.stack(tok_idx_list).reshape(1, -1, 4).to(x.device)
-        seq_lens       = torch.tensor(seq_lens_list, dtype=torch.long, device=x.device)
-
-        # ── Encode ────────────────────────────────────────────────────────────
-        try:
-            enc_out, _ = self.encoder(
-                token_values = packed_tokens,
-                seq_lens     = seq_lens,
-                tok_idx      = packed_tok_idx,
-                attn_impl    = "flex_attention",
-            )
-        except Exception:
-            enc_out, _ = self.encoder(
-                token_values = packed_tokens,
-                seq_lens     = seq_lens,
-                tok_idx      = packed_tok_idx,
-                attn_impl    = "sdpa",
+        if x.shape[-1] % self.n_fine != 0:
+            raise ValueError(
+                f"ZUNA requires T divisible by {self.n_fine}; got {x.shape[-1]}"
             )
 
-        # enc_out: [1, B * n_ch * n_coarse, latent_dim]
-        latent_dim = enc_out.shape[-1]
-
-        # ── Reshape to [B, T, C, D] ───────────────────────────────────────────
-        features = (
-            enc_out.squeeze(0)                              # [B*n_ch*n_coarse, D]
-                   .reshape(B, n_ch, n_coarse, latent_dim)  # [B, n_ch, 40, D]
-                   .permute(0, 2, 1, 3)                     # [B, T=40, C=n_ch, D]
-                   .contiguous()
+        positions = self.chan_pos_dict[montage].to(x.device)
+        positions = positions.unsqueeze(0).expand(x.shape[0], -1, -1)
+        valid = self._valid_channel_mask(positions)
+        native_positions = self._to_zuna_native_frame(positions, valid)
+        x = self._preprocess_eeg(x, valid)
+        encoder_input, seq_lens, tok_idx = self._sequence_repacking(
+            x,
+            native_positions,
+            valid,
         )
-        return features
+        do_idx = encoder_input.sum(dim=-1) == 0
+        encoder_result = self.encoder(
+            token_values=encoder_input.unsqueeze(0),
+            seq_lens=seq_lens,
+            tok_idx=tok_idx,
+            do_idx=do_idx,
+            attn_impl=self.attn_impl,
+        )
+        latent = encoder_result[0]
+        dense = self._restore_dense_outputs(
+            latent,
+            seq_lens,
+            valid,
+            x.shape[-1],
+        )
+        return dense.permute(0, 2, 1, 3).contiguous()
 
     def forward(self, batch: dict) -> torch.Tensor:
-        features = self.encode(batch)
+        features = self.encode(batch)   # [B, T, C, D]
+        if self.feature_norm is not None:
+            shape = features.shape
+            features = self.feature_norm(features.reshape(shape[0], -1)).reshape(shape)
         montage: str = batch['montage'][0]
         return self.classifier(features, montage)
 
@@ -266,12 +530,20 @@ class ZunaCachedDataset(Dataset):
 class ZunaCachedModel(nn.Module):
     """Classifier-only model that operates on pre-computed ZUNA embeddings."""
 
-    def __init__(self, classifier: MultiHeadClassifier):
+    def __init__(
+        self,
+        classifier: MultiHeadClassifier,
+        feature_norm: Optional[nn.Module] = None,
+    ):
         super().__init__()
         self.classifier = classifier
+        self.feature_norm = feature_norm
 
     def forward(self, batch: dict) -> torch.Tensor:
         features = batch['features'].float()   # [B, T, C, D]
+        if self.feature_norm is not None:
+            shape = features.shape
+            features = self.feature_norm(features.reshape(shape[0], -1)).reshape(shape)
         montage  = batch['montage'][0]
         return self.classifier(features, montage)
 
@@ -297,61 +569,80 @@ class ZunaTrainer(AbstractTrainer):
         self.loss_fn = nn.CrossEntropyLoss()
 
     def setup_model(self) -> nn.Module:
-        """Download ZUNA from HuggingFace, extract encoder, build classifier."""
-        from huggingface_hub import hf_hub_download
-        from safetensors.torch import load_file as safe_load
-        from zuna.inference.AY2l.lingua.apps.AY2latent_bci.transformer import (
-            DecoderTransformerArgs, EncoderDecoder,
-        )
-        from zuna.inference.AY2l.lingua.lingua.args import dataclass_from_dict
-
+        """Load the original AY2latent encoder from a distributed checkpoint."""
         model_cfg: ZunaModelArgs = self.cfg.model
-        logger.info("Setting up ZUNA encoder (downloading from HuggingFace if needed)…")
+        ay2latent_root = Path(model_cfg.ay2latent_root).expanduser().resolve()
+        checkpoint_path = Path(model_cfg.checkpoint_path).expanduser().resolve()
+        if not (ay2latent_root / "apps" / "AY2latent_bci").is_dir():
+            raise FileNotFoundError(
+                f"AY2latent checkout not found at {ay2latent_root}"
+            )
+        if not (checkpoint_path / ".metadata").is_file():
+            raise FileNotFoundError(
+                f"ZUNA distributed checkpoint not found at {checkpoint_path}"
+            )
+        if str(ay2latent_root) not in sys.path:
+            sys.path.insert(0, str(ay2latent_root))
 
-        # ── Load HF config → model args ───────────────────────────────────────
-        cfg_path = hf_hub_download(
-            repo_id  = model_cfg.pretrained_repo,
-            filename = model_cfg.pretrained_config_file,
+        from apps.AY2latent_bci.transformer import (
+            DecoderTransformerArgs,
+            EncoderDecoder,
         )
-        with open(cfg_path) as f:
-            hf_cfg = json.load(f)
+        from lingua.args import dataclass_from_dict
+        from lingua.checkpoint import load_from_checkpoint
+
+        logger.info("Setting up ZUNA from AY2latent checkpoint %s", checkpoint_path)
+        model_kwargs = dict(model_cfg.model_kwargs)
+        model_kwargs["encoder_latent_downsample_factor"] = 1
+        model_kwargs["ape_dim"] = 0
         model_args: DecoderTransformerArgs = dataclass_from_dict(
-            DecoderTransformerArgs, hf_cfg["model"]
+            DecoderTransformerArgs,
+            model_kwargs,
         )
-
-        # ── Load weights → extract encoder ────────────────────────────────────
-        weights_path = hf_hub_download(
-            repo_id  = model_cfg.pretrained_repo,
-            filename = model_cfg.pretrained_weights_file,
-        )
-        sd_raw = safe_load(weights_path, device="cpu")
-        sd = {k.removeprefix("model."): v for k, v in sd_raw.items()}
-
         enc_dec = EncoderDecoder(model_args)
-        enc_dec.load_state_dict(sd, strict=True)
+        enc_dec.init_weights()
+        load_from_checkpoint(
+            str(checkpoint_path),
+            enc_dec,
+            model_key="model",
+        )
 
         self.encoder = enc_dec.encoder
-        latent_dim   = model_args.encoder_output_dim
+        latent_dim = model_args.encoder_output_dim
         del enc_dec
 
-        logger.info(f"ZUNA encoder loaded — latent_dim={latent_dim}, "
-                    f"params={sum(p.numel() for p in self.encoder.parameters()):,}")
+        logger.info(
+            "ZUNA encoder loaded: latent_dim=%s, params=%s",
+            latent_dim,
+            f"{sum(p.numel() for p in self.encoder.parameters()):,}",
+        )
 
         for p in self.encoder.parameters():
             p.requires_grad_(False)
         self.encoder.eval()
+        encoder_trainable = sum(
+            p.numel() for p in self.encoder.parameters() if p.requires_grad
+        )
+        logger.info("ZUNA encoder frozen: trainable encoder params=%s", encoder_trainable)
 
         # ── Build per-montage channel position tensors ─────────────────────────
-        chan_pos_dict = _build_chan_pos_dict(self.ds_info)
+        chan_pos_dict = _build_chan_pos_dict(
+            self.ds_info,
+            model_cfg.invalid_channel_position,
+        )
 
         # ── Build classifier ──────────────────────────────────────────────────
         head_configs = {ds_name: info['n_class'] for ds_name, info in self.ds_info.items()}
         head_cfg     = model_cfg.classifier_head
-        n_coarse     = int(self.cfg.fs * 5) // model_cfg.n_fine  # 1280 // 32 = 40
-
         ds_shape_info: Dict[str, Tuple[int, int, int]] = {}
         for ds_name, info in self.ds_info.items():
             for montage_key, (n_timepoints, n_channels) in info['shape_info'].items():
+                if n_timepoints % model_cfg.n_fine != 0:
+                    raise ValueError(
+                        f"{montage_key}: {n_timepoints} samples is not divisible "
+                        f"by ZUNA n_fine={model_cfg.n_fine}"
+                    )
+                n_coarse = n_timepoints // model_cfg.n_fine
                 ds_shape_info[montage_key] = (n_coarse, n_channels, latent_dim)
 
         self.classifier = MultiHeadClassifier(
@@ -363,12 +654,29 @@ class ZunaTrainer(AbstractTrainer):
         )
         logger.info(f"ZUNA classifier built for: {list(head_configs.keys())}")
 
+        # ── Optional per-feature BatchNorm (mimics StandardScaler) ────────────
+        feature_norm: Optional[nn.Module] = None
+        if model_cfg.use_feature_norm:
+            first_shape = next(iter(ds_shape_info.values()))  # (T=40, C, D)
+            n_flat = first_shape[0] * first_shape[1] * first_shape[2]
+            feature_norm = nn.BatchNorm1d(n_flat, track_running_stats=True, affine=False)
+            logger.info(f"ZUNA: feature_norm enabled — BatchNorm1d({n_flat})")
+
         # ── Assemble unified model ────────────────────────────────────────────
         model = ZunaUnifiedModel(
-            encoder       = self.encoder,
-            classifier    = self.classifier,
-            chan_pos_dict = chan_pos_dict,
-            n_fine        = model_cfg.n_fine,
+            encoder          = self.encoder,
+            classifier       = self.classifier,
+            chan_pos_dict    = chan_pos_dict,
+            n_fine           = model_cfg.n_fine,
+            data_norm        = model_cfg.data_norm,
+            data_clip        = model_cfg.data_clip,
+            do_avg_ref       = model_cfg.do_avg_ref,
+            num_bins         = model_cfg.num_bins_discretize_xyz_chan_pos,
+            channel_position_montage = model_cfg.channel_position_montage,
+            invalid_channel_position = model_cfg.invalid_channel_position,
+            attn_impl        = model_cfg.attn_impl,
+            skip_input_norm  = model_cfg.skip_input_norm,
+            feature_norm     = feature_norm,
         )
 
         model = model.to(self.device)
@@ -378,9 +686,8 @@ class ZunaTrainer(AbstractTrainer):
         return model
 
     def load_checkpoint(self, checkpoint_path: str):
-        """Not used — weights are always fetched from HuggingFace in setup_model."""
-        logger.info(f"load_checkpoint called with {checkpoint_path} — "
-                    "ZUNA weights are loaded from HuggingFace in setup_model, ignoring.")
+        """ZUNA's AY2latent checkpoint is loaded during ``setup_model``."""
+        logger.info("ZUNA checkpoint is loaded during setup_model: %s", checkpoint_path)
 
     # ── Embedding-cache helpers ────────────────────────────────────────────────
 
@@ -436,7 +743,9 @@ class ZunaTrainer(AbstractTrainer):
         with torch.no_grad():
             for step, batch in enumerate(loader):
                 if step % 100 == 0:
-                    logger.info(f"  [{split_name}] step {step} / {len(loader)}")
+                    logger.info(
+                        f"[cache] Encoding '{split_name}' split: step {step} / {len(loader)}"
+                    )
                 batch = {
                     k: v.to(self.device) if isinstance(v, torch.Tensor) else v
                     for k, v in batch.items()
@@ -568,7 +877,10 @@ class ZunaTrainer(AbstractTrainer):
         # Log param counts before swapping model (encoder still accessible via raw_model)
         self.log_model_param_counts()
 
-        cached_model = ZunaCachedModel(raw_model.classifier)
+        cached_model = ZunaCachedModel(
+            classifier   = raw_model.classifier,
+            feature_norm = raw_model.feature_norm,
+        )
         cached_model = cached_model.to(self.device)
         cached_model = self.maybe_wrap_ddp(cached_model, find_unused_parameters=False)
         self.model   = cached_model

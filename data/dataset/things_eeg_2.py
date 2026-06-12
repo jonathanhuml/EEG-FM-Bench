@@ -47,6 +47,7 @@ class ThingsEEG2Config(EEGConfig):
     """
 
     filter_notch: float = 50.0
+    filter_low: float = 0.5
 
     dataset_name: Optional[str] = 'things_eeg_2'
     task_type: DatasetTaskType = DatasetTaskType.VISUAL
@@ -207,13 +208,7 @@ class ThingsEEG2Builder(EEGDatasetBuilder):
         return raw
 
     def _resample_and_filter(self, data: BaseRaw):
-        orig_fs = data.info['sfreq']
-        if not self.config.is_notched:
-            notch_freqs = np.arange(self.config.filter_notch, orig_fs / 2, self.config.filter_notch).tolist()
-            data = data.notch_filter(freqs=notch_freqs, verbose=False)
-        if orig_fs != self.config.fs:
-            data = data.resample(sfreq=self.config.fs, verbose=False)
-        return data
+        return super()._resample_and_filter(data)
 
 
 if __name__ == "__main__":

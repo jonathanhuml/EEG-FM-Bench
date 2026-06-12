@@ -1,7 +1,7 @@
 """
 Plot balanced accuracy training curves from trainer log files.
 
-Parses tuev/eval and tuev/test balanced_acc from the standard trainer log format:
+Parses eval and test balanced_acc from the standard trainer log format:
   0:INFO ... - tuev/eval epoch: 5, loss: 0.91, acc: 0.65, balanced_acc: 0.31, ...
 
 Usage
@@ -34,12 +34,10 @@ import matplotlib.ticker as ticker
 
 # ── Log parsing ───────────────────────────────────────────────────────────────
 
-_EVAL_RE = re.compile(
-    r'tuev/(?P<split>eval|test)\s+epoch:\s*(?P<epoch>\d+).*?balanced_acc:\s*(?P<bacc>[0-9.]+)'
-)
-
-
-def parse_log(log_path: str) -> Dict[str, List[Tuple[int, float]]]:
+def parse_log(
+    log_path: str,
+    dataset_key: Optional[str] = None,
+) -> Dict[str, List[Tuple[int, float]]]:
     """
     Parse a trainer log file.
 
@@ -48,9 +46,14 @@ def parse_log(log_path: str) -> Dict[str, List[Tuple[int, float]]]:
     {'eval': [(epoch, balanced_acc), ...], 'test': [...]}
     """
     result: Dict[str, List[Tuple[int, float]]] = {'eval': [], 'test': []}
+    dataset_pattern = re.escape(dataset_key) if dataset_key else r'[^/\s]+'
+    eval_re = re.compile(
+        rf'{dataset_pattern}/(?P<split>eval|test)\s+epoch:\s*'
+        rf'(?P<epoch>\d+).*?balanced_acc:\s*(?P<bacc>[0-9.eE+-]+)'
+    )
     with open(log_path) as f:
         for line in f:
-            m = _EVAL_RE.search(line)
+            m = eval_re.search(line)
             if m:
                 split = m.group('split')
                 epoch = int(m.group('epoch'))
@@ -80,6 +83,9 @@ _COLORS = {
     'zuna':  '#F44336',   # red
     'bendr': '#4CAF50',   # green
     'biot':  '#FF9800',   # orange
+    'labram': '#9C27B0',  # purple
+    'cbramod': '#00ACC1', # cyan
+    'reve': '#795548',    # brown
 }
 _DEFAULT_COLOR = '#9E9E9E'
 
@@ -88,6 +94,9 @@ _LABELS = {
     'zuna':  'ZUNA',
     'bendr': 'BENDR',
     'biot':  'BIOT',
+    'labram': 'LaBraM',
+    'cbramod': 'CBraMod',
+    'reve': 'REVE',
 }
 
 
@@ -96,6 +105,7 @@ def plot_curves(
     include_test: bool = False,
     out_path: str = 'assets/vis/training_curves/balanced_acc.png',
     dataset: str = 'TUEV',
+    dataset_key: Optional[str] = None,
 ):
     fig, ax = plt.subplots(figsize=(8, 5))
 
@@ -105,7 +115,7 @@ def plot_curves(
             print(f"[skip] {method}: log not found at {log_path}")
             continue
 
-        curves = parse_log(log_path)
+        curves = parse_log(log_path, dataset_key=dataset_key)
 
         eval_pts = curves['eval']
         test_pts = curves['test']
@@ -154,8 +164,12 @@ def main():
         '--logs', nargs='*', metavar='METHOD:PATH',
         help='Log files as method:path pairs. If omitted, auto-discovers latest run per method.'
     )
-    parser.add_argument('--methods', nargs='*', default=['psd', 'zuna', 'bendr', 'biot'],
-                        help='Methods to include when auto-discovering (default: all four)')
+    parser.add_argument(
+        '--methods',
+        nargs='*',
+        default=['psd', 'zuna', 'bendr', 'biot', 'labram', 'cbramod', 'reve'],
+        help='Methods to include when auto-discovering',
+    )
     parser.add_argument('--run-dir', default=None,
                         help='Base log directory, e.g. assets/run/avg_pool/log/baseline. '
                              'If omitted, defaults to assets/run/log/baseline.')
@@ -167,6 +181,11 @@ def main():
     parser.add_argument('--out', default='assets/vis/training_curves/balanced_acc.png',
                         help='Output image path')
     parser.add_argument('--dataset', default='TUEV')
+    parser.add_argument(
+        '--dataset-key',
+        default=None,
+        help='Dataset key used in trainer logs, e.g. siena_scalp',
+    )
     args = parser.parse_args()
 
     # Resolve run directory
@@ -192,7 +211,13 @@ def main():
             else:
                 print(f"[auto] {method}: no log found, skipping")
 
-    plot_curves(method_logs, include_test=args.test, out_path=args.out, dataset=args.dataset)
+    plot_curves(
+        method_logs,
+        include_test=args.test,
+        out_path=args.out,
+        dataset=args.dataset,
+        dataset_key=args.dataset_key,
+    )
 
 
 if __name__ == '__main__':

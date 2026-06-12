@@ -1,0 +1,70 @@
+# BIOT — single-task frozen-backbone on THINGS-EEG2
+# Binary classification: non-target vs target (RSVP paradigm)
+#
+# NOTE: BIOT operates at 200 Hz. THINGS-EEG2 must be preprocessed at 200 Hz
+# separately (things_eeg2_preproc_200.yaml) before running this config.
+#
+# max_channels=64: THINGS-EEG2 has 64 channels; BIOT's use_channel_conv=true
+# handles arbitrary channel counts via a learnable per-channel projection.
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/biot/biot_things_eeg2.yaml model_type=biot
+
+seed: 42
+master_port: 51302
+multitask: false
+model_type: 'biot'
+fs: 200
+
+data:
+  batch_size: 32
+  num_workers: 2
+  datasets:
+    things_eeg_2: 'finetune'
+
+model:
+  pretrained_path: null   # set to local .ckpt path or auto-downloaded by benchmark script
+
+  emb_size: 256
+  heads: 8
+  depth: 4
+  max_channels: 64
+  n_fft: 200
+  hop_length: 100
+  use_channel_conv: true
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'biot_things_eeg2'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['biot', 'things_eeg2', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10

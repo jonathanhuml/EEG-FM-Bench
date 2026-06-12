@@ -33,6 +33,12 @@ class PSDModelArgs(BaseModelArgs):
     # Frequency band to retain (Hz).  None = keep all bins.
     fmin: Optional[float] = None
     fmax: Optional[float] = None
+    # Log compression: None → log1p(psd); float → log(psd + log_offset).
+    # Set to 1e-12 to match np.log(psd + 1e-12) used in dreamer/compare_models.py.
+    log_offset: Optional[float] = None
+    # If True, apply per-feature BatchNorm to encoder output before head.
+    # Matches the StandardScaler(fit_transform) step in compare_models.py.
+    use_feature_norm: bool = False
 
 
 class PSDTrainingArgs(BaseTrainingArgs):

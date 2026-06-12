@@ -1,0 +1,79 @@
+# ZUNA — frozen-backbone, 5-class valence classification on DREAMER
+#
+# Replicates the compare_models.py (dreamer repo) setup:
+#   - Frozen ZUNA encoder (no gradient through backbone)
+#   - Trainable classifier head (PyTorch MLP) replaces the sklearn LogisticRegression
+#   - Same 5-class valence task (scores 1–5 → labels 0–4)
+#   - Same preprocessing: baseline subtraction, 128→256 Hz resample, 0.5 Hz
+#     high-pass, 50 Hz notch, per-channel z-score, 5 s non-overlapping windows
+#
+# Before running: preprocess DREAMER with
+#   python preproc.py conf_file=assets/conf/preproc/dreamer_preproc_256.yaml
+#
+# Usage:
+#   torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/zuna/zuna_dreamer_valence.yaml model_type=zuna
+
+seed: 42
+master_port: 51300
+multitask: true
+model_type: 'zuna'
+
+data:
+  batch_size: 256   # encoder is frozen; only MLP head trains on cached features
+  num_workers: 4
+  datasets:
+    dreamer: 'finetune_valence'
+
+model:
+  pretrained_repo: 'Zyphra/ZUNA'
+  pretrained_weights_file: 'model-00001-of-00001.safetensors'
+  pretrained_config_file: 'config.json'
+
+  n_fine: 32            # raw samples per ZUNA token (must match pretrained model)
+  encoder_output_dim: 32  # latent dim per token (read from HF config at runtime)
+
+  # Match compare_models.py: data is already z-scored; no extra normalisation.
+  skip_input_norm: true
+  # Match compare_models.py: StandardScaler on encoder features before classifier.
+  use_feature_norm: true
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+
+  t_sne: false   # set to true when running plot_vis.py
+
+training:
+  max_epochs: 100
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0   # encoder is frozen; this has no effect
+  warmup_epochs: 3
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+  # Pre-compute encoder embeddings once, then train only the MLP head
+  cache_features: true
+  features_cache_dir: 'assets/data/cache/zuna_dreamer_valence'
+  precompute_batch_size: 8
+
+logging:
+  experiment_name: 'zuna_dreamer_valence'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['zuna', 'dreamer', 'valence', 'frozen', 'avg_pool', 'single_task', 'cached']
+  log_step_interval: 10
+  ckpt_interval: 10

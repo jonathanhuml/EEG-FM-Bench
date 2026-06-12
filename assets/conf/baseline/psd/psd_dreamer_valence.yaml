@@ -1,0 +1,66 @@
+# PSD — Welch power spectral density baseline on DREAMER (valence)
+#
+# Parameter-free encoder: computes log-power spectra via rfft (no pretrained weights).
+# Only the classification head is trained, matching the compare_models.py PSD baseline.
+#
+# Usage:
+#   CUDA_VISIBLE_DEVICES=4 torchrun --nproc_per_node=1 baseline_main.py \
+#     conf_file=assets/conf/baseline/psd/psd_dreamer_valence.yaml model_type=psd
+
+seed: 42
+master_port: 51302
+multitask: false
+model_type: 'psd'
+fs: 256
+
+data:
+  batch_size: 64
+  num_workers: 4
+  datasets:
+    dreamer: 'finetune_valence'
+
+model:
+  # Welch PSD parameters
+  nperseg: 256      # 1 s window at 256 Hz
+  noverlap: null    # null → nperseg // 2 (50% overlap)
+  fmin: 1.0
+  fmax: 45.0
+  # Match compare_models.py: np.log(psd + 1e-12) instead of log1p.
+  log_offset: 1.0e-12
+  # Match compare_models.py: StandardScaler on PSD features before classifier.
+  use_feature_norm: true
+
+  classifier_head:
+    head_type: 'avg_pool'
+    hidden_dims: [128]
+    dropout: 0.3
+
+  t_sne: false
+
+training:
+  max_epochs: 50
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  lr_schedule: 'cosine'
+  max_lr: 4e-4
+  encoder_lr_scale: 0.0   # encoder has no parameters
+  warmup_epochs: 5
+  warmup_scale: 1e-2
+  pct_start: 0.2
+  min_lr: 4e-6
+
+  freeze_encoder: true    # no-op for PSD, kept for framework consistency
+  use_amp: false
+
+  lora:
+    use_lora: false
+
+logging:
+  experiment_name: 'psd_dreamer_valence'
+  run_dir: 'assets/run'
+  use_cloud: false
+  offline: false
+  tags: ['psd', 'dreamer', 'valence', 'frozen', 'avg_pool', 'single_task']
+  log_step_interval: 10
+  ckpt_interval: 10

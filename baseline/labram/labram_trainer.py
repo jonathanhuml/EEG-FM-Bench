@@ -1,8 +1,10 @@
 import logging
 import os
 from functools import partial
+from pathlib import Path
 from typing import Tuple
 
+import safetensors.torch
 import torch
 from torch import nn
 
@@ -177,25 +179,61 @@ class LabramTrainer(AbstractTrainer):
             return
 
         logger.info(f"Loading pretrained weights from: {checkpoint_path}")
-        
-        # Load checkpoint
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
 
-        encoder_state_dict = {}
-        for k, v in checkpoint['model'].items():
-            if k.startswith('student.'):
-                encoder_state_dict[k[len('student.'):]] = v
-
-        # Load weights into encoder
-        if self.encoder is not None:
-            missing_keys, unexpected_keys = self.encoder.load_state_dict(encoder_state_dict, strict=False)
+        path = Path(checkpoint_path)
+        if path.suffix == ".safetensors":
+            checkpoint = safetensors.torch.load_file(str(path), device="cpu")
         else:
-            missing_keys, unexpected_keys = [], []
-        
+            checkpoint = torch.load(
+                path,
+                map_location="cpu",
+                weights_only=False,
+            )
+            if isinstance(checkpoint, dict) and "model" in checkpoint:
+                checkpoint = checkpoint["model"]
+
+        if not isinstance(checkpoint, dict):
+            raise TypeError(
+                f"Unsupported LaBraM checkpoint payload: {type(checkpoint)!r}"
+            )
+
+        prefixes = (
+            "backbone.student.",
+            "module.backbone.student.",
+            "student.",
+            "module.student.",
+        )
+        encoder_state_dict = {}
+        for name, value in checkpoint.items():
+            for prefix in prefixes:
+                if name.startswith(prefix):
+                    encoder_state_dict[name[len(prefix):]] = value
+                    break
+
+        if not encoder_state_dict:
+            encoder_state_dict = dict(checkpoint)
+
+        current_state = self.encoder.state_dict()
+        compatible_state = {
+            name: value
+            for name, value in encoder_state_dict.items()
+            if name in current_state and current_state[name].shape == value.shape
+        }
+        skipped = sorted(set(encoder_state_dict) - set(compatible_state))
+        missing_keys, unexpected_keys = self.encoder.load_state_dict(
+            compatible_state,
+            strict=False,
+        )
+
         if missing_keys:
             logger.warning(f"Missing keys when loading checkpoint: {missing_keys}")
         if unexpected_keys:
             logger.warning(f"Unexpected keys when loading checkpoint: {unexpected_keys}")
+        if skipped:
+            logger.warning(
+                "Skipped %d incompatible/non-encoder LaBraM checkpoint keys",
+                len(skipped),
+            )
         
         logger.info("Successfully loaded pretrained encoder weights")
 
@@ -339,4 +377,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

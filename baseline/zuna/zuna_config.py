@@ -1,8 +1,6 @@
-"""
-ZUNA Configuration that inherits from AbstractConfig.
-"""
+"""ZUNA configuration backed by the local AY2latent checkout."""
 
-from typing import Dict, Optional, List
+from typing import Any, Dict, Optional, List
 from pydantic import Field
 
 from baseline.abstract.config import AbstractConfig, BaseDataArgs, BaseModelArgs, BaseTrainingArgs, BaseLoggingArgs
@@ -17,14 +15,62 @@ class ZunaDataArgs(BaseDataArgs):
 
 class ZunaModelArgs(BaseModelArgs):
     """ZUNA model configuration."""
-    # HuggingFace repo — weights downloaded automatically on first run
-    pretrained_repo: str = "Zyphra/ZUNA"
-    pretrained_weights_file: str = "model-00001-of-00001.safetensors"
-    pretrained_config_file: str = "config.json"
+    ay2latent_root: str = (
+        "/data/groups/bci/jonhuml/workspace/AY2latent/lingua"
+    )
+    checkpoint_path: str = (
+        "/data/groups/bci/checkpoints/bci/ZUNA2_5e-4/checkpoints/0000052500"
+    )
 
-    # Tokenisation parameters (must match pretrained model)
-    n_fine: int = 32          # raw time-samples per token
-    encoder_output_dim: int = 32  # latent_dim; read from HF config at runtime
+    # Mirrors AY2latent's ZUNA2 evaluation model. The original implementation
+    # remains the source of truth for the encoder and tokenization helpers.
+    model_kwargs: Dict[str, Any] = Field(default_factory=lambda: {
+        "dim": 1024,
+        "n_layers": 16,
+        "head_dim": 64,
+        "seqlen_t": False,
+        "huber_c": None,
+        "input_dim": 32,
+        "encoder_input_dim": 32,
+        "encoder_output_dim": 32,
+        "encoder_latent_downsample_factor": 1,
+        "encoder_sliding_window": 65536,
+        "sliding_window": 65536,
+        "xattn_sliding_window": 65536,
+        "max_seqlen": 256,
+        "max_chans": 512,
+        "model_dtype": "bf16",
+        "stft_global_sigma": 0.1,
+        "adaptive_loss_weighting": True,
+        "num_fine_time_pts": 32,
+        "rope_dim": 4,
+        "rope_theta": 10000.0,
+        "ape_dim": 0,
+        "tok_idx_type": "{x,y,z,tc}",
+        "dont_noise_chan_xyz": False,
+        "zero_spatial": False,
+        "dropout_vec_type": "zeros",
+        "register_tok_idx": "mean_all",
+    })
+
+    n_fine: int = 32
+    encoder_output_dim: int = 32
+    data_norm: float = 10.0
+    data_clip: Optional[float] = 1.0
+    do_avg_ref: bool = True
+    num_bins_discretize_xyz_chan_pos: int = 100
+    channel_position_montage: str = "standard_1005"
+    invalid_channel_position: float = -0.1
+    attn_impl: str = "flex_attention"
+
+    # If True, skip the ((x-mean)/std/10).clamp(-1,1) normalisation in encode().
+    # Set True for DREAMER, where data is already z-scored and compare_models.py
+    # feeds it directly to ZUNA (ZUNA_DATA_NORM=1.0, i.e. no-op).
+    skip_input_norm: bool = False
+
+    # If True, apply per-feature BatchNorm to encoder output before head.
+    # Matches the StandardScaler(fit_transform) step in compare_models.py.
+    use_feature_norm: bool = False
 
 
 class ZunaTrainingArgs(BaseTrainingArgs):

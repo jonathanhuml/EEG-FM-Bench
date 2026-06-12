@@ -187,15 +187,24 @@ class SeedVBuilder(EEGDatasetBuilder):
 
     def _walk_raw_data_files(self):
         scan_path = os.path.join(self.config.raw_path, self.config.scan_sub_dir)
-        raw_data_files = []
-        for root, dirs, files in os.walk(scan_path):
+        set_files = []
+        cnt_files = []
+        for root, _dirs, files in os.walk(scan_path):
             for file in files:
-                # if '7_1_20180411' in file:
-                #     continue
-                if file.endswith(self.config.file_ext):
-                    file_path = os.path.join(root, file)
-                    raw_data_files.append(os.path.normpath(file_path))
-        return raw_data_files
+                file_path = os.path.normpath(os.path.join(root, file))
+                if file.lower().endswith(".set"):
+                    set_files.append(file_path)
+                elif file.lower().endswith(".cnt"):
+                    cnt_files.append(file_path)
+        if set_files:
+            return sorted(set_files)
+
+        repaired = {
+            path.replace("_repaired.cnt", ".cnt")
+            for path in cnt_files
+            if path.lower().endswith("_repaired.cnt")
+        }
+        return sorted(path for path in cnt_files if path not in repaired)
 
     def _read_raw_data(self, file_path: str, preload: bool = False, verbose: bool = False) -> BaseRaw:
         with warnings.catch_warnings():
@@ -203,6 +212,12 @@ class SeedVBuilder(EEGDatasetBuilder):
                 "ignore",
                 category=RuntimeWarning,
             )
+            if file_path.lower().endswith(".cnt"):
+                return mne.io.read_raw_cnt(
+                    file_path,
+                    preload=preload,
+                    verbose=verbose,
+                )
             data = mne.io.read_raw_eeglab(file_path, preload=preload, verbose=verbose)
             return data
 
@@ -213,6 +228,4 @@ if __name__ == "__main__":
     builder.download_and_prepare(num_proc=1)
     dataset = builder.as_dataset()
     print(dataset)
-
-
 
