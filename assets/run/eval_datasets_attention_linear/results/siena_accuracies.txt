@@ -1,0 +1,110 @@
+dataset_folder: siena
+fm_bench_dataset: siena_scalp
+encoder_features: frozen
+readout: learned attention pooling + linear classifier
+classifier_hidden_dims: []
+
+[psd]
+status: complete
+eval epoch=0 balanced_acc=0.500000
+eval epoch=1 balanced_acc=0.500000
+eval epoch=2 balanced_acc=0.500000
+eval epoch=3 balanced_acc=0.500000
+eval epoch=4 balanced_acc=0.500000
+eval epoch=5 balanced_acc=0.500000
+eval epoch=6 balanced_acc=0.500000
+eval epoch=7 balanced_acc=0.500000
+eval epoch=8 balanced_acc=0.500000
+eval epoch=9 balanced_acc=0.500000
+eval epoch=10 balanced_acc=0.500000
+eval epoch=11 balanced_acc=0.500000
+eval epoch=12 balanced_acc=0.500000
+eval epoch=13 balanced_acc=0.500000
+eval epoch=14 balanced_acc=0.500000
+eval epoch=15 balanced_acc=0.500000
+eval epoch=16 balanced_acc=0.500000
+eval epoch=17 balanced_acc=0.500000
+eval epoch=18 balanced_acc=0.500000
+eval epoch=19 balanced_acc=0.500000
+eval epoch=20 balanced_acc=0.500000
+eval epoch=21 balanced_acc=0.500000
+eval epoch=22 balanced_acc=0.500000
+eval epoch=23 balanced_acc=0.500000
+eval epoch=24 balanced_acc=0.500000
+eval epoch=25 balanced_acc=0.500000
+eval epoch=26 balanced_acc=0.500000
+eval epoch=27 balanced_acc=0.500000
+eval epoch=28 balanced_acc=0.500000
+eval epoch=29 balanced_acc=0.500000
+eval epoch=30 balanced_acc=0.500000
+eval epoch=31 balanced_acc=0.500000
+eval epoch=32 balanced_acc=0.500000
+eval epoch=33 balanced_acc=0.500000
+eval epoch=34 balanced_acc=0.500000
+eval epoch=35 balanced_acc=0.500000
+eval epoch=36 balanced_acc=0.500000
+eval epoch=37 balanced_acc=0.500000
+eval epoch=38 balanced_acc=0.500000
+eval epoch=39 balanced_acc=0.500000
+eval epoch=40 balanced_acc=0.500000
+eval epoch=41 balanced_acc=0.500000
+eval epoch=42 balanced_acc=0.500000
+eval epoch=43 balanced_acc=0.500000
+eval epoch=44 balanced_acc=0.500000
+eval epoch=45 balanced_acc=0.500000
+eval epoch=46 balanced_acc=0.500000
+eval epoch=47 balanced_acc=0.500000
+eval epoch=48 balanced_acc=0.500000
+eval epoch=49 balanced_acc=0.500000
+final_eval_balanced_acc: 0.500000
+test epoch=0 balanced_acc=0.500000
+test epoch=1 balanced_acc=0.500000
+test epoch=2 balanced_acc=0.500000
+test epoch=3 balanced_acc=0.500000
+test epoch=4 balanced_acc=0.500000
+test epoch=5 balanced_acc=0.500000
+test epoch=6 balanced_acc=0.500000
+test epoch=7 balanced_acc=0.500000
+test epoch=8 balanced_acc=0.500000
+test epoch=9 balanced_acc=0.500000
+test epoch=10 balanced_acc=0.512000
+test epoch=11 balanced_acc=0.500000
+test epoch=12 balanced_acc=0.512000
+test epoch=13 balanced_acc=0.500000
+test epoch=14 balanced_acc=0.512000
+test epoch=15 balanced_acc=0.500000
+test epoch=16 balanced_acc=0.500000
+test epoch=17 balanced_acc=0.512000
+test epoch=18 balanced_acc=0.512000
+test epoch=19 balanced_acc=0.500000
+test epoch=20 balanced_acc=0.500000
+test epoch=21 balanced_acc=0.500000
+test epoch=22 balanced_acc=0.500000
+test epoch=23 balanced_acc=0.500000
+test epoch=24 balanced_acc=0.500000
+test epoch=25 balanced_acc=0.500000
+test epoch=26 balanced_acc=0.500000
+test epoch=27 balanced_acc=0.500000
+test epoch=28 balanced_acc=0.500000
+test epoch=29 balanced_acc=0.500000
+test epoch=30 balanced_acc=0.500000
+test epoch=31 balanced_acc=0.500000
+test epoch=32 balanced_acc=0.500000
+test epoch=33 balanced_acc=0.500000
+test epoch=34 balanced_acc=0.500000
+test epoch=35 balanced_acc=0.500000
+test epoch=36 balanced_acc=0.500000
+test epoch=37 balanced_acc=0.500000
+test epoch=38 balanced_acc=0.500000
+test epoch=39 balanced_acc=0.500000
+test epoch=40 balanced_acc=0.500000
+test epoch=41 balanced_acc=0.500000
+test epoch=42 balanced_acc=0.500000
+test epoch=43 balanced_acc=0.500000
+test epoch=44 balanced_acc=0.500000
+test epoch=45 balanced_acc=0.500000
+test epoch=46 balanced_acc=0.500000
+test epoch=47 balanced_acc=0.500000
+test epoch=48 balanced_acc=0.500000
+test epoch=49 balanced_acc=0.500000
+final_test_balanced_acc: 0.500000
